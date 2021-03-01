@@ -1,0 +1,33 @@
+version: "3.8"
+
+services:
+
+  db:
+    image: postgres:12.3
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=db_root_user
+      - POSTGRES_PASSWORD=db_root_password
+      - POSTGRES_DB=squad_dashboard
+
+  flyway:
+    build:
+      context: ./flyway
+      dockerfile: Dockerfile
+    volumes:
+      - ./flyway/sql:/flyway/sql
+    command: >
+      --host db
+      --port 5432
+      --database squad_dashboard
+      --username db_root_user
+      --password db_root_password
+      --command flyway -user=db_root_user -password=db_root_password -url=jdbc:postgresql://db/squad_dashboard
+                migrate -placeholders.database_name=squad_dashboard -placeholders.user_writer_name=squad_write -placeholders.user_writer_password=squad_writer -locations=filesystem:/flyway/sql/up
+
+volumes:
+  db_data:
+
