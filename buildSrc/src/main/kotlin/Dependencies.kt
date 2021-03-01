@@ -2,6 +2,8 @@ object Dependencies {
 
     object Versions {
 
+        val jvmTargetVersion = "1.8"
+
         // Kotlin
         const val kotlinVersion = "1.4.20"
 
@@ -11,8 +13,11 @@ object Dependencies {
         // Testing
         const val junitVersion = "5.7.1"
         const val mockkVersion = "1.10.6"
-        const val kotestVersion = "4.0.7"
+        const val kotestVersion = "4.4.1"
         const val kotlinxCoroutinesTestVersion = "1.4.2"
+
+        // Code style
+        const val ktlintVersion = "10.0.0"
     }
 
     // Kotlin Core

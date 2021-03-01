@@ -1,10 +1,6 @@
 plugins {
-    id("org.jetbrains.kotlin.jvm") version Dependencies.Versions.kotlinVersion
     application
-}
-
-repositories {
-    mavenCentral()
+    kotlin("jvm")
 }
 
 dependencies {
@@ -17,5 +13,5 @@ dependencies {
 }
 
 application {
-    mainClass.set("squaddashboard.AppKt") 
+    mainClass.set("squaddashboard.AppKt")
 }
