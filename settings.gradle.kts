@@ -9,3 +9,4 @@
 
 rootProject.name = "squad-dashboard"
 include("app")
+include("collectors:jira-collector")
