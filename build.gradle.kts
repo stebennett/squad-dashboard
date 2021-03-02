@@ -1,5 +1,6 @@
 plugins {
     kotlin("jvm") version Dependencies.Versions.kotlinVersion
+    kotlin("kapt") version Dependencies.Versions.kaptPluginVersion
     id("org.jlleitschuh.gradle.ktlint") version Dependencies.Versions.ktlintVersion
 }
 

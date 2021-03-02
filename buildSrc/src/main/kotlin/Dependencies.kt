@@ -7,8 +7,16 @@ object Dependencies {
         // Kotlin
         const val kotlinVersion = "1.4.20"
 
+        // Kapt
+        const val kaptPluginVersion = "1.4.31"
+
         // Guava
         const val guavaVersion = "29.0-jre"
+
+        // OkHttp, Retrofit, Moshi
+        const val retrofit2Version = "2.9.0"
+        const val okhttpVersion = "4.9.1"
+        const val moshiVersion = ""
 
         // Testing
         const val junitVersion = "5.7.1"
@@ -24,6 +32,14 @@ object Dependencies {
     const val kotlinStdLibJdk8 = "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     const val kotlinBom = "org.jetbrains.kotlin:kotlin-bom"
     const val guava = "com.google.guava:guava:${Versions.guavaVersion}"
+
+    // OKHttp, Retrofit, Moshi
+    const val retrofit = "com.squareup.retrofit2:retrofit:${Versions.retrofit2Version}"
+    const val okhttp = "com.squareup.okhttp3:okhttp:${Versions.okhttpVersion}"
+    const val moshi = "com.squareup.moshi:moshi:${Versions.moshiVersion}"
+    const val moshiCodeGen = "com.squareup.moshi:moshi-kotlin-codegen:${Versions.moshiVersion}"
+
+    val httpClientCore = listOf(retrofit, okhttp, moshi)
 
     // Testing libraries
     val jupiter = "org.junit.jupiter:junit-jupiter:${Versions.junitVersion}"
