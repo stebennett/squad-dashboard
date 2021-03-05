@@ -11,7 +11,7 @@ dependencies {
     implementation(Dependencies.guava)
 
     // HttpClient
-    Dependencies.httpClientCore.forEach { implementation(it) }]
+    Dependencies.httpClientCore.forEach { implementation(it) }
     kapt(Dependencies.moshiCodeGen)
 
     // Tests

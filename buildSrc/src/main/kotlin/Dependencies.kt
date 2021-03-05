@@ -16,7 +16,7 @@ object Dependencies {
         // OkHttp, Retrofit, Moshi
         const val retrofit2Version = "2.9.0"
         const val okhttpVersion = "4.9.1"
-        const val moshiVersion = ""
+        const val moshiVersion = "1.11.0"
 
         // Testing
         const val junitVersion = "5.7.1"
@@ -36,10 +36,11 @@ object Dependencies {
     // OKHttp, Retrofit, Moshi
     const val retrofit = "com.squareup.retrofit2:retrofit:${Versions.retrofit2Version}"
     const val okhttp = "com.squareup.okhttp3:okhttp:${Versions.okhttpVersion}"
-    const val moshi = "com.squareup.moshi:moshi:${Versions.moshiVersion}"
+    const val moshi = "com.squareup.moshi:moshi-kotlin:${Versions.moshiVersion}"
+    const val converterMoshi = "com.squareup.retrofit2:converter-moshi:${Versions.retrofit2Version}"
     const val moshiCodeGen = "com.squareup.moshi:moshi-kotlin-codegen:${Versions.moshiVersion}"
 
-    val httpClientCore = listOf(retrofit, okhttp, moshi)
+    val httpClientCore = listOf(retrofit, okhttp, converterMoshi, moshi)
 
     // Testing libraries
     val jupiter = "org.junit.jupiter:junit-jupiter:${Versions.junitVersion}"
