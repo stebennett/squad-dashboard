@@ -1,11 +1,18 @@
-package squaddashboard
+package squaddashboard.service
 
+import squaddashboard.client.jira.model.JiraIssue
 import squaddashboard.repository.JiraRepository
-import java.awt.KeyEventPostProcessor
 
 class JiraBackillService(private val jiraRepository: JiraRepository) {
 
-    fun loadIssues(projectKey: String, issueProcessor: () -> Unit) {
-        throw NotImplementedError("Not yet implemented")
+    fun loadIssues(projectKey: String, startAt: Int = 0, batchCount: Int = 50, issueProcessor: (issue: JiraIssue) -> Unit) {
+        val response = jiraRepository.fetchIssuesForProject(projectKey, startAt, batchCount)
+        response.issues.forEach {
+            issueProcessor(it)
+        }
+
+        if (response.total > (response.startAt + response.maxResults)) {
+            loadIssues(projectKey, startAt + batchCount, batchCount, issueProcessor)
+        }
     }
 }

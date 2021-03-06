@@ -23,6 +23,7 @@ object Dependencies {
         const val mockkVersion = "1.10.6"
         const val kotestVersion = "4.4.1"
         const val kotlinxCoroutinesTestVersion = "1.4.2"
+        const val kotlinFakerVersion = "1.6.0"
 
         // Code style
         const val ktlintVersion = "10.0.0"
@@ -43,15 +44,16 @@ object Dependencies {
     val httpClientCore = listOf(retrofit, okhttp, converterMoshi, moshi)
 
     // Testing libraries
-    val jupiter = "org.junit.jupiter:junit-jupiter:${Versions.junitVersion}"
-    val mockk = "io.mockk:mockk:${Versions.mockkVersion}"
-    val kotestRunner = "io.kotest:kotest-runner-junit5:${Versions.kotestVersion}"
-    val kotestProperties = "io.kotest:kotest-property:${Versions.kotestVersion}"
-    val kotestAssertions = "io.kotest:kotest-assertions-core-jvm:${Versions.kotestVersion}"
-    val kotestArrowAssertions = "io.kotest:kotest-assertions-arrow:${Versions.kotestVersion}"
-    val kotlinxCoroutinesTest = "org.jetbrains.kotlinx:kotlinx-coroutines-test:${Versions.kotlinxCoroutinesTestVersion}"
+    const val jupiter = "org.junit.jupiter:junit-jupiter:${Versions.junitVersion}"
+    const val mockk = "io.mockk:mockk:${Versions.mockkVersion}"
+    const val kotestRunner = "io.kotest:kotest-runner-junit5:${Versions.kotestVersion}"
+    const val kotestProperties = "io.kotest:kotest-property:${Versions.kotestVersion}"
+    const val kotestAssertions = "io.kotest:kotest-assertions-core-jvm:${Versions.kotestVersion}"
+    const val kotestArrowAssertions = "io.kotest:kotest-assertions-arrow:${Versions.kotestVersion}"
+    const val kotlinxCoroutinesTest = "org.jetbrains.kotlinx:kotlinx-coroutines-test:${Versions.kotlinxCoroutinesTestVersion}"
+    const val kotlinFaker = "io.github.serpro69:kotlin-faker:${Versions.kotlinFakerVersion}"
 
-    val testsCore = listOf(jupiter, mockk, kotestRunner, kotestProperties, kotestAssertions, kotestArrowAssertions, kotlinxCoroutinesTest)
+    val testsCore = listOf(jupiter, mockk, kotestRunner, kotestProperties, kotestAssertions, kotestArrowAssertions, kotlinxCoroutinesTest, kotlinFaker)
 
 
 }

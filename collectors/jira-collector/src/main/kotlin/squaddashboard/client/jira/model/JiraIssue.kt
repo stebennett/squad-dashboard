@@ -29,13 +29,13 @@ data class ChangeDetail(
 data class JiraIssueFields(
     val summary: String,
     val issueType: JiraIssueType,
+    val created: ZonedDateTime,
+    val updated: ZonedDateTime,
+    val status: JiraIssueStatus,
 )
 
 data class JiraIssueType(
     val name: String,
-    val created: ZonedDateTime,
-    val updated: ZonedDateTime,
-    val status: JiraIssueStatus,
 )
 
 data class JiraIssueStatus(
