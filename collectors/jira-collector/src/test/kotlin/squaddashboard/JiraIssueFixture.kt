@@ -1,7 +1,6 @@
 package squaddashboard
 
 import io.github.serpro69.kfaker.Faker
-import kotlin.random.Random
 import squaddashboard.client.jira.model.ChangeLogs
 import squaddashboard.client.jira.model.JiraIssue
 import squaddashboard.client.jira.model.JiraIssueFields
@@ -9,6 +8,7 @@ import squaddashboard.client.jira.model.JiraIssueStatus
 import squaddashboard.client.jira.model.JiraIssueType
 import squaddashboard.client.jira.model.JiraSearchResponse
 import java.time.ZonedDateTime
+import kotlin.random.Random
 
 object JiraFixtures {
 
