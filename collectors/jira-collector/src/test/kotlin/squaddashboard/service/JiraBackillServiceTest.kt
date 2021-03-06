@@ -11,7 +11,7 @@ import squaddashboard.repository.JiraRepository
 class JiraBackillServiceTest : FunSpec({
 
     val jiraRepository = mockk<JiraRepository>()
-    val jiraBackfillService = JiraBackillService(jiraRepository)
+    val jiraBackfillService = JiraIssueService(jiraRepository)
 
     test("should load issues from repository with single page of results") {
         val projectKey = "DEF"

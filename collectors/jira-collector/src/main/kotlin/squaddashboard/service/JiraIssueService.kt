@@ -3,7 +3,7 @@ package squaddashboard.service
 import squaddashboard.client.jira.model.JiraIssue
 import squaddashboard.repository.JiraRepository
 
-class JiraBackillService(private val jiraRepository: JiraRepository) {
+class JiraIssueService(private val jiraRepository: JiraRepository) {
 
     fun loadIssues(projectKey: String, startAt: Int = 0, batchCount: Int = 50, issueProcessor: (issue: JiraIssue) -> Unit) {
         val response = jiraRepository.fetchIssuesForProject(projectKey, startAt, batchCount)
