@@ -64,6 +64,5 @@ object InsertTransitionSQL {
     }
 }
 
-
 private fun ZonedDateTime.asTimestamp(): Timestamp =
     Timestamp.valueOf(this.toLocalDateTime())

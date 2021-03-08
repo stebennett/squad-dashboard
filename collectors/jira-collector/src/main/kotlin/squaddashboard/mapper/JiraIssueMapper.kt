@@ -1,6 +1,5 @@
 package squaddashboard.mapper
 
-import squaddashboard.client.jira.model.ChangeLog
 import squaddashboard.client.jira.model.ChangeLogs
 import squaddashboard.client.jira.model.JiraIssue
 import squaddashboard.model.JiraWorkType
@@ -20,7 +19,7 @@ class JiraIssueMapper {
         )
 
     private fun mapTransitions(changeLogs: ChangeLogs): List<SquadDashboardJiraIssueTransition> =
-        // select only the history items that have a status change somewher in the log
+        // select only the history items that have a status change somewhere in the log
         changeLogs.statusChanges().mapNotNull { changeLog ->
 
             // find the status change - there can only be one!

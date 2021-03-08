@@ -1,17 +1,17 @@
 package squaddashboard
 
 import io.github.serpro69.kfaker.Faker
+import squaddashboard.client.jira.model.ChangeDetail
+import squaddashboard.client.jira.model.ChangeLog
 import squaddashboard.client.jira.model.ChangeLogs
 import squaddashboard.client.jira.model.JiraIssue
 import squaddashboard.client.jira.model.JiraIssueFields
 import squaddashboard.client.jira.model.JiraIssueStatus
 import squaddashboard.client.jira.model.JiraIssueType
 import squaddashboard.client.jira.model.JiraSearchResponse
-import kotlin.random.Random
-import squaddashboard.client.jira.model.ChangeDetail
-import squaddashboard.client.jira.model.ChangeLog
 import squaddashboard.model.JiraWorkType
 import squaddashboard.model.SquadDashboardJiraIssueTransition
+import kotlin.random.Random
 
 object JiraFixtures {
 
@@ -54,14 +54,15 @@ object JiraFixtures {
                     ChangeLog(
                         id = it.jiraId.toString(),
                         created = it.transitionAt,
-                        items = listOf(ChangeDetail(
-                            field = "status",
-                            toString = it.transitionTo,
-                            fromString = it.transitionFrom,
-                        ))
+                        items = listOf(
+                            ChangeDetail(
+                                field = "status",
+                                toString = it.transitionTo,
+                                fromString = it.transitionFrom,
+                            )
+                        )
                     )
                 }
             )
     }
 }
-
