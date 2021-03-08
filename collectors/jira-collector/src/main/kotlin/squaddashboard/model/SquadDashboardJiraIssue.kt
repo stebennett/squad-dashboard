@@ -20,5 +20,12 @@ data class SquadDashboardJiraIssueTransition(
 enum class JiraWorkType(val typeName: String) {
     Story("story"),
     Task("task"),
-    Bug("bug")
+    Bug("bug");
+
+    companion object {
+        fun workTypeValueOf(typeName: String): JiraWorkType =
+            enumValues<JiraWorkType>().firstOrNull {
+                it.typeName.equals(typeName, true)
+            } ?: throw IllegalArgumentException("No enum constant for $typeName")
+    }
 }

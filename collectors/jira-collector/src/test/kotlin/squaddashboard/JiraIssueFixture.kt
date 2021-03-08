@@ -9,6 +9,7 @@ import squaddashboard.client.jira.model.JiraIssueType
 import squaddashboard.client.jira.model.JiraSearchResponse
 import java.time.ZonedDateTime
 import kotlin.random.Random
+import squaddashboard.model.JiraWorkType
 
 object JiraFixtures {
 
@@ -21,21 +22,21 @@ object JiraFixtures {
                 maxResults = count,
                 total = total,
                 issues = (0..count).map {
-                    JiraIssueFixure.create(projectKey)
+                    JiraIssueFixure.create(projectKey, JiraWorkType.Story)
                 }
             )
     }
 
     object JiraIssueFixure {
 
-        fun create(projectKey: String): JiraIssue = JiraIssue(
-            id = faker.idNumber.toString(),
+        fun create(projectKey: String, workType: JiraWorkType = JiraWorkType.Story): JiraIssue = JiraIssue(
+            id = Random.nextLong().toString(),
             self = "a-fake-self-url",
             key = "$projectKey-${Random.nextInt(1, 500)}",
             changelog = ChangeLogs(emptyList()),
             fields = JiraIssueFields(
                 summary = faker.michaelScott.quotes(),
-                issueType = JiraIssueType("Story"),
+                issueType = JiraIssueType(workType.typeName),
                 created = Random.nextZonedDateTime(),
                 updated = Random.nextZonedDateTime(),
                 status = JiraIssueStatus("In Progress")
