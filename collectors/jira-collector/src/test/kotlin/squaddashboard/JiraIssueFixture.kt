@@ -7,9 +7,11 @@ import squaddashboard.client.jira.model.JiraIssueFields
 import squaddashboard.client.jira.model.JiraIssueStatus
 import squaddashboard.client.jira.model.JiraIssueType
 import squaddashboard.client.jira.model.JiraSearchResponse
-import java.time.ZonedDateTime
 import kotlin.random.Random
+import squaddashboard.client.jira.model.ChangeDetail
+import squaddashboard.client.jira.model.ChangeLog
 import squaddashboard.model.JiraWorkType
+import squaddashboard.model.SquadDashboardJiraIssueTransition
 
 object JiraFixtures {
 
@@ -22,18 +24,18 @@ object JiraFixtures {
                 maxResults = count,
                 total = total,
                 issues = (0..count).map {
-                    JiraIssueFixure.create(projectKey, JiraWorkType.Story)
+                    JiraIssueFixture.create(projectKey, JiraWorkType.Story)
                 }
             )
     }
 
-    object JiraIssueFixure {
+    object JiraIssueFixture {
 
-        fun create(projectKey: String, workType: JiraWorkType = JiraWorkType.Story): JiraIssue = JiraIssue(
+        fun create(projectKey: String, workType: JiraWorkType = JiraWorkType.Story, jiraChangeLogs: ChangeLogs = ChangeLogs(emptyList())): JiraIssue = JiraIssue(
             id = Random.nextLong().toString(),
             self = "a-fake-self-url",
             key = "$projectKey-${Random.nextInt(1, 500)}",
-            changelog = ChangeLogs(emptyList()),
+            changelog = jiraChangeLogs,
             fields = JiraIssueFields(
                 summary = faker.michaelScott.quotes(),
                 issueType = JiraIssueType(workType.typeName),
@@ -43,7 +45,23 @@ object JiraFixtures {
             ),
         )
     }
+
+    object JiraChangeLogFixture {
+
+        fun create(transitions: List<SquadDashboardJiraIssueTransition> = emptyList()): ChangeLogs =
+            ChangeLogs(
+                histories = transitions.map {
+                    ChangeLog(
+                        id = it.jiraId.toString(),
+                        created = it.transitionAt,
+                        items = listOf(ChangeDetail(
+                            field = "status",
+                            toString = it.transitionTo,
+                            fromString = it.transitionFrom,
+                        ))
+                    )
+                }
+            )
+    }
 }
 
-fun Random.nextZonedDateTime(): ZonedDateTime =
-    ZonedDateTime.now().plusSeconds(nextLong((60 * 60 * 24 * 365) * -2, 0))
