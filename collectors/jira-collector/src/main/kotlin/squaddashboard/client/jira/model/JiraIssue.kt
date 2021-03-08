@@ -12,13 +12,26 @@ data class JiraIssue(
 
 data class ChangeLogs(
     val histories: List<ChangeLog>,
-)
+) {
+
+    fun statusChanges(): List<ChangeLog> =
+        histories.filter {
+            it.items.any {
+                it.field == "status"
+            }
+        }
+}
 
 data class ChangeLog(
     val id: String,
     val created: ZonedDateTime,
     val items: List<ChangeDetail>,
-)
+) {
+    fun statusChange(): ChangeDetail? =
+        items.firstOrNull {
+            it.field == "status"
+        }
+}
 
 data class ChangeDetail(
     val field: String,
