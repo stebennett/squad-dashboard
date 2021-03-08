@@ -14,6 +14,9 @@ dependencies {
     Dependencies.httpClientCore.forEach { implementation(it) }
     kapt(Dependencies.moshiCodeGen)
 
+    // Databases
+    Dependencies.dbCore.forEach { implementation(it) }
+
     // Tests
     Dependencies.testsCore.forEach { testImplementation(it) }
 }

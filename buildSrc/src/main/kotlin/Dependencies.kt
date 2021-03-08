@@ -18,6 +18,10 @@ object Dependencies {
         const val okhttpVersion = "4.9.1"
         const val moshiVersion = "1.11.0"
 
+        // Databases
+        const val hikariCPVersion = "4.0.3"
+        const val postgresDriverVersion = "42.2.16"
+
         // Testing
         const val junitVersion = "5.7.1"
         const val mockkVersion = "1.10.6"
@@ -42,6 +46,12 @@ object Dependencies {
     const val moshiCodeGen = "com.squareup.moshi:moshi-kotlin-codegen:${Versions.moshiVersion}"
 
     val httpClientCore = listOf(retrofit, okhttp, converterMoshi, moshi)
+
+    // Database integration
+    const val hikariCP = "com.zaxxer:HikariCP:${Versions.hikariCPVersion}"
+    const val postgresDriver = "org.postgresql:postgresql:${Versions.postgresDriverVersion}"
+
+    val dbCore = listOf(postgresDriver, hikariCP)
 
     // Testing libraries
     const val jupiter = "org.junit.jupiter:junit-jupiter:${Versions.junitVersion}"
