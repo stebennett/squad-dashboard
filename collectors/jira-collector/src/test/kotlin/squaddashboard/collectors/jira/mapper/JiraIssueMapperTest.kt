@@ -2,15 +2,14 @@ package squaddashboard.collectors.jira.mapper
 
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.inspectors.forAll
-import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
+import squaddashboard.collectors.jira.JiraFixtures
+import squaddashboard.collectors.jira.model.JiraWorkType
+import squaddashboard.collectors.jira.model.SquadDashboardJiraIssueTransition
+import squaddashboard.collectors.jira.nextFromList
+import squaddashboard.collectors.jira.nextZonedDateTime
 import kotlin.random.Random
-import squaddashboard.JiraFixtures
-import squaddashboard.model.JiraWorkType
-import squaddashboard.model.SquadDashboardJiraIssueTransition
-import squaddashboard.nextFromList
-import squaddashboard.nextZonedDateTime
 
 @ExperimentalStdlibApi
 class JiraIssueMapperTest : FunSpec({

@@ -1,8 +1,8 @@
 package squaddashboard.collectors.jira.repository
 
 import com.zaxxer.hikari.HikariDataSource
-import squaddashboard.model.SquadDashboardJiraIssue
-import squaddashboard.model.SquadDashboardJiraIssueTransition
+import squaddashboard.collectors.jira.model.SquadDashboardJiraIssue
+import squaddashboard.collectors.jira.model.SquadDashboardJiraIssueTransition
 import java.sql.Connection
 import java.sql.Timestamp
 import java.time.ZonedDateTime

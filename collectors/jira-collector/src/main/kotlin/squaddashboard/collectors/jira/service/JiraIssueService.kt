@@ -1,7 +1,7 @@
 package squaddashboard.collectors.jira.service
 
-import squaddashboard.client.jira.model.JiraIssue
-import squaddashboard.repository.JiraRepository
+import squaddashboard.collectors.jira.client.jira.model.JiraIssue
+import squaddashboard.collectors.jira.repository.JiraRepository
 
 class JiraIssueService(private val jiraRepository: JiraRepository) {
 

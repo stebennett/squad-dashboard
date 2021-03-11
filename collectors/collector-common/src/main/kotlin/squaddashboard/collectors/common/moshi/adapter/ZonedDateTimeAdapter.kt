@@ -1,4 +1,4 @@
-package squaddashboard.collectors.jira.client.moshi.adapter
+package squaddashboard.collectors.common.moshi.adapter
 
 import com.squareup.moshi.FromJson
 import com.squareup.moshi.ToJson

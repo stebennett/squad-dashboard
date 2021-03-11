@@ -1,4 +1,4 @@
-package squaddashboard.collectors.jira.client
+package squaddashboard.collectors.common.client
 
 import com.squareup.moshi.Moshi
 import okhttp3.OkHttpClient

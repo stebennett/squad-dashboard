@@ -4,9 +4,9 @@ import io.kotest.core.spec.style.FunSpec
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import squaddashboard.client.jira.JiraClient
-import squaddashboard.client.jira.JiraCommandFactory
-import squaddashboard.client.jira.model.IssueSearchCommand
+import squaddashboard.collectors.jira.client.jira.JiraClient
+import squaddashboard.collectors.jira.client.jira.JiraCommandFactory
+import squaddashboard.collectors.jira.client.jira.model.IssueSearchCommand
 
 class JiraRepositoryTest : FunSpec({
 

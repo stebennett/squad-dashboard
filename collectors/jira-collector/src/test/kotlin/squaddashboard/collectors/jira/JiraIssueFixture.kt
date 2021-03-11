@@ -1,16 +1,16 @@
 package squaddashboard.collectors.jira
 
 import io.github.serpro69.kfaker.Faker
-import squaddashboard.client.jira.model.ChangeDetail
-import squaddashboard.client.jira.model.ChangeLog
-import squaddashboard.client.jira.model.ChangeLogs
-import squaddashboard.client.jira.model.JiraIssue
-import squaddashboard.client.jira.model.JiraIssueFields
-import squaddashboard.client.jira.model.JiraIssueStatus
-import squaddashboard.client.jira.model.JiraIssueType
-import squaddashboard.client.jira.model.JiraSearchResponse
-import squaddashboard.model.JiraWorkType
-import squaddashboard.model.SquadDashboardJiraIssueTransition
+import squaddashboard.collectors.jira.client.jira.model.ChangeDetail
+import squaddashboard.collectors.jira.client.jira.model.ChangeLog
+import squaddashboard.collectors.jira.client.jira.model.ChangeLogs
+import squaddashboard.collectors.jira.client.jira.model.JiraIssue
+import squaddashboard.collectors.jira.client.jira.model.JiraIssueFields
+import squaddashboard.collectors.jira.client.jira.model.JiraIssueStatus
+import squaddashboard.collectors.jira.client.jira.model.JiraIssueType
+import squaddashboard.collectors.jira.client.jira.model.JiraSearchResponse
+import squaddashboard.collectors.jira.model.JiraWorkType
+import squaddashboard.collectors.jira.model.SquadDashboardJiraIssueTransition
 import kotlin.random.Random
 
 object JiraFixtures {

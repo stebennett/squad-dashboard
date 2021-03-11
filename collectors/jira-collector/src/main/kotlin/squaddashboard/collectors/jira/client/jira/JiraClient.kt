@@ -2,8 +2,8 @@ package squaddashboard.collectors.jira.client.jira
 
 import retrofit2.http.Body
 import retrofit2.http.POST
-import squaddashboard.client.jira.model.IssueSearchCommand
-import squaddashboard.client.jira.model.JiraSearchResponse
+import squaddashboard.collectors.jira.client.jira.model.IssueSearchCommand
+import squaddashboard.collectors.jira.client.jira.model.JiraSearchResponse
 
 interface JiraClient {
 

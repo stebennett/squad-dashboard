@@ -1,12 +1,14 @@
 package squaddashboard.collectors.jira.client
 
-import squaddashboard.client.jira.JiraClient
-import squaddashboard.client.moshi.MoshFactory
+import squaddashboard.collectors.common.client.ClientConfig
+import squaddashboard.collectors.common.client.ClientFactory
+import squaddashboard.collectors.jira.client.jira.JiraClient
+import squaddashboard.collectors.jira.client.moshi.MoshiFactory
 
 class JiraClientFactory(
     private val clientConfig: ClientConfig,
     private val clientFactory: ClientFactory,
-    private val moshiFactory: MoshFactory,
+    private val moshiFactory: MoshiFactory,
 ) {
 
     fun make(): JiraClient {

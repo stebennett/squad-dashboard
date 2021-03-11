@@ -1,10 +1,10 @@
 package squaddashboard.collectors.jira.mapper
 
-import squaddashboard.client.jira.model.ChangeLogs
-import squaddashboard.client.jira.model.JiraIssue
-import squaddashboard.model.JiraWorkType
-import squaddashboard.model.SquadDashboardJiraIssue
-import squaddashboard.model.SquadDashboardJiraIssueTransition
+import squaddashboard.collectors.jira.client.jira.model.ChangeLogs
+import squaddashboard.collectors.jira.client.jira.model.JiraIssue
+import squaddashboard.collectors.jira.model.JiraWorkType
+import squaddashboard.collectors.jira.model.SquadDashboardJiraIssue
+import squaddashboard.collectors.jira.model.SquadDashboardJiraIssueTransition
 
 class JiraIssueMapper {
 
