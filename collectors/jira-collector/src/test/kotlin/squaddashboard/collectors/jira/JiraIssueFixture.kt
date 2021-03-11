@@ -11,6 +11,7 @@ import squaddashboard.collectors.jira.client.jira.model.JiraIssueType
 import squaddashboard.collectors.jira.client.jira.model.JiraSearchResponse
 import squaddashboard.collectors.jira.model.JiraWorkType
 import squaddashboard.collectors.jira.model.SquadDashboardJiraIssueTransition
+import squaddashboard.common.test.nextZonedDateTime
 import kotlin.random.Random
 
 object JiraFixtures {

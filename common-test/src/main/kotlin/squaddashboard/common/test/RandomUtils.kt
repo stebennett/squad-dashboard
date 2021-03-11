@@ -1,4 +1,4 @@
-package squaddashboard.collectors.jira
+package squaddashboard.common.test
 
 import java.time.ZonedDateTime
 import kotlin.random.Random

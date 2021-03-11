@@ -7,8 +7,8 @@ import io.kotest.matchers.shouldBe
 import squaddashboard.collectors.jira.JiraFixtures
 import squaddashboard.collectors.jira.model.JiraWorkType
 import squaddashboard.collectors.jira.model.SquadDashboardJiraIssueTransition
-import squaddashboard.collectors.jira.nextFromList
-import squaddashboard.collectors.jira.nextZonedDateTime
+import squaddashboard.common.test.nextFromList
+import squaddashboard.common.test.nextZonedDateTime
 import kotlin.random.Random
 
 @ExperimentalStdlibApi
