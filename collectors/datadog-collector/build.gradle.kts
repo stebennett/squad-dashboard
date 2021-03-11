@@ -23,5 +23,5 @@ dependencies {
 }
 
 application {
-    mainClass.set("squaddashboard.AppKt")
+    mainClass.set("squaddashboard.collectors.datadog.AppKt")
 }
