@@ -19,6 +19,7 @@ dependencies {
 
     // Tests
     Dependencies.testsCore.forEach { testImplementation(it) }
+    testImplementation(project(":common-test"))
 }
 
 application {
