@@ -1,4 +1,4 @@
-package squaddashboard.collectors.jira.client.jira.model
+package squaddashboard.collectors.jira.client.model
 
 data class IssueSearchCommand(
     val jql: String,

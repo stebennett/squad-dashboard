@@ -5,7 +5,7 @@ import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.mockk.every
 import io.mockk.mockk
 import squaddashboard.collectors.jira.JiraFixtures
-import squaddashboard.collectors.jira.client.jira.model.JiraIssue
+import squaddashboard.collectors.jira.client.model.JiraIssue
 import squaddashboard.collectors.jira.repository.JiraRepository
 
 class JiraBackillServiceTest : FunSpec({

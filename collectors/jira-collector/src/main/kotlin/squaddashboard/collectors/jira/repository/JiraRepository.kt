@@ -1,8 +1,8 @@
 package squaddashboard.collectors.jira.repository
 
-import squaddashboard.collectors.jira.client.jira.JiraClient
-import squaddashboard.collectors.jira.client.jira.JiraCommandFactory
-import squaddashboard.collectors.jira.client.jira.model.JiraSearchResponse
+import squaddashboard.collectors.jira.client.JiraClient
+import squaddashboard.collectors.jira.client.model.JiraCommandFactory
+import squaddashboard.collectors.jira.client.model.JiraSearchResponse
 
 class JiraRepository(private val jiraClient: JiraClient, private val jiraCommandFactory: JiraCommandFactory) {
 

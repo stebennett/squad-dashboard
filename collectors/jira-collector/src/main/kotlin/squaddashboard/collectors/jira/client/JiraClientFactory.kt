@@ -2,7 +2,6 @@ package squaddashboard.collectors.jira.client
 
 import squaddashboard.collectors.common.client.ClientConfig
 import squaddashboard.collectors.common.client.ClientFactory
-import squaddashboard.collectors.jira.client.jira.JiraClient
 import squaddashboard.collectors.jira.client.moshi.MoshiFactory
 
 class JiraClientFactory(

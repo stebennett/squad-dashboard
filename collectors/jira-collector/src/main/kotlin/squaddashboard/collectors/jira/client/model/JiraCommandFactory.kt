@@ -1,6 +1,4 @@
-package squaddashboard.collectors.jira.client.jira
-
-import squaddashboard.collectors.jira.client.jira.model.IssueSearchCommand
+package squaddashboard.collectors.jira.client.model
 
 class JiraCommandFactory {
 
