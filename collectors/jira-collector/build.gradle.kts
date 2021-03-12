@@ -19,6 +19,7 @@ dependencies {
 
     // Tests
     Dependencies.testsCore.forEach { testImplementation(it) }
+    Dependencies.testDbCore.forEach { testImplementation(it) }
     testImplementation(project(":common-test"))
 
     // common utils

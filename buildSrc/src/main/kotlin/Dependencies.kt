@@ -29,9 +29,16 @@ object Dependencies {
         const val kotlinxCoroutinesTestVersion = "1.4.2"
         const val kotlinFakerVersion = "1.6.0"
 
+        // Postgres container
+        const val testContainersVersion = "1.15.2"
+
+        // Flyway
+        const val flywayVersion = "7.7.0"
+
         // Code style
         const val ktlintVersion = "10.0.0"
     }
+
 
     // Kotlin Core
     const val kotlinStdLibJdk8 = "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
@@ -63,7 +70,12 @@ object Dependencies {
     const val kotlinxCoroutinesTest = "org.jetbrains.kotlinx:kotlinx-coroutines-test:${Versions.kotlinxCoroutinesTestVersion}"
     const val kotlinFaker = "io.github.serpro69:kotlin-faker:${Versions.kotlinFakerVersion}"
 
+    // Database Containers for Testing
+    const val testContainers = "org.testcontainers:testcontainers:${Versions.testContainersVersion}"
+    const val testContainersPostgres = "org.testcontainers:postgresql:${Versions.testContainersVersion}"
+    const val kotestTestContainers = "io.kotest:kotest-extensions-testcontainers:${Versions.kotestVersion}"
+    const val flyway = "org.flywaydb:flyway-core:${Versions.flywayVersion}"
+
     val testsCore = listOf(jupiter, mockk, kotestRunner, kotestProperties, kotestAssertions, kotestArrowAssertions, kotlinxCoroutinesTest, kotlinFaker)
-
-
+    val testDbCore = listOf(testContainers, testContainersPostgres, kotestTestContainers, flyway)
 }
