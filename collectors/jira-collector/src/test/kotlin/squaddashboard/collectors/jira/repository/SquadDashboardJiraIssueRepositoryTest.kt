@@ -3,8 +3,8 @@ package squaddashboard.collectors.jira.repository
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import io.kotest.core.spec.style.FunSpec
-import io.kotest.matchers.shouldBe
 import io.kotest.extensions.testcontainers.perSpec
+import io.kotest.matchers.shouldBe
 import org.flywaydb.core.Flyway
 import org.testcontainers.containers.PostgreSQLContainerProvider
 
@@ -35,7 +35,7 @@ class SquadDashboardJiraIssueRepositoryTest : FunSpec({
 
         val flyway = Flyway.configure().dataSource(database.jdbcUrl, database.username, database.password)
             .placeholders(placeholders)
-            .locations("filesystem:${migrationsLocation}")
+            .locations("filesystem:$migrationsLocation")
             .load()
         flyway.migrate()
 
