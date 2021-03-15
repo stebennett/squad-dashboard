@@ -7,10 +7,8 @@ import io.kotest.extensions.testcontainers.perSpec
 import io.kotest.matchers.shouldBe
 import org.flywaydb.core.Flyway
 import org.testcontainers.containers.PostgreSQLContainerProvider
-import squaddashboard.collectors.common.moshi.adapter.ZonedDateTimeAdapter
 import squaddashboard.collectors.jira.model.IngestionType
 import java.time.Instant
-import java.time.ZonedDateTime
 
 @ExperimentalStdlibApi
 class SquadDashboardJiraIssueRepositoryTest : FunSpec({

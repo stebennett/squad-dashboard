@@ -1,7 +1,6 @@
 package squaddashboard.collectors.jira.model
 
 import java.time.Instant
-import java.time.ZonedDateTime
 
 data class SquadDashboardJiraIssue(
     val jiraId: Long,
