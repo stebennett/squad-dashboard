@@ -43,7 +43,6 @@ class SquadDashboardJiraIssueRepositoryTest : FunSpec({
         hikariConfig.jdbcUrl = database.jdbcUrl
         hikariConfig.username = username
         hikariConfig.password = password
-        hikariConfig.schema = databaseName
         hikariConfig.maximumPoolSize = 1
         dataSource = HikariDataSource(hikariConfig)
     }
