@@ -9,13 +9,14 @@ import squaddashboard.collectors.jira.model.SquadDashboardJiraIssueTransition
 class JiraIssueMapper {
 
     @ExperimentalStdlibApi
-    fun map(jiraIssue: JiraIssue): SquadDashboardJiraIssue =
+    fun map(jiraIssue: JiraIssue, jiraProjectKey: String): SquadDashboardJiraIssue =
         SquadDashboardJiraIssue(
-            jiraId = jiraIssue.id.toLong(),
+            jiraId = jiraIssue.id.toInt(),
             jiraKey = jiraIssue.key,
             jiraCreatedAt = jiraIssue.fields.created,
             jiraWorkType = JiraWorkType.workTypeValueOf(jiraIssue.fields.issueType.name.lowercase()),
-            transitions = mapTransitions(jiraIssue.changelog)
+            transitions = mapTransitions(jiraIssue.changelog),
+            jiraProjectKey = jiraProjectKey,
         )
 
     private fun mapTransitions(changeLogs: ChangeLogs): List<SquadDashboardJiraIssueTransition> =
@@ -25,7 +26,7 @@ class JiraIssueMapper {
             // find the status change - there can only be one!
             changeLog.statusChange()?.let {
                 SquadDashboardJiraIssueTransition(
-                    jiraId = changeLog.id.toLong(),
+                    jiraId = changeLog.id.toInt(),
                     transitionFrom = it.fromString,
                     transitionTo = it.toString,
                     transitionAt = changeLog.created

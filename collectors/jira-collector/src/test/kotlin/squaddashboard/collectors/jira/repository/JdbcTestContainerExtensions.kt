@@ -1,7 +1,10 @@
 package squaddashboard.collectors.jira.repository
 
+import io.mockk.stackTracesAlignmentValueOf
 import org.testcontainers.containers.JdbcDatabaseContainer
 import squaddashboard.collectors.jira.model.IngestionType
+import squaddashboard.collectors.jira.model.JiraWorkType
+import squaddashboard.collectors.jira.model.SquadDashboardJiraIssue
 
 fun JdbcDatabaseContainer<*>.getJiraConfigCount(projectKey: String): Long {
     createConnection("").use { connection ->
@@ -41,3 +44,34 @@ fun JdbcDatabaseContainer<*>.createJiraConfig(projectKey: String) {
         }
     }
 }
+
+
+fun JdbcDatabaseContainer<*>.getJiraIssueCountForProject(projectKey: String): Long {
+    createConnection("").use { connection ->
+        connection.prepareStatement("SELECT COUNT(_id) FROM jira_data WHERE jira_project_key = ?").use { statement ->
+            statement.setString(1, projectKey)
+            val resultSet = statement.executeQuery()
+            resultSet.next()
+            return resultSet.getLong(1)
+        }
+    }
+}
+
+fun JdbcDatabaseContainer<*>.getJiraIssue(jiraIssueId: Int): SquadDashboardJiraIssue {
+    createConnection("").use { connection ->
+        connection.prepareStatement("SELECT jira_id, jira_key, jira_project_key, jira_work_type, jira_created_at FROM jira_data WHERE jira_id = ?").use { statement ->
+            statement.setInt(1, jiraIssueId)
+            val resultSet = statement.executeQuery()
+            resultSet.next()
+            return SquadDashboardJiraIssue(
+                jiraId = resultSet.getInt(1),
+                jiraKey = resultSet.getString(2),
+                jiraProjectKey = resultSet.getString(3),
+                jiraWorkType = JiraWorkType.workTypeValueOf(resultSet.getString(4)),
+                jiraCreatedAt = resultSet.getTimestamp(5).toInstant(),
+                transitions = emptyList()
+            )
+        }
+    }
+}
+

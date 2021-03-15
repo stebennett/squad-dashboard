@@ -18,26 +18,28 @@ class JiraIssueMapperTest : FunSpec({
     val issueStates = listOf("to do", "in progress", "done", "verified")
 
     test("should map basic jira fields") {
-        val jiraIssue = JiraFixtures.JiraIssueFixture.create("ABC")
+        val projectKey = "ABC"
+        val jiraIssue = JiraFixtures.JiraIssueFixture.create(projectKey)
 
-        val result = jiraIssueMapper.map(jiraIssue)
+        val result = jiraIssueMapper.map(jiraIssue, projectKey)
 
         result.jiraId shouldBe jiraIssue.id.toLong()
         result.jiraKey shouldBe jiraIssue.key
         result.jiraCreatedAt shouldBe jiraIssue.fields.created
+        result.jiraProjectKey shouldBe projectKey
     }
 
     test("should map a Jira issue type correctly") {
         JiraWorkType.values().forAll {
             val jiraIssue = JiraFixtures.JiraIssueFixture.create("ABC", it)
-            jiraIssueMapper.map(jiraIssue).jiraWorkType shouldBe it
+            jiraIssueMapper.map(jiraIssue, "ABC").jiraWorkType shouldBe it
         }
     }
 
     test("should map a set of jira transitions") {
         val transitions = (1..10).map {
             SquadDashboardJiraIssueTransition(
-                Random.nextLong(),
+                Random.nextInt(),
                 Random.nextFromList(issueStates),
                 Random.nextFromList(issueStates),
                 Random.nextZonedDateTime().toInstant()
@@ -46,7 +48,7 @@ class JiraIssueMapperTest : FunSpec({
         val jiraChangeLogs = JiraFixtures.JiraChangeLogFixture.create(transitions)
         val jiraIssue = JiraFixtures.JiraIssueFixture.create("ABC", jiraChangeLogs = jiraChangeLogs)
 
-        val result = jiraIssueMapper.map(jiraIssue)
+        val result = jiraIssueMapper.map(jiraIssue, "ABC")
 
         result.transitions shouldContainExactlyInAnyOrder transitions
     }

@@ -3,15 +3,16 @@ package squaddashboard.collectors.jira.model
 import java.time.Instant
 
 data class SquadDashboardJiraIssue(
-    val jiraId: Long,
+    val jiraId: Int,
     val jiraKey: String,
     val jiraWorkType: JiraWorkType,
     val jiraCreatedAt: Instant,
     val transitions: List<SquadDashboardJiraIssueTransition>,
+    val jiraProjectKey: String,
 )
 
 data class SquadDashboardJiraIssueTransition(
-    val jiraId: Long,
+    val jiraId: Int,
     val transitionTo: String,
     val transitionFrom: String,
     val transitionAt: Instant,

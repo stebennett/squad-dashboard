@@ -7,20 +7,21 @@ object InsertIssueSQL {
 
     private const val insertStatement = """
         INSERT INTO jira_data
-        (jira_id, jira_key, jira_work_type, jira_created_at)
+        (jira_id, jira_key, jira_work_type, jira_created_at, jira_project_key)
         VALUES
-        (?, ?, ?, ?)
-        ON CONFLICT (jira_id, jira_key) 
-        DO UPDATE SET jira_work_type=? 
+        (?, ?, CAST(? AS WORK_TYPE), ?, ?)
+        ON CONFLICT (jira_id) 
+        DO UPDATE SET jira_work_type= CAST(? AS WORK_TYPE) 
     """
 
     fun execute(issue: SquadDashboardJiraIssue, connection: Connection) {
         connection.prepareStatement(insertStatement).use { statement ->
-            statement.setLong(1, issue.jiraId)
+            statement.setInt(1, issue.jiraId)
             statement.setString(2, issue.jiraKey)
-            statement.setObject(3, issue.jiraWorkType)
+            statement.setString(3, issue.jiraWorkType.typeName)
             statement.setTimestamp(4, issue.jiraCreatedAt.asTimestamp())
-            statement.setObject(4, issue.jiraWorkType)
+            statement.setString(5, issue.jiraProjectKey)
+            statement.setString(6, issue.jiraWorkType.typeName)
             statement.executeUpdate()
         }
     }

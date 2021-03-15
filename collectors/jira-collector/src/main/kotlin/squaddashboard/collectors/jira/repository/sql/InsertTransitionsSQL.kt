@@ -14,10 +14,10 @@ object InsertTransitionsSQL {
         DO NOTHING
     """
 
-    fun execute(issueId: Long, transitions: List<SquadDashboardJiraIssueTransition>, connection: Connection) {
+    fun execute(issueId: Int, transitions: List<SquadDashboardJiraIssueTransition>, connection: Connection) {
         connection.prepareStatement(insertStatement).use { statement ->
             transitions.forEach {
-                statement.setLong(1, issueId)
+                statement.setInt(1, issueId)
                 statement.setString(2, it.jiraId.toString())
                 statement.setString(3, it.transitionTo)
                 statement.setTimestamp(4, it.transitionAt.asTimestamp())
