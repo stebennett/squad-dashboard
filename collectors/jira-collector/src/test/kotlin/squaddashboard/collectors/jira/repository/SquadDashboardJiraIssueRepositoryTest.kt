@@ -77,4 +77,17 @@ class SquadDashboardJiraIssueRepositoryTest : FunSpec({
         database.getJiraConfig(projectKey).lastIngestionType shouldBe IngestionType.Backfill
         database.getJiraConfig(projectKey).lastIngestionStarted shouldBe ingestionStartTime
     }
+
+    test("should mark ingestion as completed in the database") {
+        val repo = SquadDashboardJiraIssueRepository(dataSource)
+
+        val projectKey = "GHI"
+        val ingestionCompletedTime = Instant.now()
+
+        database.createJiraConfig(projectKey)
+
+        repo.completeIngestion(projectKey, ingestionCompletedTime)
+
+        database.getJiraConfig(projectKey).lastIngestionCompleted shouldBe ingestionCompletedTime
+    }
 })
