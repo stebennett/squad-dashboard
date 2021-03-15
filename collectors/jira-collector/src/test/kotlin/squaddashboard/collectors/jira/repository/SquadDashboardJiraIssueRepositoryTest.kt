@@ -7,7 +7,12 @@ import io.kotest.extensions.testcontainers.perSpec
 import io.kotest.matchers.shouldBe
 import org.flywaydb.core.Flyway
 import org.testcontainers.containers.PostgreSQLContainerProvider
+import squaddashboard.collectors.common.moshi.adapter.ZonedDateTimeAdapter
+import squaddashboard.collectors.jira.model.IngestionType
+import java.time.Instant
+import java.time.ZonedDateTime
 
+@ExperimentalStdlibApi
 class SquadDashboardJiraIssueRepositoryTest : FunSpec({
 
     val databaseName = "squad_dashboard"
@@ -58,6 +63,20 @@ class SquadDashboardJiraIssueRepositoryTest : FunSpec({
         repo.createProjectConfig(projectKey, workStartState)
 
         database.getJiraConfigCount(projectKey) shouldBe 1
-        database.getJiraConfigWorkStartState(projectKey) shouldBe workStartState
+        database.getJiraConfig(projectKey).workStartState shouldBe workStartState
+    }
+
+    test("should flag ingestion as started in the database") {
+        val repo = SquadDashboardJiraIssueRepository(dataSource)
+
+        val projectKey = "DEF"
+        val ingestionStartTime = Instant.now()
+
+        database.createJiraConfig(projectKey)
+
+        repo.startIngestion(projectKey, IngestionType.Backfill, ingestionStartTime)
+
+        database.getJiraConfig(projectKey).lastIngestionType shouldBe IngestionType.Backfill
+        database.getJiraConfig(projectKey).lastIngestionStarted shouldBe ingestionStartTime
     }
 })

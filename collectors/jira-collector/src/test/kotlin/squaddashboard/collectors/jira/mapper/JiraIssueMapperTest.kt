@@ -40,7 +40,7 @@ class JiraIssueMapperTest : FunSpec({
                 Random.nextLong(),
                 Random.nextFromList(issueStates),
                 Random.nextFromList(issueStates),
-                Random.nextZonedDateTime()
+                Random.nextZonedDateTime().toInstant()
             )
         }
         val jiraChangeLogs = JiraFixtures.JiraChangeLogFixture.create(transitions)

@@ -1,6 +1,6 @@
 package squaddashboard.collectors.jira.client.model
 
-import java.time.ZonedDateTime
+import java.time.Instant
 
 data class JiraIssue(
     val id: String,
@@ -24,7 +24,7 @@ data class ChangeLogs(
 
 data class ChangeLog(
     val id: String,
-    val created: ZonedDateTime,
+    val created: Instant,
     val items: List<ChangeDetail>,
 ) {
     fun statusChange(): ChangeDetail? =
@@ -42,8 +42,8 @@ data class ChangeDetail(
 data class JiraIssueFields(
     val summary: String,
     val issueType: JiraIssueType,
-    val created: ZonedDateTime,
-    val updated: ZonedDateTime,
+    val created: Instant,
+    val updated: Instant,
     val status: JiraIssueStatus,
 )
 

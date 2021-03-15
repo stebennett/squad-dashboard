@@ -40,8 +40,8 @@ object JiraFixtures {
             fields = JiraIssueFields(
                 summary = faker.michaelScott.quotes(),
                 issueType = JiraIssueType(workType.typeName),
-                created = Random.nextZonedDateTime(),
-                updated = Random.nextZonedDateTime(),
+                created = Random.nextZonedDateTime().toInstant(),
+                updated = Random.nextZonedDateTime().toInstant(),
                 status = JiraIssueStatus("In Progress")
             ),
         )

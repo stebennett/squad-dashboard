@@ -8,7 +8,7 @@ import squaddashboard.collectors.jira.repository.sql.CreateProjectConfigSQL
 import squaddashboard.collectors.jira.repository.sql.InsertIssueSQL
 import squaddashboard.collectors.jira.repository.sql.InsertTransitionsSQL
 import squaddashboard.collectors.jira.repository.sql.StartIngestionSQL
-import java.time.ZonedDateTime
+import java.time.Instant
 
 class SquadDashboardJiraIssueRepository(private val dataSource: HikariDataSource) {
 
@@ -25,13 +25,14 @@ class SquadDashboardJiraIssueRepository(private val dataSource: HikariDataSource
         }
     }
 
-    fun startIngestion(projectKey: String, ingestionType: IngestionType, startedAt: ZonedDateTime) {
+    @ExperimentalStdlibApi
+    fun startIngestion(projectKey: String, ingestionType: IngestionType, startedAt: Instant) {
         dataSource.connection.use { connection ->
             StartIngestionSQL.execute(projectKey, ingestionType, startedAt, connection)
         }
     }
 
-    fun completeIngestion(projectKey: String, completedAt: ZonedDateTime) {
+    fun completeIngestion(projectKey: String, completedAt: Instant) {
         dataSource.connection.use { connection ->
             CompleteIngestionSQL.execute(projectKey, completedAt, connection)
         }
