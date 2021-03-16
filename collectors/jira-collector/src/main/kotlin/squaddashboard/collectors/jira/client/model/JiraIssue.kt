@@ -35,7 +35,6 @@ data class ChangeLog(
 
 data class ChangeDetail(
     val field: String,
-    val fromString: String,
     val toString: String,
 )
 

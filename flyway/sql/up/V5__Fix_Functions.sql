@@ -10,20 +10,20 @@ CREATE FUNCTION fn_calc_dev_start_time() RETURNS trigger
     LANGUAGE plpgsql
 AS $$
 DECLARE
-    work_start_state text;
-    work_start_date timestamp;
+    wss text;
+    wsd timestamp;
 BEGIN
-    SELECT work_start_state INTO work_start_state FROM jira_config
+    SELECT work_start_state INTO wss FROM jira_config
     WHERE project_key = (SELECT jira_project_key FROM jira_data WHERE _id = NEW.jira_data_id);
 
-    SELECT jira_transition_at INTO work_start_date FROM jira_transitions
-    WHERE jira_transition_to = work_start_state
+    SELECT jira_transition_at INTO wsd FROM jira_transitions
+    WHERE jira_transition_to = wss
       AND jira_data_id = NEW.jira_data_id
     ORDER BY jira_transition_at DESC
     LIMIT 1;
 
     UPDATE jira_data
-    SET jira_work_started_at = work_start_date
+    SET jira_work_started_at = wsd
     WHERE _id = NEW.jira_data_id;
 
     RETURN NEW;
@@ -40,8 +40,8 @@ BEGIN
     WHERE _id = NEW._id;
 
     INSERT INTO flow_measures(jira_data_id, cycle_time)
-    VALUES (NEW._id, cycle_time_val) ON CONFLICT
-        DO UPDATE SET cycle_time = cycle_time_val WHERE jira_data_id = NEW._id;
+    VALUES (NEW._id, cycle_time_val) ON CONFLICT(jira_data_id)
+        DO UPDATE SET cycle_time = cycle_time_val WHERE flow_measures.jira_data_id = NEW._id;
 
     RETURN NEW;
 END
@@ -57,8 +57,8 @@ BEGIN
     WHERE _id = NEW._id;
 
     INSERT INTO flow_measures(jira_data_id, lead_time)
-    VALUES (NEW._id, lead_time_val) ON CONFLICT
-        DO UPDATE SET lead_time = lead_time_val WHERE jira_data_id = NEW._id;
+    VALUES (NEW._id, lead_time_val) ON CONFLICT(jira_data_id)
+        DO UPDATE SET lead_time = lead_time_val WHERE flow_measures.jira_data_id = NEW._id;
 
     RETURN NEW;
 END

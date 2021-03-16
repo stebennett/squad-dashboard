@@ -5,7 +5,7 @@ services:
   db:
     image: postgres:12.3
     volumes:
-      - database_data:/var/lib/postgresql/data
+      - pg_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     environment:
@@ -29,4 +29,4 @@ services:
                 migrate -placeholders.database_name=squad_dashboard -placeholders.user_writer_name=squad_write -placeholders.user_writer_password=squad_writer -locations=filesystem:/flyway/sql/up
 
 volumes:
-  database_data:
+  pg_data:

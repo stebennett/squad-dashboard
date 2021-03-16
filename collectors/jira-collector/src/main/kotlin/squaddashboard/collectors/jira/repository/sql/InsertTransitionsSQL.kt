@@ -18,7 +18,7 @@ object InsertTransitionsSQL {
         connection.prepareStatement(insertStatement).use { statement ->
             transitions.forEach {
                 statement.setInt(1, issueId)
-                statement.setString(2, it.jiraId.toString())
+                statement.setInt(2, it.jiraId)
                 statement.setString(3, it.transitionTo)
                 statement.setTimestamp(4, it.transitionAt.asTimestamp())
             }

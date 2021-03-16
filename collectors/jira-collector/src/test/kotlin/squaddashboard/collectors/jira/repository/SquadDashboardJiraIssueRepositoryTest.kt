@@ -7,12 +7,12 @@ import io.kotest.extensions.testcontainers.perSpec
 import io.kotest.matchers.shouldBe
 import kotlin.random.Random
 import org.flywaydb.core.Flyway
-import org.testcontainers.containers.JdbcDatabaseContainer
 import org.testcontainers.containers.PostgreSQLContainerProvider
-import squaddashboard.collectors.jira.JiraFixtures
 import squaddashboard.collectors.jira.model.IngestionType
 import squaddashboard.collectors.jira.model.JiraWorkType
 import squaddashboard.collectors.jira.model.SquadDashboardJiraIssue
+import squaddashboard.collectors.jira.model.SquadDashboardJiraIssueTransition
+import squaddashboard.common.test.nextPositiveInt
 import java.time.Instant
 
 @ExperimentalStdlibApi
@@ -103,7 +103,7 @@ class SquadDashboardJiraIssueRepositoryTest : FunSpec({
         
         test("should add an issue to the database") {
             val repo = SquadDashboardJiraIssueRepository(dataSource)
-            val jiraId = Random.nextInt()
+            val jiraId = Random.nextPositiveInt()
             val issue = SquadDashboardJiraIssue(
                 jiraId = jiraId,
                 jiraKey = "JKL-1234",
@@ -122,5 +122,32 @@ class SquadDashboardJiraIssueRepositoryTest : FunSpec({
             database.getJiraIssueCountForProject("JKL") shouldBe 1
             database.getJiraIssue(jiraId) shouldBe issue
         }
+
+        test("should add a transition to the database") {
+            val repo = SquadDashboardJiraIssueRepository(dataSource)
+            val transitionId = Random.nextPositiveInt()
+            val transition = SquadDashboardJiraIssueTransition(
+                jiraId = transitionId,
+                transitionTo = "In Progress",
+                transitionAt = Instant.now()
+            )
+            val issue = SquadDashboardJiraIssue(
+                jiraId = Random.nextPositiveInt(),
+                jiraKey = "JKL-89432",
+                jiraWorkType = JiraWorkType.Story,
+                jiraCreatedAt = Instant.now(),
+                jiraProjectKey = "MNO",
+                transitions = listOf(transition)
+            )
+
+            database.createJiraConfig("MNO")
+
+            repo.saveIssue(issue)
+
+            database.getJiraIssueCountForProject("MNO") shouldBe 1
+            database.getJiraTransition(transitionId) shouldBe transition
+        }
+
+
     }
 })

@@ -1,10 +1,10 @@
 package squaddashboard.collectors.jira.repository
 
-import io.mockk.stackTracesAlignmentValueOf
 import org.testcontainers.containers.JdbcDatabaseContainer
 import squaddashboard.collectors.jira.model.IngestionType
 import squaddashboard.collectors.jira.model.JiraWorkType
 import squaddashboard.collectors.jira.model.SquadDashboardJiraIssue
+import squaddashboard.collectors.jira.model.SquadDashboardJiraIssueTransition
 
 fun JdbcDatabaseContainer<*>.getJiraConfigCount(projectKey: String): Long {
     createConnection("").use { connection ->
@@ -70,6 +70,21 @@ fun JdbcDatabaseContainer<*>.getJiraIssue(jiraIssueId: Int): SquadDashboardJiraI
                 jiraWorkType = JiraWorkType.workTypeValueOf(resultSet.getString(4)),
                 jiraCreatedAt = resultSet.getTimestamp(5).toInstant(),
                 transitions = emptyList()
+            )
+        }
+    }
+}
+
+fun JdbcDatabaseContainer<*>.getJiraTransition(transitionId: Int): SquadDashboardJiraIssueTransition {
+    createConnection("").use { connection ->
+        connection.prepareStatement("SELECT jira_id, jira_transition_to, jira_transition_at FROM jira_transitions WHERE jira_id = ?").use { statement ->
+            statement.setInt(1, transitionId)
+            val resultSet = statement.executeQuery()
+            resultSet.next()
+            return SquadDashboardJiraIssueTransition(
+                jiraId = resultSet.getInt(1),
+                transitionTo = resultSet.getString(2),
+                transitionAt = resultSet.getTimestamp(3).toInstant()
             )
         }
     }

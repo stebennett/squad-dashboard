@@ -59,7 +59,6 @@ object JiraFixtures {
                             ChangeDetail(
                                 field = "status",
                                 toString = it.transitionTo,
-                                fromString = it.transitionFrom,
                             )
                         )
                     )

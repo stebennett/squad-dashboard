@@ -41,7 +41,6 @@ class JiraIssueMapperTest : FunSpec({
             SquadDashboardJiraIssueTransition(
                 Random.nextInt(),
                 Random.nextFromList(issueStates),
-                Random.nextFromList(issueStates),
                 Random.nextZonedDateTime().toInstant()
             )
         }

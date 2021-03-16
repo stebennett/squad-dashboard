@@ -14,7 +14,6 @@ data class SquadDashboardJiraIssue(
 data class SquadDashboardJiraIssueTransition(
     val jiraId: Int,
     val transitionTo: String,
-    val transitionFrom: String,
     val transitionAt: Instant,
 )
 

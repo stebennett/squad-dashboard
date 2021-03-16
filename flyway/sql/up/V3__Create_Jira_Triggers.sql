@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS jira_config (
 
 CREATE TABLE IF NOT EXISTS flow_measures (
     _id BIGINT GENERATED ALWAYS AS IDENTITY,
-    jira_data_id INT NOT NULL,
+    jira_data_id BIGINT UNIQUE NOT NULL,
     cycle_time INT NOT NULL DEFAULT -1,
     lead_time INT NOT NULL DEFAULT -1,
 

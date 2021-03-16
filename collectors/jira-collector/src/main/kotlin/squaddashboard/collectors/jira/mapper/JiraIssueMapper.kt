@@ -27,7 +27,6 @@ class JiraIssueMapper {
             changeLog.statusChange()?.let {
                 SquadDashboardJiraIssueTransition(
                     jiraId = changeLog.id.toInt(),
-                    transitionFrom = it.fromString,
                     transitionTo = it.toString,
                     transitionAt = changeLog.created
                 )
