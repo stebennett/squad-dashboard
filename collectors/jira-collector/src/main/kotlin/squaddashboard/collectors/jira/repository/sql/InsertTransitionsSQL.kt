@@ -21,6 +21,7 @@ object InsertTransitionsSQL {
                 statement.setInt(2, it.jiraId)
                 statement.setString(3, it.transitionTo)
                 statement.setTimestamp(4, it.transitionAt.asTimestamp())
+                statement.addBatch()
             }
             statement.executeBatch()
         }
