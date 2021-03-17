@@ -182,5 +182,34 @@ class SquadDashboardJiraIssueRepositoryTest : FunSpec({
 
             database.getJiraIssue(jiraIssueId).jiraWorkStartedAt shouldBe transitionAt
         }
+
+
+        test("should not set work start timestamp when transition has work start state") {
+            val repo = SquadDashboardJiraIssueRepository(dataSource)
+            val jiraProjectKey = "STU"
+            val workStartState = "Work Start State For $jiraProjectKey"
+            val transitionAt = Instant.now()
+            val jiraIssueId = Random.nextPositiveInt()
+
+            val transition = SquadDashboardJiraIssueTransition(
+                jiraId = Random.nextPositiveInt(),
+                transitionTo = "a different work state",
+                transitionAt = transitionAt
+            )
+            val issue = SquadDashboardJiraIssue(
+                jiraId = jiraIssueId,
+                jiraKey = "$jiraProjectKey-1235",
+                jiraWorkType = JiraWorkType.Bug,
+                jiraCreatedAt = Instant.now(),
+                jiraProjectKey = jiraProjectKey,
+                transitions = listOf(transition)
+            )
+
+            database.createJiraConfig(jiraProjectKey, workStartState)
+
+            repo.saveIssue(issue)
+
+            database.getJiraIssue(jiraIssueId).jiraWorkStartedAt shouldBe null
+        }
     }
 })
