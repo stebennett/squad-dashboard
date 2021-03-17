@@ -7,7 +7,7 @@ import squaddashboard.collectors.jira.client.model.JiraSearchResponse
 class JiraRepository(private val jiraClient: JiraClient, private val jiraCommandFactory: JiraCommandFactory) {
 
     fun fetchIssuesForProject(projectKey: String, startAt: Int = 0, maxResults: Int): JiraSearchResponse {
-        val issueSearchCommand = jiraCommandFactory.makeProjectIssuesCommand(projectKey, startAt, maxResults)
+        val issueSearchCommand = jiraCommandFactory.makeSearchForAllIssuesForProjectCommand(projectKey, startAt, maxResults)
         return jiraClient.issueSearch(issueSearchCommand)
     }
 }

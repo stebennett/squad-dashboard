@@ -20,7 +20,7 @@ class JiraRepositoryTest : FunSpec({
         val maxResults = 100
 
         val expectedArgs = mockk<IssueSearchCommand>()
-        every { jiraCommandFactory.makeProjectIssuesCommand(projectKey, startAt, maxResults) } returns expectedArgs
+        every { jiraCommandFactory.makeSearchForAllIssuesForProjectCommand(projectKey, startAt, maxResults) } returns expectedArgs
 
         jiraRepository.fetchIssuesForProject(projectKey, startAt, maxResults)
 

@@ -2,12 +2,12 @@ package squaddashboard.collectors.jira.client.model
 
 class JiraCommandFactory {
 
-    fun makeProjectIssuesCommand(projectKey: String, startAt: Int, maxResults: Int): IssueSearchCommand =
+    fun makeSearchForAllIssuesForProjectCommand(projectKey: String, startAt: Int, maxResults: Int): IssueSearchCommand =
         IssueSearchCommand(
-            jql = "project = $projectKey",
+            jql = "project = $projectKey order by created asc",
             startAt = startAt,
             maxResults = maxResults,
-            fields = listOf("status", "issuetype", "created", "updated", "summary"),
+            fields = listOf("status", "issuetype", "created", "updated", "summary", "resolutiondate"),
             expand = listOf("changelog")
         )
 }

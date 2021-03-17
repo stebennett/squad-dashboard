@@ -15,7 +15,7 @@ class JiraCommandFactoryTest : FunSpec({
         val startAt = 10
         val maxResults = 100
 
-        val issueSearchCommand = jiraCommandFactory.makeProjectIssuesCommand(projectKey, startAt, maxResults)
+        val issueSearchCommand = jiraCommandFactory.makeSearchForAllIssuesForProjectCommand(projectKey, startAt, maxResults)
 
         issueSearchCommand should {
             it.jql shouldBe "project = $projectKey"

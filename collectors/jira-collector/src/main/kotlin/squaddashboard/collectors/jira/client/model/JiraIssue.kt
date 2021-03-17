@@ -43,6 +43,7 @@ data class JiraIssueFields(
     val issueType: JiraIssueType,
     val created: Instant,
     val updated: Instant,
+    val resolutiondate: Instant?,
     val status: JiraIssueStatus,
 )
 

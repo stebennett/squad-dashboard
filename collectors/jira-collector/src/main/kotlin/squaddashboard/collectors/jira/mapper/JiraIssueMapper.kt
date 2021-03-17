@@ -15,6 +15,7 @@ class JiraIssueMapper {
             jiraKey = jiraIssue.key,
             jiraProjectKey = jiraProjectKey,
             jiraCreatedAt = jiraIssue.fields.created,
+            jiraCompletedAt = jiraIssue.fields.resolutiondate,
             jiraWorkType = JiraWorkType.workTypeValueOf(jiraIssue.fields.issueType.name.lowercase()),
             transitions = mapTransitions(jiraIssue.changelog),
         )

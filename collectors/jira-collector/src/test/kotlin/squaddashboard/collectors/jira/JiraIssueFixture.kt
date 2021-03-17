@@ -42,6 +42,7 @@ object JiraFixtures {
                 issueType = JiraIssueType(workType.typeName),
                 created = Random.nextZonedDateTime().toInstant(),
                 updated = Random.nextZonedDateTime().toInstant(),
+                resolutiondate = Random.nextZonedDateTime().toInstant(),
                 status = JiraIssueStatus("In Progress")
             ),
         )
