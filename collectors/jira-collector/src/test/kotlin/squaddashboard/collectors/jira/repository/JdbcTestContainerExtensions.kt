@@ -91,3 +91,24 @@ fun JdbcDatabaseContainer<*>.getJiraTransition(transitionId: Int): SquadDashboar
     }
 }
 
+fun JdbcDatabaseContainer<*>.getCycleTime(jiraIssueId: Int): Int {
+    createConnection("").use { connection ->
+        connection.prepareStatement("SELECT cycle_time FROM flow_measures WHERE jira_data_id = (SELECT _id FROM jira_data WHERE jira_id = ?)").use { statement ->
+            statement.setInt(1, jiraIssueId)
+            val resultSet = statement.executeQuery()
+            resultSet.next()
+            return resultSet.getInt(1)
+        }
+    }
+}
+
+fun JdbcDatabaseContainer<*>.getLeadTime(jiraIssueId: Int): Int {
+    createConnection("").use { connection ->
+        connection.prepareStatement("SELECT lead_time FROM flow_measures WHERE jira_data_id = (SELECT _id FROM jira_data WHERE jira_id = ?)").use { statement ->
+            statement.setInt(1, jiraIssueId)
+            val resultSet = statement.executeQuery()
+            resultSet.next()
+            return resultSet.getInt(1)
+        }
+    }
+}

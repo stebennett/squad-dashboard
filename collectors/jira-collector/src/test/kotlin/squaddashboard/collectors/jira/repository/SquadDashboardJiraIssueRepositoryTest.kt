@@ -14,6 +14,8 @@ import squaddashboard.collectors.jira.model.SquadDashboardJiraIssue
 import squaddashboard.collectors.jira.model.SquadDashboardJiraIssueTransition
 import squaddashboard.common.test.nextPositiveInt
 import java.time.Instant
+import java.time.Period
+import java.time.temporal.TemporalUnit
 
 @ExperimentalStdlibApi
 class SquadDashboardJiraIssueRepositoryTest : FunSpec({
@@ -210,6 +212,58 @@ class SquadDashboardJiraIssueRepositoryTest : FunSpec({
             repo.saveIssue(issue)
 
             database.getJiraIssue(jiraIssueId).jiraWorkStartedAt shouldBe null
+        }
+
+        test("should complete cycle time for issue when transition is entered") {
+            val repo = SquadDashboardJiraIssueRepository(dataSource)
+            val jiraProjectKey = "VWX"
+            val workStartState = "Work Start State For $jiraProjectKey"
+            val transitionAt = Instant.now().minus(Period.ofDays(2))
+            val jiraIssueId = Random.nextPositiveInt()
+
+            val transition = SquadDashboardJiraIssueTransition(
+                jiraId = Random.nextPositiveInt(),
+                transitionTo = workStartState,
+                transitionAt = transitionAt
+            )
+            val issue = SquadDashboardJiraIssue(
+                jiraId = jiraIssueId,
+                jiraKey = "$jiraProjectKey-1235",
+                jiraWorkType = JiraWorkType.Task,
+                jiraCreatedAt = Instant.now().minus(Period.ofDays(4)),
+                jiraCompletedAt = Instant.now(),
+                jiraProjectKey = jiraProjectKey,
+                transitions = listOf(transition)
+            )
+
+            database.createJiraConfig(jiraProjectKey, workStartState)
+
+            repo.saveIssue(issue)
+
+            database.getCycleTime(jiraIssueId) shouldBe 3
+        }
+
+        test("should complete lead time for issue when completed time is entered") {
+            val repo = SquadDashboardJiraIssueRepository(dataSource)
+            val jiraProjectKey = "YZA"
+            val workStartState = "Work Start State For $jiraProjectKey"
+            val jiraIssueId = Random.nextPositiveInt()
+
+            val issue = SquadDashboardJiraIssue(
+                jiraId = jiraIssueId,
+                jiraKey = "$jiraProjectKey-1235",
+                jiraWorkType = JiraWorkType.Task,
+                jiraCreatedAt = Instant.now().minus(Period.ofDays(4)),
+                jiraCompletedAt = Instant.now(),
+                jiraProjectKey = jiraProjectKey,
+                transitions = emptyList()
+            )
+
+            database.createJiraConfig(jiraProjectKey, workStartState)
+
+            repo.saveIssue(issue)
+
+            database.getLeadTime(jiraIssueId) shouldBe 5
         }
     }
 })
