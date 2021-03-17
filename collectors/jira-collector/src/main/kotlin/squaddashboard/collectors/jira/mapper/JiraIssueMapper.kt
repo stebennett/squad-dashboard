@@ -13,10 +13,10 @@ class JiraIssueMapper {
         SquadDashboardJiraIssue(
             jiraId = jiraIssue.id.toInt(),
             jiraKey = jiraIssue.key,
+            jiraProjectKey = jiraProjectKey,
             jiraCreatedAt = jiraIssue.fields.created,
             jiraWorkType = JiraWorkType.workTypeValueOf(jiraIssue.fields.issueType.name.lowercase()),
             transitions = mapTransitions(jiraIssue.changelog),
-            jiraProjectKey = jiraProjectKey,
         )
 
     private fun mapTransitions(changeLogs: ChangeLogs): List<SquadDashboardJiraIssueTransition> =

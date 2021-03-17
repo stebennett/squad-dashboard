@@ -7,6 +7,7 @@ data class SquadDashboardJiraIssue(
     val jiraKey: String,
     val jiraWorkType: JiraWorkType,
     val jiraCreatedAt: Instant,
+    val jiraWorkStartedAt: Instant? = null,
     val transitions: List<SquadDashboardJiraIssueTransition>,
     val jiraProjectKey: String,
 )

@@ -35,11 +35,11 @@ fun JdbcDatabaseContainer<*>.getJiraConfig(projectKey: String): JiraConfig {
     }
 }
 
-fun JdbcDatabaseContainer<*>.createJiraConfig(projectKey: String) {
+fun JdbcDatabaseContainer<*>.createJiraConfig(projectKey: String, workStartState: String = "In Progress") {
     createConnection("").use { connection ->
         connection.prepareStatement("INSERT INTO jira_config (project_key, work_start_state) VALUES (?, ?)").use { statement ->
             statement.setString(1, projectKey)
-            statement.setString(2, "In Progress")
+            statement.setString(2, workStartState)
             statement.executeUpdate()
         }
     }
@@ -59,7 +59,7 @@ fun JdbcDatabaseContainer<*>.getJiraIssueCountForProject(projectKey: String): Lo
 
 fun JdbcDatabaseContainer<*>.getJiraIssue(jiraIssueId: Int): SquadDashboardJiraIssue {
     createConnection("").use { connection ->
-        connection.prepareStatement("SELECT jira_id, jira_key, jira_project_key, jira_work_type, jira_created_at FROM jira_data WHERE jira_id = ?").use { statement ->
+        connection.prepareStatement("SELECT jira_id, jira_key, jira_project_key, jira_work_type, jira_created_at, jira_work_started_at FROM jira_data WHERE jira_id = ?").use { statement ->
             statement.setInt(1, jiraIssueId)
             val resultSet = statement.executeQuery()
             resultSet.next()
@@ -69,6 +69,7 @@ fun JdbcDatabaseContainer<*>.getJiraIssue(jiraIssueId: Int): SquadDashboardJiraI
                 jiraProjectKey = resultSet.getString(3),
                 jiraWorkType = JiraWorkType.workTypeValueOf(resultSet.getString(4)),
                 jiraCreatedAt = resultSet.getTimestamp(5).toInstant(),
+                jiraWorkStartedAt = resultSet.getTimestamp(6)?.toInstant(),
                 transitions = emptyList()
             )
         }
