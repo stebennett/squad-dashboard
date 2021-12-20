@@ -1,0 +1,16 @@
+FROM goland:1.17.5
+ARG version
+
+COPY go.* /go/src/github.com/stebennett/squad-dashboard
+COPY pkg/ /go/src/github.com/stebennett/squad-dashboard/pkg/
+COPY vendor/ /go/src/github.com/stebennett/squad-dashboard/vendor
+COPY cmd/jiracollector/ /go/src/github.com/stebennett/cmd/jiracollector/
+WORKDIR /go/src/github.com/stebennett/cmd/jiracollector/
+RUN GO111MODULE=on GOFLAGS=-mod=vendor CGO_ENABLED=0 GOOS linux go build -v -ldflags "-X github.com/stebennett/squad-dashboard/cmd/jiracollector/main.version=$version" -a -installsuffix cgo -o jiracollector .
+
+FROM apline:3.14
+RUN apk --no-cache add ca-certificates
+WORKDIR /app
+COPY --from=0 /go/src/github.com/stebennett/squad-dashboard/cmd/jiracollector .
+ENTRYPOINT ["/app/jiracollector"]
+CMD ["--logtostderr"]
