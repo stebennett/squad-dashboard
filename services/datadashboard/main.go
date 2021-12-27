@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"flag"
 	goflag "flag"
 	"os"
 	"os/signal"
@@ -11,6 +10,7 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
+	flag "github.com/spf13/pflag"
 )
 
 var version = "?"
