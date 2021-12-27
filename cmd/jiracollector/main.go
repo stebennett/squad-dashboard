@@ -42,7 +42,7 @@ func main() {
 		log.Fatal("JIRA_EPIC_FIELD env var is not set")
 	}
 
-	url := fmt.Sprintf("https://%s/jira/rest/api/2/search", jiraBaseUrl)
+	url := fmt.Sprintf("https://%s/rest/api/2/search", jiraBaseUrl)
 
 	query := &JiraSearchQuery{
 		jql:    jiraQuery,
@@ -67,10 +67,10 @@ func main() {
 	req.SetBasicAuth(jiraUser, jiraAuthToken)
 	req.Header.Set("Content-Type", "application/json")
 
-	response, err = jiraClient.Do(req)
+	resp, err := jiraClient.Do(req)
 	if err != nil {
 		log.Fatalf("Failed to make request. Got error %s", err.Error())
 	}
 
-	defer response.Body.Close()
+	defer resp.Body.Close()
 }
