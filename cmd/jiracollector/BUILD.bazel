@@ -1,0 +1,15 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_library(
+    name = "jiracollector_lib",
+    srcs = ["main.go"],
+    importpath = "github.com/stebennett/squad-dashboard/cmd/jiracollector",
+    visibility = ["//visibility:private"],
+    deps = ["//vendor/github.com/golang/glog"],
+)
+
+go_binary(
+    name = "jiracollector",
+    embed = [":jiracollector_lib"],
+    visibility = ["//visibility:public"],
+)

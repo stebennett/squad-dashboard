@@ -1,0 +1,19 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_library(
+    name = "datadashboard_lib",
+    srcs = ["main.go"],
+    importpath = "github.com/stebennett/squad-dashboard/services/datadashboard",
+    visibility = ["//visibility:private"],
+    deps = [
+        "//vendor/github.com/golang/glog",
+        "//vendor/github.com/spf13/cobra",
+        "//vendor/github.com/spf13/pflag",
+    ],
+)
+
+go_binary(
+    name = "datadashboard",
+    embed = [":datadashboard_lib"],
+    visibility = ["//visibility:public"],
+)
