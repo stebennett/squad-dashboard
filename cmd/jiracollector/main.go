@@ -11,9 +11,21 @@ import (
 )
 
 type JiraSearchQuery struct {
-	jql    string
-	fields []string
-	expand []string
+	jql        string
+	fields     []string
+	expand     []string
+	startAt    int
+	maxResults int
+}
+
+type JiraIssue struct {
+}
+
+type JiraSearchResults struct {
+	StartAt    int `json:"startAt"`
+	MaxResults int `json:"maxResults"`
+	Total      int `json:"total"`
+	issues     []JiraIssue
 }
 
 func main() {
@@ -45,9 +57,11 @@ func main() {
 	url := fmt.Sprintf("https://%s/rest/api/2/search", jiraBaseUrl)
 
 	query := &JiraSearchQuery{
-		jql:    jiraQuery,
-		fields: []string{"summary", "issuetype", jiraEpicField},
-		expand: []string{"changelog"},
+		jql:        jiraQuery,
+		fields:     []string{"summary", "issuetype", jiraEpicField},
+		expand:     []string{"changelog"},
+		startAt:    0,
+		maxResults: 100,
 	}
 
 	queryJSON, err := json.Marshal(query)
