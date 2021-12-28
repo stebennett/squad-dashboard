@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -87,4 +88,9 @@ func main() {
 	}
 
 	defer resp.Body.Close()
+
+	log.Printf("response status:", resp.Status)
+	log.Printf("response headers:", resp.Header)
+	body, _ := ioutil.ReadAll(resp.Body)
+	log.Printf("response body:", string(body))
 }
