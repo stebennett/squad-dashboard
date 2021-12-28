@@ -1,0 +1,26 @@
+version: "3.9"
+
+services:
+
+  db:
+    image: postgres:14.1
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+      - POSTGRES_DB
+    ports:
+      - "5432:5432"
+
+  jiracollector:
+    image: bazel/cmd/jiracollector:image
+    environment:
+      - JIRA_HOST
+      - JIRA_USER
+      - JIRA_AUTH_TOKEN
+      - JIRA_QUERY
+      - JIRA_EPIC_FIELD
+
+volumes:
+  db_data:
