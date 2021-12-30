@@ -1,12 +1,8 @@
-package paginator
+package util
 
-import "errors"
-
-type PaginationArgs struct {
-	startAt int
-	perPage int
-}
-
-func nextPaginationArgs(currentStartAt int, totalPerPage int, currentCount int, totalCount int) (*PaginationArgs, error) {
-	return nil, errors.New("Reached end of pagination")
+func nextPaginationArgs(currentStartAt int, totalPerPage int, currentCount int, totalCount int) int {
+	if currentStartAt + currentCount < totalCount {
+		return currentStartAt + totalPerPage
+	}
+	return -1
 }
