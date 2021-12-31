@@ -6,7 +6,6 @@ go_library(
     srcs = ["main.go"],
     importpath = "github.com/stebennett/squad-dashboard/cmd/jiracollector",
     visibility = ["//visibility:private"],
-    deps = ["//vendor/github.com/golang/glog"],
 )
 
 go_binary(
