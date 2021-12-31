@@ -13,6 +13,8 @@ func TestNextPaginationArgs(t *testing.T) {
 	}{
 		{0, 100, 100, 1000, 100},
 		{100, 100, 100, 100, -1},
+		{0, 50, 25, 25, -1},
+		{0, 20, 0, 0, -1},
 	}
 
 	for _, table := range tables {
