@@ -19,14 +19,18 @@ type JiraSearchQuery struct {
 	maxResults int
 }
 
-type JiraIssue struct {
-}
-
 type JiraSearchResults struct {
 	StartAt    int `json:"startAt"`
 	MaxResults int `json:"maxResults"`
 	Total      int `json:"total"`
-	issues     []JiraIssue
+	Issues     []struct {
+		Key    string `json:"key"`
+		Fields struct {
+			IssueType struct {
+				Name string `json:"name"`
+			} `json:"issuetype"`
+		} `json:"fields"`
+	} `json:"issues"`
 }
 
 func main() {
@@ -55,9 +59,7 @@ func main() {
 		log.Fatal("JIRA_EPIC_FIELD env var is not set")
 	}
 
-	url := fmt.Sprintf("https://%s/rest/api/2/search", jiraBaseUrl)
-
-	query := &JiraSearchQuery{
+	query := JiraSearchQuery{
 		jql:        jiraQuery,
 		fields:     []string{"summary", "issuetype", jiraEpicField},
 		expand:     []string{"changelog"},
@@ -65,18 +67,30 @@ func main() {
 		maxResults: 100,
 	}
 
-	queryJSON, err := json.Marshal(query)
-	if err != nil {
-		log.Fatal("Failed to create Jira Query in JSON")
-	}
-
 	jiraClient := http.Client{
 		Timeout: time.Second * 30,
 	}
 
+	searchResult, err := makeJiraSearchRequest(&query, jiraBaseUrl, &jiraClient, jiraUser, jiraAuthToken)
+	if err != nil {
+		log.Fatalf("Failed to make request %s", err)
+	}
+
+	log.Printf("Query exectuted. Returned %d results", searchResult.MaxResults)
+}
+
+func makeJiraSearchRequest(jiraSearchQuery *JiraSearchQuery, jiraBaseUrl string, jiraClient *http.Client, jiraUser string, jiraAuthToken string) (*JiraSearchResults, error) {
+
+	url := fmt.Sprintf("https://%s/rest/api/2/search", jiraBaseUrl)
+
+	queryJSON, err := json.Marshal(jiraSearchQuery)
+	if err != nil {
+		return nil, err
+	}
+
 	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(queryJSON))
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	req.SetBasicAuth(jiraUser, jiraAuthToken)
@@ -84,13 +98,21 @@ func main() {
 
 	resp, err := jiraClient.Do(req)
 	if err != nil {
-		log.Fatalf("Failed to make request. Got error %s", err.Error())
+		return nil, err
 	}
 
 	defer resp.Body.Close()
 
-	log.Printf("response status:", resp.Status)
-	log.Printf("response headers:", resp.Header)
+	log.Printf("response status: %s", resp.Status)
+	log.Printf("response headers: %s", resp.Header)
+
 	body, _ := ioutil.ReadAll(resp.Body)
-	log.Printf("response body:", string(body))
+
+	var jiraResult JiraSearchResults
+	jsonErr := json.Unmarshal(body, &jiraResult)
+	if jsonErr != nil {
+		return nil, jsonErr
+	}
+
+	return &jiraResult, nil
 }
