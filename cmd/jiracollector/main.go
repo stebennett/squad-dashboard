@@ -9,14 +9,16 @@ import (
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/stebennett/squad-dashboard/pkg/util"
 )
 
 type JiraSearchQuery struct {
-	jql        string
-	fields     []string
-	expand     []string
-	startAt    int
-	maxResults int
+	Jql        string   `json:"jql"`
+	Fields     []string `json:"fields"`
+	Expand     []string `json:"expand"`
+	StartAt    int      `json:"startAt"`
+	MaxResults int      `json:"maxResults"`
 }
 
 type JiraSearchResults struct {
@@ -60,23 +62,40 @@ func main() {
 	}
 
 	query := JiraSearchQuery{
-		jql:        jiraQuery,
-		fields:     []string{"summary", "issuetype", jiraEpicField},
-		expand:     []string{"changelog"},
-		startAt:    0,
-		maxResults: 100,
+		Jql:        jiraQuery,
+		Fields:     []string{"summary", "issuetype", jiraEpicField},
+		Expand:     []string{"changelog"},
+		StartAt:    0,
+		MaxResults: 100,
 	}
 
 	jiraClient := http.Client{
 		Timeout: time.Second * 30,
 	}
 
+	log.Printf("Querying Jira for startAt: %d; maxResults: %d", query.StartAt, query.MaxResults)
 	searchResult, err := makeJiraSearchRequest(&query, jiraBaseUrl, &jiraClient, jiraUser, jiraAuthToken)
 	if err != nil {
 		log.Fatalf("Failed to make request %s", err)
 	}
 
-	log.Printf("Query exectuted. Returned %d results", searchResult.MaxResults)
+	var nextPageStartAt = util.NextPaginationArgs(0, 100, len(searchResult.Issues), searchResult.Total)
+	for {
+		if nextPageStartAt == -1 {
+			log.Println("No new pages to fetch.")
+			break
+		}
+
+		query.StartAt = nextPageStartAt
+
+		log.Printf("Querying Jira for startAt: %d; maxResults: %d; total: %d", query.StartAt, query.MaxResults, searchResult.Total)
+		searchResult, err := makeJiraSearchRequest(&query, jiraBaseUrl, &jiraClient, jiraUser, jiraAuthToken)
+		if err != nil {
+			log.Fatalf("Failed to make request %s; startAt: %d", err, nextPageStartAt)
+		}
+
+		nextPageStartAt = util.NextPaginationArgs(nextPageStartAt, 100, len(searchResult.Issues), searchResult.Total)
+	}
 }
 
 func makeJiraSearchRequest(jiraSearchQuery *JiraSearchQuery, jiraBaseUrl string, jiraClient *http.Client, jiraUser string, jiraAuthToken string) (*JiraSearchResults, error) {
@@ -87,6 +106,7 @@ func makeJiraSearchRequest(jiraSearchQuery *JiraSearchQuery, jiraBaseUrl string,
 	if err != nil {
 		return nil, err
 	}
+	log.Printf("Making query: %s", queryJSON)
 
 	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(queryJSON))
 	if err != nil {

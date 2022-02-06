@@ -18,7 +18,7 @@ func TestNextPaginationArgs(t *testing.T) {
 	}
 
 	for _, table := range tables {
-		result := nextPaginationArgs(table.currentStartAt, table.totalPerPage, table.currentCount, table.totalCount)
+		result := NextPaginationArgs(table.currentStartAt, table.totalPerPage, table.currentCount, table.totalCount)
 
 		if result != table.newStartAt {
 			t.Errorf("New StartAt value was incorrect, got %d, expected %d", result, table.newStartAt)
