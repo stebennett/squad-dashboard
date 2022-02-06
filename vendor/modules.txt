@@ -1,3 +1,6 @@
+# github.com/Netflix/go-env v0.0.0-20210215222557-e437a7e7f9fb
+## explicit
+github.com/Netflix/go-env
 # github.com/golang/glog v1.0.0
 ## explicit; go 1.11
 github.com/golang/glog

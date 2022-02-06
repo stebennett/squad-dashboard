@@ -3,42 +3,33 @@ package main
 import (
 	"log"
 	"net/http"
-	"os"
 	"time"
+
+	env "github.com/Netflix/go-env"
 
 	"github.com/stebennett/squad-dashboard/pkg/jiraservice"
 	"github.com/stebennett/squad-dashboard/pkg/util"
 )
 
+type Environment struct {
+	JiraBaseUrl   string `env:"JIRA_HOST,required=true"`
+	JiraUser      string `env:"JIRA_USER,required=true"`
+	JiraAuthToken string `env:"JIRA_AUTH_TOKEN,required=true"`
+	JiraQuery     string `env:"JIRA_QUERY,required=true"`
+	JiraEpicField string `env:"JIRA_EPIC_FIELD,required=true"`
+}
+
 func main() {
-	jiraBaseUrl := os.Getenv("JIRA_HOST")
-	if jiraBaseUrl == "" {
-		log.Fatal("JIRA_HOST env var is not set")
-	}
 
-	jiraUser := os.Getenv("JIRA_USER")
-	if jiraUser == "" {
-		log.Fatal("JIRA_USER env var is not set")
-	}
-
-	jiraAuthToken := os.Getenv("JIRA_AUTH_TOKEN")
-	if jiraAuthToken == "" {
-		log.Fatal("JIRA_AUTH_TOKEN env var is not set")
-	}
-
-	jiraQuery := os.Getenv("JIRA_QUERY")
-	if jiraQuery == "" {
-		log.Fatal("JIRA_QUERY env var is not set")
-	}
-
-	jiraEpicField := os.Getenv("JIRA_EPIC_FIELD")
-	if jiraEpicField == "" {
-		log.Fatal("JIRA_EPIC_FIELD env var is not set")
+	var environment Environment
+	_, err := env.UnmarshalFromEnviron(&environment)
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	query := jiraservice.JiraSearchQuery{
-		Jql:        jiraQuery,
-		Fields:     []string{"summary", "issuetype", jiraEpicField},
+		Jql:        environment.JiraQuery,
+		Fields:     []string{"summary", "issuetype", environment.JiraEpicField},
 		Expand:     []string{"changelog"},
 		StartAt:    0,
 		MaxResults: 100,
@@ -49,7 +40,7 @@ func main() {
 	}
 
 	log.Printf("Querying Jira for startAt: %d; maxResults: %d", query.StartAt, query.MaxResults)
-	searchResult, err := jiraservice.MakeJiraSearchRequest(&query, jiraBaseUrl, &jiraClient, jiraUser, jiraAuthToken)
+	searchResult, err := jiraservice.MakeJiraSearchRequest(&query, environment.JiraBaseUrl, &jiraClient, environment.JiraUser, environment.JiraAuthToken)
 	if err != nil {
 		log.Fatalf("Failed to make request %s", err)
 	}
@@ -64,7 +55,7 @@ func main() {
 		query.StartAt = nextPageStartAt
 
 		log.Printf("Querying Jira for startAt: %d; maxResults: %d; total: %d", query.StartAt, query.MaxResults, searchResult.Total)
-		searchResult, err := jiraservice.MakeJiraSearchRequest(&query, jiraBaseUrl, &jiraClient, jiraUser, jiraAuthToken)
+		searchResult, err := jiraservice.MakeJiraSearchRequest(&query, environment.JiraBaseUrl, &jiraClient, environment.JiraUser, environment.JiraAuthToken)
 		if err != nil {
 			log.Fatalf("Failed to make request %s; startAt: %d", err, nextPageStartAt)
 		}
