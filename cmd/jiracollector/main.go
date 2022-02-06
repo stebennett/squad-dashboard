@@ -27,6 +27,12 @@ func main() {
 		log.Fatal(err)
 	}
 
+	jiraParams := jiraservice.JiraParams{
+		BaseUrl:   environment.JiraBaseUrl,
+		User:      environment.JiraUser,
+		AuthToken: environment.JiraAuthToken,
+	}
+
 	query := jiraservice.JiraSearchQuery{
 		Jql:        environment.JiraQuery,
 		Fields:     []string{"summary", "issuetype", environment.JiraEpicField},
@@ -40,7 +46,7 @@ func main() {
 	}
 
 	log.Printf("Querying Jira for startAt: %d; maxResults: %d", query.StartAt, query.MaxResults)
-	searchResult, err := jiraservice.MakeJiraSearchRequest(&query, environment.JiraBaseUrl, &jiraClient, environment.JiraUser, environment.JiraAuthToken)
+	searchResult, err := jiraservice.MakeJiraSearchRequest(&query, &jiraParams, &jiraClient)
 	if err != nil {
 		log.Fatalf("Failed to make request %s", err)
 	}
@@ -55,7 +61,7 @@ func main() {
 		query.StartAt = nextPageStartAt
 
 		log.Printf("Querying Jira for startAt: %d; maxResults: %d; total: %d", query.StartAt, query.MaxResults, searchResult.Total)
-		searchResult, err := jiraservice.MakeJiraSearchRequest(&query, environment.JiraBaseUrl, &jiraClient, environment.JiraUser, environment.JiraAuthToken)
+		searchResult, err := jiraservice.MakeJiraSearchRequest(&query, &jiraParams, &jiraClient)
 		if err != nil {
 			log.Fatalf("Failed to make request %s; startAt: %d", err, nextPageStartAt)
 		}

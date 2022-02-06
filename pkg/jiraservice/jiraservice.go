@@ -9,6 +9,12 @@ import (
 	"net/http"
 )
 
+type JiraParams struct {
+	BaseUrl   string
+	User      string
+	AuthToken string
+}
+
 type JiraSearchQuery struct {
 	Jql        string   `json:"jql"`
 	Fields     []string `json:"fields"`
@@ -31,9 +37,9 @@ type JiraSearchResults struct {
 	} `json:"issues"`
 }
 
-func MakeJiraSearchRequest(jiraSearchQuery *JiraSearchQuery, jiraBaseUrl string, jiraClient *http.Client, jiraUser string, jiraAuthToken string) (*JiraSearchResults, error) {
+func MakeJiraSearchRequest(jiraSearchQuery *JiraSearchQuery, jiraParams *JiraParams, httpClient *http.Client) (*JiraSearchResults, error) {
 
-	url := fmt.Sprintf("https://%s/rest/api/2/search", jiraBaseUrl)
+	url := fmt.Sprintf("https://%s/rest/api/2/search", jiraParams.BaseUrl)
 
 	queryJSON, err := json.Marshal(jiraSearchQuery)
 	if err != nil {
@@ -46,10 +52,10 @@ func MakeJiraSearchRequest(jiraSearchQuery *JiraSearchQuery, jiraBaseUrl string,
 		return nil, err
 	}
 
-	req.SetBasicAuth(jiraUser, jiraAuthToken)
+	req.SetBasicAuth(jiraParams.User, jiraParams.AuthToken)
 	req.Header.Set("Content-Type", "application/json")
 
-	resp, err := jiraClient.Do(req)
+	resp, err := httpClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -68,4 +74,8 @@ func MakeJiraSearchRequest(jiraSearchQuery *JiraSearchQuery, jiraBaseUrl string,
 	}
 
 	return &jiraResult, nil
+}
+
+func MakeJiraGetHistoryRequest(issueKey string, jiraParams *JiraParams, httpClient *http.Client) {
+	// TODO: Write code to return a page from history for a given issue - used for getting transitions
 }
