@@ -1,0 +1,23 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "pgxpool",
+    srcs = [
+        "batch_results.go",
+        "conn.go",
+        "doc.go",
+        "pool.go",
+        "rows.go",
+        "stat.go",
+        "tx.go",
+    ],
+    importmap = "github.com/stebennett/squad-dashboard/vendor/github.com/jackc/pgx/v4/pgxpool",
+    importpath = "github.com/jackc/pgx/v4/pgxpool",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/jackc/pgconn",
+        "//vendor/github.com/jackc/pgproto3/v2:pgproto3",
+        "//vendor/github.com/jackc/pgx/v4:pgx",
+        "//vendor/github.com/jackc/puddle",
+    ],
+)

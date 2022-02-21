@@ -1,0 +1,14 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "puddle",
+    srcs = [
+        "doc.go",
+        "nanotime_time.go",
+        "nanotime_unsafe.go",
+        "pool.go",
+    ],
+    importmap = "github.com/stebennett/squad-dashboard/vendor/github.com/jackc/puddle",
+    importpath = "github.com/jackc/puddle",
+    visibility = ["//visibility:public"],
+)

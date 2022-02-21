@@ -8,6 +8,6 @@ import (
 )
 
 type IssueRepository interface {
-	StoreIssue(ctx context.Context, jiraIssue models.JiraIssue) error
-	StoreTransition(ctx context.Context, jiraTransition models.JiraTransition) error
+	SaveIssue(ctx context.Context, jiraIssue models.JiraIssue) (*models.JiraIssue, error)
+	SaveTransition(ctx context.Context, jiraTransition models.JiraTransition) (*models.JiraTransition, error)
 }

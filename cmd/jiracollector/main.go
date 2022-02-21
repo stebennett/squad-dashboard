@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
@@ -10,8 +9,9 @@ import (
 	"time"
 
 	env "github.com/Netflix/go-env"
+	"github.com/jackc/pgx/v4/pgxpool"
 
-	"github.com/stebennett/squad-dashboard/cmd/jiracollector/models"
+	"github.com/stebennett/squad-dashboard/cmd/jiracollector/adapters"
 	"github.com/stebennett/squad-dashboard/cmd/jiracollector/repository"
 	"github.com/stebennett/squad-dashboard/pkg/jiraservice"
 	"github.com/stebennett/squad-dashboard/pkg/util"
@@ -33,8 +33,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	db := initDb()
-	repo := repository.NewPostgresIssueRepository(db)
+	dbPool := initDb()
+	defer dbPool.Close()
+	repo := repository.NewDBIssueRepository(dbPool)
 
 	jiraParams := jiraservice.JiraParams{
 		BaseUrl:   environment.JiraBaseUrl,
@@ -54,60 +55,38 @@ func main() {
 		Timeout: time.Second * 30,
 	}
 
+	storeJiraIssues(repo, &query, &jiraParams, &jiraClient)
+}
+
+func storeJiraIssues(repo repository.IssueRepository, query *jiraservice.JiraSearchQuery, params *jiraservice.JiraParams, client *http.Client) {
+	if query.StartAt == -1 {
+		log.Println("No new pages to fetch.")
+		return
+	}
+
 	log.Printf("Querying Jira for startAt: %d; maxResults: %d", query.StartAt, query.MaxResults)
-	searchResult, err := jiraservice.MakeJiraSearchRequest(&query, &jiraParams, &jiraClient)
+	results, err := jiraservice.MakeJiraSearchRequest(query, params, client)
 	if err != nil {
 		log.Fatalf("Failed to make request %s", err)
 	}
 
-	for _, issue := range searchResult.Issues {
-		saveableIssue := transformToIssue(issue)
-		go repo.SaveIssue(context.Background(), saveableIssue)
+	for _, jiraIssue := range results.Issues {
+		issue := adapters.AdaptIssue(jiraIssue)
+		go repo.SaveIssue(context.Background(), issue)
 	}
 
-	var nextPageStartAt = util.NextPaginationArgs(0, 100, len(searchResult.Issues), searchResult.Total)
-	for {
-		if nextPageStartAt == -1 {
-			log.Println("No new pages to fetch.")
-			break
-		}
-
-		query.StartAt = nextPageStartAt
-
-		log.Printf("Querying Jira for startAt: %d; maxResults: %d; total: %d", query.StartAt, query.MaxResults, searchResult.Total)
-		searchResult, err := jiraservice.MakeJiraSearchRequest(&query, &jiraParams, &jiraClient)
-		if err != nil {
-			log.Fatalf("Failed to make request %s; startAt: %d", err, nextPageStartAt)
-		}
-
-		nextPageStartAt = util.NextPaginationArgs(nextPageStartAt, 100, len(searchResult.Issues), searchResult.Total)
-	}
+	query.StartAt = util.NextPaginationArgs(query.StartAt, query.MaxResults, len(results.Issues), results.Total)
+	storeJiraIssues(repo, query, params, client)
 }
 
-func initDb() *sql.DB {
-	var err error
-	var db *sql.DB
-	connStr := os.ExpandEnv("postgres://$DB_USERNAME:$DB_PASSWORD@DB_HOST:$DB_PORT/$DB_NAME") // load from env vars
+func initDb() *pgxpool.Pool {
+	connStr := os.ExpandEnv("postgres://$DB_USERNAME:$DB_PASSWORD@$DB_HOST:$DB_PORT/$DB_NAME?sslmode=$DB_SSLMODE") // load from env vars
 
-	db, err = sql.Open("postgres", connStr)
+	dbPool, err := pgxpool.Connect(context.Background(), connStr)
 	if err != nil {
 		panic(err)
 	}
 
-	if err = db.Ping(); err != nil {
-		panic(err)
-	}
-
 	fmt.Println("Database initialised")
-	return db
-}
-
-func transformToIssue(issue jiraservice.JiraIssue) models.JiraIssue {
-	return models.JiraIssue{
-		Key:       issue.Key,
-		IssueType: issue.Fields.IssueType.Name,
-		ParentKey: "",                           // TODO: Add parent key
-		CreatedAt: models.Timestamp(time.Now()), // TODO: Update with correct time
-		UpdateAt:  models.Timestamp(time.Now()), // TODO: Update with correct time
-	}
+	return dbPool
 }

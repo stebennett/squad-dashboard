@@ -7,11 +7,12 @@ go_library(
     importpath = "github.com/stebennett/squad-dashboard/cmd/jiracollector",
     visibility = ["//visibility:private"],
     deps = [
-        "//cmd/jiracollector/models",
+        "//cmd/jiracollector/adapters",
         "//cmd/jiracollector/repository",
         "//pkg/jiraservice",
         "//pkg/util",
         "//vendor/github.com/Netflix/go-env",
+        "//vendor/github.com/jackc/pgx/v4/pgxpool",
     ],
 )
 
