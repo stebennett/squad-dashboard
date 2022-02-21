@@ -1,6 +1,8 @@
 # github.com/Netflix/go-env v0.0.0-20210215222557-e437a7e7f9fb
 ## explicit
 github.com/Netflix/go-env
+# github.com/davecgh/go-spew v1.1.0
+github.com/davecgh/go-spew/spew
 # github.com/golang/glog v1.0.0
 ## explicit
 github.com/golang/glog
@@ -12,9 +14,16 @@ github.com/inconshreveable/mousetrap
 github.com/lib/pq
 github.com/lib/pq/oid
 github.com/lib/pq/scram
+# github.com/pmezard/go-difflib v1.0.0
+github.com/pmezard/go-difflib/difflib
 # github.com/spf13/cobra v0.0.3
 ## explicit
 github.com/spf13/cobra
 # github.com/spf13/pflag v1.0.5
 ## explicit
 github.com/spf13/pflag
+# github.com/stretchr/testify v1.7.0
+## explicit
+github.com/stretchr/testify/assert
+# gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c
+gopkg.in/yaml.v3
