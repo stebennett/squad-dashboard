@@ -23,18 +23,20 @@ type JiraSearchQuery struct {
 	MaxResults int      `json:"maxResults"`
 }
 
+type JiraIssue struct {
+	Key    string `json:"key"`
+	Fields struct {
+		IssueType struct {
+			Name string `json:"name"`
+		} `json:"issuetype"`
+	} `json:"fields"`
+}
+
 type JiraSearchResults struct {
-	StartAt    int `json:"startAt"`
-	MaxResults int `json:"maxResults"`
-	Total      int `json:"total"`
-	Issues     []struct {
-		Key    string `json:"key"`
-		Fields struct {
-			IssueType struct {
-				Name string `json:"name"`
-			} `json:"issuetype"`
-		} `json:"fields"`
-	} `json:"issues"`
+	StartAt    int         `json:"startAt"`
+	MaxResults int         `json:"maxResults"`
+	Total      int         `json:"total"`
+	Issues     []JiraIssue `json:"issues"`
 }
 
 func MakeJiraSearchRequest(jiraSearchQuery *JiraSearchQuery, jiraParams *JiraParams, httpClient *http.Client) (*JiraSearchResults, error) {
