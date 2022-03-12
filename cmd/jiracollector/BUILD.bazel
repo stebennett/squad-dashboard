@@ -3,7 +3,10 @@ load("@io_bazel_rules_docker//container:container.bzl", "container_image")
 
 go_library(
     name = "jiracollector_lib",
-    srcs = ["main.go"],
+    srcs = [
+        "jiracollector.go",
+        "main.go",
+    ],
     importpath = "github.com/stebennett/squad-dashboard/cmd/jiracollector",
     visibility = ["//visibility:private"],
     deps = [
