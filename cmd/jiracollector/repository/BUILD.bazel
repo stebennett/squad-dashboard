@@ -2,10 +2,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "repository",
-    srcs = [
-        "issuerepo.go",
-        "pgissuerepo.go",
-    ],
+    srcs = ["issuerepo.go"],
     importpath = "github.com/stebennett/squad-dashboard/cmd/jiracollector/repository",
     visibility = ["//visibility:public"],
     deps = [
