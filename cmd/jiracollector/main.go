@@ -10,6 +10,7 @@ import (
 
 	env "github.com/Netflix/go-env"
 
+	"github.com/stebennett/squad-dashboard/cmd/jiracollector/jiracollector"
 	"github.com/stebennett/squad-dashboard/cmd/jiracollector/repository"
 	"github.com/stebennett/squad-dashboard/pkg/jiraservice"
 )
@@ -38,10 +39,10 @@ func main() {
 	jira := createJiraService(environment)
 
 	// create a new collector job
-	jiracollector := NewJiraCollector(issueRepo, jira)
+	jiracollector := jiracollector.NewJiraCollector(issueRepo, jira)
 
 	// execute the job
-	jiracollector.execute(environment.JiraQuery, environment.JiraEpicField)
+	jiracollector.Execute(environment.JiraQuery, environment.JiraEpicField)
 }
 
 func initDb() *sql.DB {

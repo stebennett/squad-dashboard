@@ -1,0 +1,14 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "jiracollector",
+    srcs = ["jiracollector.go"],
+    importpath = "github.com/stebennett/squad-dashboard/cmd/jiracollector/jiracollector",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//cmd/jiracollector/models",
+        "//cmd/jiracollector/repository",
+        "//pkg/jiraservice",
+        "//pkg/util",
+    ],
+)

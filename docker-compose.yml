@@ -21,6 +21,11 @@ services:
       - JIRA_AUTH_TOKEN
       - JIRA_QUERY
       - JIRA_EPIC_FIELD
+      - DB_USERNAME
+      - DB_PASSWORD
+      - DB_NAME
+      - DB_HOST
+      - DB_PORT
 
 volumes:
   db_data:
