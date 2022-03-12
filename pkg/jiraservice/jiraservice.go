@@ -9,6 +9,18 @@ import (
 	"net/http"
 )
 
+type JiraService struct {
+	jiraParams JiraParams
+	httpClient *http.Client
+}
+
+func NewJiraService(httpClient *http.Client, jiraParams JiraParams) *JiraService {
+	return &JiraService{
+		jiraParams: jiraParams,
+		httpClient: httpClient,
+	}
+}
+
 type JiraParams struct {
 	BaseUrl   string
 	User      string
@@ -39,9 +51,9 @@ type JiraSearchResults struct {
 	Issues     []JiraIssue `json:"issues"`
 }
 
-func MakeJiraSearchRequest(jiraSearchQuery *JiraSearchQuery, jiraParams *JiraParams, httpClient *http.Client) (*JiraSearchResults, error) {
+func (js *JiraService) MakeJiraSearchRequest(jiraSearchQuery *JiraSearchQuery) (*JiraSearchResults, error) {
 
-	url := fmt.Sprintf("https://%s/rest/api/2/search", jiraParams.BaseUrl)
+	url := fmt.Sprintf("https://%s/rest/api/2/search", js.jiraParams.BaseUrl)
 
 	queryJSON, err := json.Marshal(jiraSearchQuery)
 	if err != nil {
@@ -54,10 +66,10 @@ func MakeJiraSearchRequest(jiraSearchQuery *JiraSearchQuery, jiraParams *JiraPar
 		return nil, err
 	}
 
-	req.SetBasicAuth(jiraParams.User, jiraParams.AuthToken)
+	req.SetBasicAuth(js.jiraParams.User, js.jiraParams.AuthToken)
 	req.Header.Set("Content-Type", "application/json")
 
-	resp, err := httpClient.Do(req)
+	resp, err := js.httpClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -78,6 +90,6 @@ func MakeJiraSearchRequest(jiraSearchQuery *JiraSearchQuery, jiraParams *JiraPar
 	return &jiraResult, nil
 }
 
-func MakeJiraGetHistoryRequest(issueKey string, jiraParams *JiraParams, httpClient *http.Client) {
+func (js *JiraService) MakeJiraGetHistoryRequest(issueKey string, jiraParams *JiraParams, httpClient *http.Client) {
 	// TODO: Write code to return a page from history for a given issue - used for getting transitions
 }

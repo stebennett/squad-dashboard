@@ -36,17 +36,9 @@ func main() {
 	db := initDb()
 	issueRepo := repository.NewPostgresIssueRepository(db)
 
-	jiraParams := jiraservice.JiraParams{
-		BaseUrl:   environment.JiraBaseUrl,
-		User:      environment.JiraUser,
-		AuthToken: environment.JiraAuthToken,
-	}
+	jira := createJiraService(environment)
 
-	jiraClient := http.Client{
-		Timeout: time.Second * 30,
-	}
-
-	execute(issueRepo, &jiraParams, environment.JiraQuery, environment.JiraEpicField, &jiraClient)
+	execute(issueRepo, environment.JiraQuery, environment.JiraEpicField, jira)
 }
 
 func initDb() *sql.DB {
@@ -67,7 +59,21 @@ func initDb() *sql.DB {
 	return db
 }
 
-func execute(repo repository.IssueRepository, jiraParams *jiraservice.JiraParams, jql string, epicField string, jiraClient *http.Client) {
+func createJiraService(environment Environment) *jiraservice.JiraService {
+	jiraParams := jiraservice.JiraParams{
+		BaseUrl:   environment.JiraBaseUrl,
+		User:      environment.JiraUser,
+		AuthToken: environment.JiraAuthToken,
+	}
+
+	jiraClient := http.Client{
+		Timeout: time.Second * 30,
+	}
+
+	return jiraservice.NewJiraService(&jiraClient, jiraParams)
+}
+
+func execute(repo repository.IssueRepository, jql string, epicField string, jira *jiraservice.JiraService) {
 
 	query := jiraservice.JiraSearchQuery{
 		Jql:        jql,
@@ -78,7 +84,7 @@ func execute(repo repository.IssueRepository, jiraParams *jiraservice.JiraParams
 	}
 
 	log.Printf("Querying Jira for startAt: %d; maxResults: %d", query.StartAt, query.MaxResults)
-	searchResult, err := jiraservice.MakeJiraSearchRequest(&query, jiraParams, jiraClient)
+	searchResult, err := jira.MakeJiraSearchRequest(&query)
 	if err != nil {
 		log.Fatalf("Failed to make request %s", err)
 	}
@@ -98,7 +104,7 @@ func execute(repo repository.IssueRepository, jiraParams *jiraservice.JiraParams
 		query.StartAt = nextPageStartAt
 
 		log.Printf("Querying Jira for startAt: %d; maxResults: %d; total: %d", query.StartAt, query.MaxResults, searchResult.Total)
-		searchResult, err := jiraservice.MakeJiraSearchRequest(&query, jiraParams, jiraClient)
+		searchResult, err := jira.MakeJiraSearchRequest(&query)
 		if err != nil {
 			log.Fatalf("Failed to make request %s; startAt: %d", err, nextPageStartAt)
 		}
