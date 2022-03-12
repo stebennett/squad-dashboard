@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 	"log"
@@ -11,10 +10,8 @@ import (
 
 	env "github.com/Netflix/go-env"
 
-	"github.com/stebennett/squad-dashboard/cmd/jiracollector/models"
 	"github.com/stebennett/squad-dashboard/cmd/jiracollector/repository"
 	"github.com/stebennett/squad-dashboard/pkg/jiraservice"
-	"github.com/stebennett/squad-dashboard/pkg/util"
 )
 
 type Environment struct {
@@ -33,12 +30,18 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// create a new database to store jira issues
 	db := initDb()
 	issueRepo := repository.NewPostgresIssueRepository(db)
 
+	// create a new connection to jira
 	jira := createJiraService(environment)
 
-	execute(issueRepo, environment.JiraQuery, environment.JiraEpicField, jira)
+	// create a new collector job
+	jiracollector := NewJiraCollector(issueRepo, jira)
+
+	// execute the job
+	jiracollector.execute(environment.JiraQuery, environment.JiraEpicField)
 }
 
 func initDb() *sql.DB {
@@ -71,44 +74,4 @@ func createJiraService(environment Environment) *jiraservice.JiraService {
 	}
 
 	return jiraservice.NewJiraService(&jiraClient, jiraParams)
-}
-
-func execute(repo repository.IssueRepository, jql string, epicField string, jira *jiraservice.JiraService) {
-
-	query := jiraservice.JiraSearchQuery{
-		Jql:        jql,
-		Fields:     []string{"summary", "issuetype", epicField},
-		Expand:     []string{"changelog"},
-		StartAt:    0,
-		MaxResults: 100,
-	}
-
-	log.Printf("Querying Jira for startAt: %d; maxResults: %d", query.StartAt, query.MaxResults)
-	searchResult, err := jira.MakeJiraSearchRequest(&query)
-	if err != nil {
-		log.Fatalf("Failed to make request %s", err)
-	}
-
-	for _, issue := range searchResult.Issues {
-		saveableIssue := models.Create(issue)
-		go repo.StoreIssue(context.Background(), saveableIssue)
-	}
-
-	var nextPageStartAt = util.NextPaginationArgs(0, 100, len(searchResult.Issues), searchResult.Total)
-	for {
-		if nextPageStartAt == -1 {
-			log.Println("No new pages to fetch.")
-			break
-		}
-
-		query.StartAt = nextPageStartAt
-
-		log.Printf("Querying Jira for startAt: %d; maxResults: %d; total: %d", query.StartAt, query.MaxResults, searchResult.Total)
-		searchResult, err := jira.MakeJiraSearchRequest(&query)
-		if err != nil {
-			log.Fatalf("Failed to make request %s; startAt: %d", err, nextPageStartAt)
-		}
-
-		nextPageStartAt = util.NextPaginationArgs(nextPageStartAt, 100, len(searchResult.Issues), searchResult.Total)
-	}
 }
