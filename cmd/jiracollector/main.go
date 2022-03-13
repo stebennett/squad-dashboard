@@ -55,10 +55,6 @@ func initDb() *sql.DB {
 		panic(err)
 	}
 
-	if err = db.Ping(); err != nil {
-		panic(err)
-	}
-
 	fmt.Println("Database initialised")
 	return db
 }
