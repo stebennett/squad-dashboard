@@ -32,8 +32,7 @@ func main() {
 	}
 
 	// create a new database to store jira issues
-	db := initDb()
-	issueRepo := repository.NewPostgresIssueRepository(db)
+	issueRepo := createIssueRepository()
 
 	// create a new connection to jira
 	jira := createJiraService(environment)
@@ -45,7 +44,7 @@ func main() {
 	jiracollector.Execute(environment.JiraQuery, environment.JiraEpicField, issueRepo.StoreIssue)
 }
 
-func initDb() *sql.DB {
+func createIssueRepository() repository.IssueRepository {
 	var err error
 	var db *sql.DB
 	connStr := os.ExpandEnv("postgres://$DB_USERNAME:$DB_PASSWORD@DB_HOST:$DB_PORT/$DB_NAME") // load from env vars
@@ -56,7 +55,7 @@ func initDb() *sql.DB {
 	}
 
 	fmt.Println("Database initialised")
-	return db
+	return repository.NewPostgresIssueRepository(db)
 }
 
 func createJiraService(environment Environment) *jiraservice.JiraService {
