@@ -15,18 +15,17 @@ type JiraCollector struct {
 	jira *jiraservice.JiraService
 }
 
-func NewJiraCollector(repo repository.IssueRepository, jira *jiraservice.JiraService) *JiraCollector {
+func NewJiraCollector(jira *jiraservice.JiraService) *JiraCollector {
 	return &JiraCollector{
-		repo: repo,
 		jira: jira,
 	}
 }
 
-func (jc *JiraCollector) Execute(jql string, epicField string) {
-	jc.execute(0, 100, jql, epicField)
+func (jc *JiraCollector) Execute(jql string, epicField string, fn func(ctx context.Context, jiraIssue models.JiraIssue) error) {
+	jc.execute(0, 100, jql, epicField, fn)
 }
 
-func (jc *JiraCollector) execute(startAt int, maxResults int, jql string, epicField string) {
+func (jc *JiraCollector) execute(startAt int, maxResults int, jql string, epicField string, fn func(ctx context.Context, jiraIssue models.JiraIssue) error) {
 	query := jiraservice.JiraSearchQuery{
 		Jql:        jql,
 		Fields:     []string{"summary", "issuetype", epicField},
@@ -43,7 +42,7 @@ func (jc *JiraCollector) execute(startAt int, maxResults int, jql string, epicFi
 
 	for _, issue := range searchResult.Issues {
 		saveableIssue := models.Create(issue)
-		go jc.repo.StoreIssue(context.Background(), saveableIssue)
+		go fn(context.Background(), saveableIssue)
 	}
 
 	var nextPageStartAt = util.NextPaginationArgs(startAt, maxResults, len(searchResult.Issues), searchResult.Total)
@@ -52,5 +51,5 @@ func (jc *JiraCollector) execute(startAt int, maxResults int, jql string, epicFi
 		return
 	}
 
-	jc.execute(nextPageStartAt, maxResults, jql, epicField)
+	jc.execute(nextPageStartAt, maxResults, jql, epicField, fn)
 }

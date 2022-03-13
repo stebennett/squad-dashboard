@@ -39,10 +39,10 @@ func main() {
 	jira := createJiraService(environment)
 
 	// create a new collector job
-	jiracollector := jiracollector.NewJiraCollector(issueRepo, jira)
+	jiracollector := jiracollector.NewJiraCollector(jira)
 
 	// execute the job
-	jiracollector.Execute(environment.JiraQuery, environment.JiraEpicField)
+	jiracollector.Execute(environment.JiraQuery, environment.JiraEpicField, issueRepo.StoreIssue)
 }
 
 func initDb() *sql.DB {
