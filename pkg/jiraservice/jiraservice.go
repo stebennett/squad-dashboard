@@ -35,35 +35,19 @@ type JiraSearchQuery struct {
 	MaxResults int      `json:"maxResults"`
 }
 
-type JiraIssue struct {
-	Key    string `json:"key"`
-	Fields struct {
-		IssueType struct {
-			Name string `json:"name"`
-		} `json:"issuetype"`
-	} `json:"fields"`
-}
-
-type JiraSearchResults struct {
-	StartAt    int         `json:"startAt"`
-	MaxResults int         `json:"maxResults"`
-	Total      int         `json:"total"`
-	Issues     []JiraIssue `json:"issues"`
-}
-
-func (js *JiraService) MakeJiraSearchRequest(jiraSearchQuery *JiraSearchQuery) (*JiraSearchResults, error) {
+func (js *JiraService) MakeJiraSearchRequest(jiraSearchQuery *JiraSearchQuery) (string, error) {
 
 	url := fmt.Sprintf("https://%s/rest/api/2/search", js.jiraParams.BaseUrl)
 
 	queryJSON, err := json.Marshal(jiraSearchQuery)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 	log.Printf("Making query: %s", queryJSON)
 
 	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(queryJSON))
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	req.SetBasicAuth(js.jiraParams.User, js.jiraParams.AuthToken)
@@ -71,7 +55,7 @@ func (js *JiraService) MakeJiraSearchRequest(jiraSearchQuery *JiraSearchQuery) (
 
 	resp, err := js.httpClient.Do(req)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	defer resp.Body.Close()
@@ -81,13 +65,7 @@ func (js *JiraService) MakeJiraSearchRequest(jiraSearchQuery *JiraSearchQuery) (
 
 	body, _ := ioutil.ReadAll(resp.Body)
 
-	var jiraResult JiraSearchResults
-	jsonErr := json.Unmarshal(body, &jiraResult)
-	if jsonErr != nil {
-		return nil, jsonErr
-	}
-
-	return &jiraResult, nil
+	return string(body), nil
 }
 
 func (js *JiraService) MakeJiraGetHistoryRequest(issueKey string, jiraParams *JiraParams, httpClient *http.Client) {

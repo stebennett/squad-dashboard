@@ -2,7 +2,9 @@ package jiracollector
 
 import (
 	"context"
+	"encoding/json"
 	"log"
+	"strings"
 
 	"github.com/stebennett/squad-dashboard/cmd/jiracollector/models"
 	"github.com/stebennett/squad-dashboard/cmd/jiracollector/repository"
@@ -22,11 +24,11 @@ func NewJiraCollector(jira *jiraservice.JiraService, repo repository.IssueReposi
 	}
 }
 
-func (jc *JiraCollector) Execute(jql string, epicField string) {
-	jc.execute(0, 100, jql, epicField, jc.repo.StoreIssue)
+func (jc *JiraCollector) Execute(jql string, epicField string) error {
+	return jc.execute(0, 100, jql, epicField, jc.repo.StoreIssue)
 }
 
-func (jc *JiraCollector) execute(startAt int, maxResults int, jql string, epicField string, fn func(ctx context.Context, jiraIssue models.JiraIssue) error) {
+func (jc *JiraCollector) execute(startAt int, maxResults int, jql string, epicField string, fn func(ctx context.Context, jiraIssue models.JiraIssue) error) error {
 	query := jiraservice.JiraSearchQuery{
 		Jql:        jql,
 		Fields:     []string{"summary", "issuetype", epicField},
@@ -41,16 +43,22 @@ func (jc *JiraCollector) execute(startAt int, maxResults int, jql string, epicFi
 		log.Fatalf("Failed to make request %s", err)
 	}
 
-	for _, issue := range searchResult.Issues {
+	var jiraResult models.JiraSearchResults
+	jsonErr := json.Unmarshal([]byte(strings.ReplaceAll(searchResult, epicField, "epicKey")), &jiraResult)
+	if jsonErr != nil {
+		return jsonErr
+	}
+
+	for _, issue := range jiraResult.Issues {
 		saveableIssue := models.Create(issue)
 		go fn(context.Background(), saveableIssue)
 	}
 
-	var nextPageStartAt = util.NextPaginationArgs(startAt, maxResults, len(searchResult.Issues), searchResult.Total)
+	var nextPageStartAt = util.NextPaginationArgs(startAt, maxResults, len(jiraResult.Issues), jiraResult.Total)
 	if nextPageStartAt == -1 {
 		log.Println("No new pages to fetch.")
-		return
+		return nil
 	}
 
-	jc.execute(nextPageStartAt, maxResults, jql, epicField, fn)
+	return jc.execute(nextPageStartAt, maxResults, jql, epicField, fn)
 }
