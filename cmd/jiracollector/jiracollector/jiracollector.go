@@ -15,14 +15,15 @@ type JiraCollector struct {
 	jira *jiraservice.JiraService
 }
 
-func NewJiraCollector(jira *jiraservice.JiraService) *JiraCollector {
+func NewJiraCollector(jira *jiraservice.JiraService, repo repository.IssueRepository) *JiraCollector {
 	return &JiraCollector{
+		repo: repo,
 		jira: jira,
 	}
 }
 
-func (jc *JiraCollector) Execute(jql string, epicField string, fn func(ctx context.Context, jiraIssue models.JiraIssue) error) {
-	jc.execute(0, 100, jql, epicField, fn)
+func (jc *JiraCollector) Execute(jql string, epicField string) {
+	jc.execute(0, 100, jql, epicField, jc.repo.StoreIssue)
 }
 
 func (jc *JiraCollector) execute(startAt int, maxResults int, jql string, epicField string, fn func(ctx context.Context, jiraIssue models.JiraIssue) error) {

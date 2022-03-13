@@ -38,10 +38,10 @@ func main() {
 	jira := createJiraService(environment)
 
 	// create a new collector job
-	jiracollector := jiracollector.NewJiraCollector(jira)
+	jiracollector := jiracollector.NewJiraCollector(jira, issueRepo)
 
 	// execute the job
-	jiracollector.Execute(environment.JiraQuery, environment.JiraEpicField, issueRepo.StoreIssue)
+	jiracollector.Execute(environment.JiraQuery, environment.JiraEpicField)
 }
 
 func createIssueRepository() repository.IssueRepository {
