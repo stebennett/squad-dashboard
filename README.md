@@ -50,8 +50,10 @@ Running tests
 ## Running all services
 
 1. build and run all the containers (see above)
-2. run docker compose
+2. run docker compose to start the db
+3. run docker compose to run the other services
 
 ````
+ # docker compose up -d db
  # docker compose up
 ````
