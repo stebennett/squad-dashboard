@@ -25,7 +25,7 @@ func NewJiraCollector(jira *jiraservice.JiraService, repo repository.IssueReposi
 }
 
 func (jc *JiraCollector) Execute(jql string, epicField string) error {
-	return jc.execute(0, 100, jql, epicField, jc.repo.StoreIssue)
+	return jc.execute(0, 100, jql, epicField, jc.repo.SaveIssue)
 }
 
 func (jc *JiraCollector) execute(startAt int, maxResults int, jql string, epicField string, fn func(ctx context.Context, jiraIssue models.JiraIssue) error) error {

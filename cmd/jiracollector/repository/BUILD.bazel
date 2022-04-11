@@ -7,7 +7,6 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//cmd/jiracollector/models",
-        "//vendor/github.com/jackc/pgx/v4/pgxpool",
         "//vendor/github.com/lib/pq",
     ],
 )

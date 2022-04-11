@@ -1,7 +1,7 @@
 package main
 
 import (
-	"context"
+	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
@@ -9,7 +9,6 @@ import (
 	"time"
 
 	env "github.com/Netflix/go-env"
-	"github.com/jackc/pgx/v4/pgxpool"
 
 	"github.com/stebennett/squad-dashboard/cmd/jiracollector/jiracollector"
 	"github.com/stebennett/squad-dashboard/cmd/jiracollector/repository"
@@ -47,15 +46,16 @@ func main() {
 
 func createIssueRepository() repository.IssueRepository {
 	var err error
+	var db *sql.DB
 	connStr := os.ExpandEnv("postgres://$DB_USERNAME:$DB_PASSWORD@$DB_HOST:$DB_PORT/$DB_NAME") // load from env vars
 
-	dbPool, err := pgxpool.Connect(context.Background(), connStr)
+	db, err = sql.Open("postgres", connStr)
 	if err != nil {
 		panic(err)
 	}
 
 	fmt.Println("Database initialised")
-	return repository.NewPostgresIssueRepository(dbPool)
+	return repository.NewPostgresIssueRepository(db)
 }
 
 func createJiraService(environment Environment) *jiraservice.JiraService {

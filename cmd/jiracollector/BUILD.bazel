@@ -11,7 +11,6 @@ go_library(
         "//cmd/jiracollector/repository",
         "//pkg/jiraservice",
         "//vendor/github.com/Netflix/go-env",
-        "//vendor/github.com/jackc/pgx/v4/pgxpool",
     ],
 )
 
