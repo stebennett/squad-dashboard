@@ -1,0 +1,44 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+load("@io_bazel_rules_docker//container:container.bzl", "container_image")
+load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar")
+
+go_library(
+    name = "dbmigration_lib",
+    srcs = ["main.go"],
+    importpath = "github.com/stebennett/squad-dashboard/cmd/dbmigration",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/golang-migrate/migrate/v4:migrate",
+        "//vendor/github.com/golang-migrate/migrate/v4/database/postgres",
+        "//vendor/github.com/golang-migrate/migrate/v4/source/file",
+    ],
+)
+
+go_binary(
+    name = "dbmigration",
+    embed = [":dbmigration_lib"],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "migrations",
+    srcs = glob([
+        "migrations/*",
+    ]),
+)
+
+pkg_tar(
+    name = "migrations_tar",
+    srcs = [
+        "//cmd/dbmigration:migrations",
+    ],
+    package_dir = "/migrations",
+)
+
+container_image(
+    name = "image",
+    base = "@alpine_linux_amd64//image",
+    entrypoint = ["/dbmigration"],
+    files = [":dbmigration"],
+    tars = [":migrations_tar"],
+)

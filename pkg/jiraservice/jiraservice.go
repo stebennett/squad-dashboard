@@ -9,6 +9,18 @@ import (
 	"net/http"
 )
 
+type JiraService struct {
+	jiraParams JiraParams
+	httpClient *http.Client
+}
+
+func NewJiraService(httpClient *http.Client, jiraParams JiraParams) *JiraService {
+	return &JiraService{
+		jiraParams: jiraParams,
+		httpClient: httpClient,
+	}
+}
+
 type JiraParams struct {
 	BaseUrl   string
 	User      string
@@ -23,43 +35,27 @@ type JiraSearchQuery struct {
 	MaxResults int      `json:"maxResults"`
 }
 
-type JiraIssue struct {
-	Key    string `json:"key"`
-	Fields struct {
-		IssueType struct {
-			Name string `json:"name"`
-		} `json:"issuetype"`
-	} `json:"fields"`
-}
+func (js *JiraService) MakeJiraSearchRequest(jiraSearchQuery *JiraSearchQuery) (string, error) {
 
-type JiraSearchResults struct {
-	StartAt    int         `json:"startAt"`
-	MaxResults int         `json:"maxResults"`
-	Total      int         `json:"total"`
-	Issues     []JiraIssue `json:"issues"`
-}
-
-func MakeJiraSearchRequest(jiraSearchQuery *JiraSearchQuery, jiraParams *JiraParams, httpClient *http.Client) (*JiraSearchResults, error) {
-
-	url := fmt.Sprintf("https://%s/rest/api/2/search", jiraParams.BaseUrl)
+	url := fmt.Sprintf("https://%s/rest/api/2/search", js.jiraParams.BaseUrl)
 
 	queryJSON, err := json.Marshal(jiraSearchQuery)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 	log.Printf("Making query: %s", queryJSON)
 
 	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(queryJSON))
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	req.SetBasicAuth(jiraParams.User, jiraParams.AuthToken)
+	req.SetBasicAuth(js.jiraParams.User, js.jiraParams.AuthToken)
 	req.Header.Set("Content-Type", "application/json")
 
-	resp, err := httpClient.Do(req)
+	resp, err := js.httpClient.Do(req)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	defer resp.Body.Close()
@@ -69,15 +65,9 @@ func MakeJiraSearchRequest(jiraSearchQuery *JiraSearchQuery, jiraParams *JiraPar
 
 	body, _ := ioutil.ReadAll(resp.Body)
 
-	var jiraResult JiraSearchResults
-	jsonErr := json.Unmarshal(body, &jiraResult)
-	if jsonErr != nil {
-		return nil, jsonErr
-	}
-
-	return &jiraResult, nil
+	return string(body), nil
 }
 
-func MakeJiraGetHistoryRequest(issueKey string, jiraParams *JiraParams, httpClient *http.Client) {
+func (js *JiraService) MakeJiraGetHistoryRequest(issueKey string, jiraParams *JiraParams, httpClient *http.Client) {
 	// TODO: Write code to return a page from history for a given issue - used for getting transitions
 }
