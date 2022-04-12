@@ -34,6 +34,19 @@ type JiraResultIssue struct {
 		Created JiraTimestamp `json:"created"`
 		Updated JiraTimestamp `json:"updated"`
 	} `json:"fields"`
+	ChangeLog struct {
+		StartAt    int `json:"startAt"`
+		MaxResults int `json:"maxResults"`
+		Total      int `json:"total"`
+		Histories  []struct {
+			Created JiraTimestamp `json:"created"`
+			Items   []struct {
+				Field      string `json:"field"`
+				FromString string `json:"fromString"`
+				ToString   string `json:"toString"`
+			} `json:"items"`
+		} `json:"histories"`
+	} `json:"changelog"`
 }
 
 type JiraSearchResults struct {

@@ -60,6 +60,8 @@ func (jc *JiraCollector) execute(startAt int, maxResults int, jql string, epicFi
 		if err != nil {
 			log.Fatalf("Error: Failed to save issue %s - %s", saveableIssue.Key, err)
 		}
+
+		go fetchTransitions(issue)
 	}
 
 	var nextPageStartAt = util.NextPaginationArgs(startAt, maxResults, len(jiraResult.Issues), jiraResult.Total)
@@ -69,4 +71,11 @@ func (jc *JiraCollector) execute(startAt int, maxResults int, jql string, epicFi
 	}
 
 	return jc.execute(nextPageStartAt, maxResults, jql, epicField, saveIssue)
+}
+
+func fetchTransitions(jiraIssue models.JiraResultIssue) error {
+	if jiraIssue.ChangeLog.Total > jiraIssue.ChangeLog.MaxResults {
+		log.Printf("Jira Issue has long history - %s", jiraIssue.Key)
+	}
+	return nil
 }
