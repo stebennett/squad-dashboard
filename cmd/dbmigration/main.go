@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	connectionStr := os.ExpandEnv("postgres://$DB_USERNAME:$DB_PASSWORD@$DB_HOST:$DB_PORT/$DB_NAME") // load from env vars
+	connectionStr := os.ExpandEnv("postgres://$DB_USERNAME:$DB_PASSWORD@$DB_HOST:$DB_PORT/$DB_NAME?sslmode=disable") // load from env vars
 
 	m, err := migrate.New("file://migrations", connectionStr)
 

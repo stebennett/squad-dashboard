@@ -28,7 +28,7 @@ func (jc *JiraCollector) Execute(jql string, epicField string) error {
 	return jc.execute(0, 100, jql, epicField, jc.repo.SaveIssue)
 }
 
-func (jc *JiraCollector) execute(startAt int, maxResults int, jql string, epicField string, fn func(ctx context.Context, jiraIssue models.JiraIssue) error) error {
+func (jc *JiraCollector) execute(startAt int, maxResults int, jql string, epicField string, saveIssue func(ctx context.Context, jiraIssue models.JiraIssue) (int64, error)) error {
 	query := jiraservice.JiraSearchQuery{
 		Jql:        jql,
 		Fields:     []string{"summary", "issuetype", epicField},
@@ -51,7 +51,10 @@ func (jc *JiraCollector) execute(startAt int, maxResults int, jql string, epicFi
 
 	for _, issue := range jiraResult.Issues {
 		saveableIssue := models.Create(issue)
-		go fn(context.Background(), saveableIssue)
+		_, err := saveIssue(context.Background(), saveableIssue)
+		if err != nil {
+			log.Printf("Error: Failed to save issue %s - %s", saveableIssue.Key, err)
+		}
 	}
 
 	var nextPageStartAt = util.NextPaginationArgs(startAt, maxResults, len(jiraResult.Issues), jiraResult.Total)
@@ -60,5 +63,5 @@ func (jc *JiraCollector) execute(startAt int, maxResults int, jql string, epicFi
 		return nil
 	}
 
-	return jc.execute(nextPageStartAt, maxResults, jql, epicField, fn)
+	return jc.execute(nextPageStartAt, maxResults, jql, epicField, saveIssue)
 }

@@ -9,15 +9,15 @@ type Timestamp time.Time
 type JiraIssue struct {
 	Key       string
 	IssueType string
-	CreatedAt Timestamp
-	UpdateAt  Timestamp
+	CreatedAt time.Time
+	UpdatedAt time.Time
 	ParentKey string
 }
 
 type JiraTransition struct {
 	FromState      string
 	ToState        string
-	TransitionedAt Timestamp
+	TransitionedAt time.Time
 }
 
 type JiraResultIssue struct {
@@ -44,7 +44,7 @@ func Create(issue JiraResultIssue) JiraIssue {
 		Key:       issue.Key,
 		IssueType: issue.Fields.IssueType.Name,
 		ParentKey: issue.Fields.EpicKey,
-		CreatedAt: Timestamp(time.Now()), // TODO: Update with correct time
-		UpdateAt:  Timestamp(time.Now()), // TODO: Update with correct time
+		CreatedAt: time.Now(), // TODO: Update with correct time
+		UpdatedAt: time.Now(), // TODO: Update with correct time
 	}
 }

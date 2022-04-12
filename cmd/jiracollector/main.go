@@ -47,7 +47,7 @@ func main() {
 func createIssueRepository() repository.IssueRepository {
 	var err error
 	var db *sql.DB
-	connStr := os.ExpandEnv("postgres://$DB_USERNAME:$DB_PASSWORD@$DB_HOST:$DB_PORT/$DB_NAME") // load from env vars
+	connStr := os.ExpandEnv("postgres://$DB_USERNAME:$DB_PASSWORD@$DB_HOST:$DB_PORT/$DB_NAME?sslmode=disable") // load from env vars
 
 	db, err = sql.Open("postgres", connStr)
 	if err != nil {
