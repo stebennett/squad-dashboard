@@ -31,7 +31,7 @@ func (jc *JiraCollector) Execute(jql string, epicField string) error {
 func (jc *JiraCollector) execute(startAt int, maxResults int, jql string, epicField string, saveIssue func(ctx context.Context, jiraIssue models.JiraIssue) (int64, error)) error {
 	query := jiraservice.JiraSearchQuery{
 		Jql:        jql,
-		Fields:     []string{"summary", "issuetype", epicField},
+		Fields:     []string{"summary", "issuetype", epicField, "created", "updated"},
 		Expand:     []string{"changelog"},
 		StartAt:    startAt,
 		MaxResults: maxResults,
@@ -50,10 +50,15 @@ func (jc *JiraCollector) execute(startAt int, maxResults int, jql string, epicFi
 	}
 
 	for _, issue := range jiraResult.Issues {
-		saveableIssue := models.Create(issue)
-		_, err := saveIssue(context.Background(), saveableIssue)
+		saveableIssue, err := models.Create(issue)
 		if err != nil {
-			log.Printf("Error: Failed to save issue %s - %s", saveableIssue.Key, err)
+			log.Fatalf("Error: Failed to covert issue %s - %s", issue.Key, err)
+			continue
+		}
+
+		_, err = saveIssue(context.Background(), *saveableIssue)
+		if err != nil {
+			log.Fatalf("Error: Failed to save issue %s - %s", saveableIssue.Key, err)
 		}
 	}
 

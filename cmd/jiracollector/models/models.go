@@ -1,10 +1,14 @@
 package models
 
 import (
+	"encoding/json"
+	"fmt"
 	"time"
 )
 
-type Timestamp time.Time
+type JiraTimestamp struct {
+	time.Time
+}
 
 type JiraIssue struct {
 	Key       string
@@ -26,9 +30,9 @@ type JiraResultIssue struct {
 		IssueType struct {
 			Name string `json:"name"`
 		} `json:"issuetype"`
-		EpicKey string `json:"epicKey"`
-		Created string `json:"created"`
-		Updated string `json:"updated"`
+		EpicKey string        `json:"epicKey"`
+		Created JiraTimestamp `json:"created"`
+		Updated JiraTimestamp `json:"updated"`
 	} `json:"fields"`
 }
 
@@ -39,12 +43,25 @@ type JiraSearchResults struct {
 	Issues     []JiraResultIssue `json:"issues"`
 }
 
-func Create(issue JiraResultIssue) JiraIssue {
-	return JiraIssue{
+func (p *JiraTimestamp) UnmarshalJSON(bytes []byte) error {
+	var raw string
+	err := json.Unmarshal(bytes, &raw)
+
+	if err != nil {
+		fmt.Printf("Failed to marshal timestamp - %s", err)
+		return err
+	}
+
+	p.Time, err = time.Parse("2006-01-02T15:04:05.000-0700", raw)
+	return err
+}
+
+func Create(issue JiraResultIssue) (*JiraIssue, error) {
+	return &JiraIssue{
 		Key:       issue.Key,
 		IssueType: issue.Fields.IssueType.Name,
 		ParentKey: issue.Fields.EpicKey,
-		CreatedAt: time.Now(), // TODO: Update with correct time
-		UpdatedAt: time.Now(), // TODO: Update with correct time
-	}
+		CreatedAt: issue.Fields.Created.Time.UTC(),
+		UpdatedAt: issue.Fields.Updated.Time.UTC(),
+	}, nil
 }

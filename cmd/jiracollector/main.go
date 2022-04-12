@@ -41,7 +41,8 @@ func main() {
 	jiracollector := jiracollector.NewJiraCollector(jira, issueRepo)
 
 	// execute the job
-	jiracollector.Execute(environment.JiraQuery, environment.JiraEpicField)
+	err = jiracollector.Execute(environment.JiraQuery, environment.JiraEpicField)
+	log.Fatal(err)
 }
 
 func createIssueRepository() repository.IssueRepository {
