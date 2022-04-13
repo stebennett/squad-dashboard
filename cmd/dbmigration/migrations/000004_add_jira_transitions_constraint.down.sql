@@ -1,0 +1,1 @@
+ALTER TABLE jira_transitions DROP CONSTRAINT;  

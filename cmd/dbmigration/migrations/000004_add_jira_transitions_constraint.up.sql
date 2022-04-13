@@ -1,0 +1,1 @@
+ALTER TABLE jira_transitions ADD CONSTRAINT key_created_unq UNIQUE (issue_key, created_at);  
