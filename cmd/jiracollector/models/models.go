@@ -24,6 +24,15 @@ type JiraTransition struct {
 	TransitionedAt time.Time
 }
 
+type JiraHistory struct {
+	Created JiraTimestamp `json:"created"`
+	Items   []struct {
+		Field      string `json:"field"`
+		FromString string `json:"fromString"`
+		ToString   string `json:"toString"`
+	} `json:"items"`
+}
+
 type JiraResultIssue struct {
 	Key    string `json:"key"`
 	Fields struct {
@@ -35,17 +44,10 @@ type JiraResultIssue struct {
 		Updated JiraTimestamp `json:"updated"`
 	} `json:"fields"`
 	ChangeLog struct {
-		StartAt    int `json:"startAt"`
-		MaxResults int `json:"maxResults"`
-		Total      int `json:"total"`
-		Histories  []struct {
-			Created JiraTimestamp `json:"created"`
-			Items   []struct {
-				Field      string `json:"field"`
-				FromString string `json:"fromString"`
-				ToString   string `json:"toString"`
-			} `json:"items"`
-		} `json:"histories"`
+		StartAt    int           `json:"startAt"`
+		MaxResults int           `json:"maxResults"`
+		Total      int           `json:"total"`
+		Histories  []JiraHistory `json:"histories"`
 	} `json:"changelog"`
 }
 
@@ -54,6 +56,13 @@ type JiraSearchResults struct {
 	MaxResults int               `json:"maxResults"`
 	Total      int               `json:"total"`
 	Issues     []JiraResultIssue `json:"issues"`
+}
+
+type JiraChangeLogHistoryResults struct {
+	StartAt    int           `json:"startAt"`
+	MaxResults int           `json:"maxResults"`
+	Total      int           `json:"total"`
+	Histories  []JiraHistory `json:"values"`
 }
 
 func (p *JiraTimestamp) UnmarshalJSON(bytes []byte) error {
@@ -77,4 +86,21 @@ func Create(issue JiraResultIssue) (*JiraIssue, error) {
 		CreatedAt: issue.Fields.Created.Time.UTC(),
 		UpdatedAt: issue.Fields.Updated.Time.UTC(),
 	}, nil
+}
+
+func CreateTransitions(histories []JiraHistory) (result []JiraTransition) {
+	for _, h := range histories {
+		for _, i := range h.Items {
+			if i.Field == "status" {
+				jt := JiraTransition{
+					FromState:      i.FromString,
+					ToState:        i.ToString,
+					TransitionedAt: h.Created.Time,
+				}
+				result = append(result, jt)
+			}
+		}
+	}
+
+	return result
 }

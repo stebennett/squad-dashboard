@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 type JiraService struct {
@@ -68,6 +69,34 @@ func (js *JiraService) MakeJiraSearchRequest(jiraSearchQuery *JiraSearchQuery) (
 	return string(body), nil
 }
 
-func (js *JiraService) MakeJiraGetHistoryRequest(issueKey string, jiraParams *JiraParams, httpClient *http.Client) {
-	// TODO: Write code to return a page from history for a given issue - used for getting transitions
+func (js *JiraService) MakeJiraGetHistoryRequest(issueKey string, startAt int, maxResults int) (string, error) {
+	url := fmt.Sprintf("https://%s/rest/api/2/issue/%s/changelog", js.jiraParams.BaseUrl, issueKey)
+
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return "", err
+	}
+
+	req.SetBasicAuth(js.jiraParams.User, js.jiraParams.AuthToken)
+	req.Header.Set("Content-Type", "application/json")
+
+	query := req.URL.Query()
+	query.Add("startAt", strconv.Itoa(startAt))
+	query.Add("maxResults", strconv.Itoa(maxResults))
+
+	req.URL.RawQuery = query.Encode()
+
+	resp, err := js.httpClient.Do(req)
+	if err != nil {
+		return "", err
+	}
+
+	defer resp.Body.Close()
+
+	log.Printf("response status: %s", resp.Status)
+	log.Printf("response headers: %s", resp.Header)
+
+	body, _ := ioutil.ReadAll(resp.Body)
+
+	return string(body), nil
 }
