@@ -16,6 +16,7 @@ import (
 )
 
 type Environment struct {
+	JiraProject   string `env:"JIRA_PROJECT,required=true"`
 	JiraBaseUrl   string `env:"JIRA_HOST,required=true"`
 	JiraUser      string `env:"JIRA_USER,required=true"`
 	JiraAuthToken string `env:"JIRA_AUTH_TOKEN,required=true"`
@@ -41,7 +42,7 @@ func main() {
 	jiracollector := jiracollector.NewJiraCollector(jira, issueRepo)
 
 	// execute the job
-	err = jiracollector.Execute(environment.JiraQuery, environment.JiraEpicField)
+	err = jiracollector.Execute(environment.JiraProject, environment.JiraQuery, environment.JiraEpicField)
 	log.Fatal(err)
 }
 

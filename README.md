@@ -55,5 +55,6 @@ Running tests
 
 ````
  # docker compose up -d db
+ # docker compose up -d migration
  # docker compose up
 ````

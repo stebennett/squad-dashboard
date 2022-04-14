@@ -1,3 +1,5 @@
+BEGIN;
+
 CREATE TABLE jira_issues_calculations(
     _id INT GENERATED ALWAYS AS IDENTITY,
     issue_key VARCHAR(16) UNIQUE NOT NULL,
@@ -15,7 +17,9 @@ CREATE TABLE jira_issues_calculations(
     working_system_delay_time INT
 );
 
-CREATE INDEX CONCURRENTLY year_week_create_idx ON jira_issues_calculations(week_create, year_create);
-CREATE INDEX CONCURRENTLY year_week_complete_idx ON jira_issues_calculations(week_complete, year_complete);
-CREATE INDEX CONCURRENTLY year_week_start_idx ON jira_issues_calculations(week_start, year_start);
-CREATE INDEX CONCURRENTLY issue_key_idx ON jira_issues_calculations(issue_key);
+CREATE INDEX year_week_create_idx ON jira_issues_calculations(week_create, year_create);
+CREATE INDEX year_week_complete_idx ON jira_issues_calculations(week_complete, year_complete);
+CREATE INDEX year_week_start_idx ON jira_issues_calculations(week_start, year_start);
+CREATE INDEX issue_key_idx ON jira_issues_calculations(issue_key);
+
+COMMIT;

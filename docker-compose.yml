@@ -31,6 +31,7 @@ services:
       - JIRA_AUTH_TOKEN
       - JIRA_QUERY
       - JIRA_EPIC_FIELD
+      - JIRA_PROJECT
       - DB_USERNAME
       - DB_PASSWORD
       - DB_NAME
@@ -45,6 +46,7 @@ services:
       - DB_NAME
       - DB_HOST
       - DB_PORT
+      - JIRA_PROJECT
 
 volumes:
   db_data:

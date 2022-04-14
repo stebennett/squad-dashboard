@@ -25,12 +25,12 @@ func NewJiraCollector(jira *jiraservice.JiraService, repo jirarepository.JiraRep
 	}
 }
 
-func (jc *JiraCollector) Execute(jql string, epicField string) error {
-	return jc.execute(0, 100, jql, epicField, jc.repo.SaveIssue, jc.repo.SaveTransition)
+func (jc *JiraCollector) Execute(project string, jql string, epicField string) error {
+	return jc.execute(project, 0, 100, jql, epicField, jc.repo.SaveIssue, jc.repo.SaveTransition)
 }
 
-func (jc *JiraCollector) execute(startAt int, maxResults int, jql string, epicField string,
-	saveIssue func(ctx context.Context, jiraIssue jiramodels.JiraIssue) (int64, error),
+func (jc *JiraCollector) execute(project string, startAt int, maxResults int, jql string, epicField string,
+	saveIssue func(ctx context.Context, project string, jiraIssue jiramodels.JiraIssue) (int64, error),
 	saveTransition func(ctx context.Context, issueKey string, jiraTransitions []jiramodels.JiraTransition) (int64, error)) error {
 
 	query := jiraservice.JiraSearchQuery{
@@ -60,7 +60,7 @@ func (jc *JiraCollector) execute(startAt int, maxResults int, jql string, epicFi
 			continue
 		}
 
-		_, err = saveIssue(context.Background(), *saveableIssue)
+		_, err = saveIssue(context.Background(), project, *saveableIssue)
 		if err != nil {
 			log.Fatalf("Error: Failed to save issue %s - %s", saveableIssue.Key, err)
 		}
@@ -82,7 +82,7 @@ func (jc *JiraCollector) execute(startAt int, maxResults int, jql string, epicFi
 		return nil
 	}
 
-	return jc.execute(nextPageStartAt, maxResults, jql, epicField, saveIssue, saveTransition)
+	return jc.execute(project, nextPageStartAt, maxResults, jql, epicField, saveIssue, saveTransition)
 }
 
 func (jc *JiraCollector) fetchTransitions(jiraIssue models.JiraResultIssue) ([]jiramodels.JiraTransition, error) {

@@ -9,7 +9,7 @@ import (
 )
 
 type JiraRepository interface {
-	SaveIssue(ctx context.Context, jiraIssue jiramodels.JiraIssue) (int64, error)
+	SaveIssue(ctx context.Context, project string, jiraIssue jiramodels.JiraIssue) (int64, error)
 	SaveTransition(ctx context.Context, issueKey string, jiraTransition []jiramodels.JiraTransition) (int64, error)
 	GetIssuesWithStateTransition(ctx context.Context, toState string) ([]string, error)
 	GetTransitionsForIssue(ctx context.Context, issueKey string) ([]jiramodels.JiraTransition, error)
@@ -31,13 +31,13 @@ func NewPostgresJiraRepository(db *sql.DB) *PostgresJiraRepository {
 	}
 }
 
-func (p *PostgresJiraRepository) SaveIssue(ctx context.Context, jiraIssue jiramodels.JiraIssue) (int64, error) {
+func (p *PostgresJiraRepository) SaveIssue(ctx context.Context, project string, jiraIssue jiramodels.JiraIssue) (int64, error) {
 	insertIssueStatement := `
-		INSERT INTO jira_issues(issue_key, issue_type, parent_key, created_at, updated_at)
-		VALUES ($1, $2, $3, $4, $5)
+		INSERT INTO jira_issues(issue_key, issue_type, parent_key, created_at, updated_at, project)
+		VALUES ($1, $2, $3, $4, $5, $6)
 		ON CONFLICT (issue_key)
 		DO UPDATE
-		SET issue_type = $2, parent_key = $3, created_at = $4, updated_at = $5
+		SET issue_type = $2, parent_key = $3, created_at = $4, updated_at = $5, project = $6
 		WHERE jira_issues.issue_key = $1
 	`
 
@@ -48,6 +48,7 @@ func (p *PostgresJiraRepository) SaveIssue(ctx context.Context, jiraIssue jiramo
 		jiraIssue.ParentKey,
 		jiraIssue.CreatedAt,
 		jiraIssue.UpdatedAt,
+		project,
 	)
 
 	if err != nil {

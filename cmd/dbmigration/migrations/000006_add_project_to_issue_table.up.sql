@@ -1,0 +1,1 @@
+ALTER TABLE jira_issues ADD COLUMN project VARCHAR(16) NOT NULL DEFAULT ''; 
