@@ -4,24 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"time"
+
+	"github.com/stebennett/squad-dashboard/pkg/jiramodels"
 )
 
 type JiraTimestamp struct {
 	time.Time
-}
-
-type JiraIssue struct {
-	Key       string
-	IssueType string
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	ParentKey string
-}
-
-type JiraTransition struct {
-	FromState      string
-	ToState        string
-	TransitionedAt time.Time
 }
 
 type JiraHistory struct {
@@ -78,8 +66,8 @@ func (p *JiraTimestamp) UnmarshalJSON(bytes []byte) error {
 	return err
 }
 
-func Create(issue JiraResultIssue) (*JiraIssue, error) {
-	return &JiraIssue{
+func Create(issue JiraResultIssue) (*jiramodels.JiraIssue, error) {
+	return &jiramodels.JiraIssue{
 		Key:       issue.Key,
 		IssueType: issue.Fields.IssueType.Name,
 		ParentKey: issue.Fields.EpicKey,
@@ -88,11 +76,11 @@ func Create(issue JiraResultIssue) (*JiraIssue, error) {
 	}, nil
 }
 
-func CreateTransitions(histories []JiraHistory) (result []JiraTransition) {
+func CreateTransitions(histories []JiraHistory) (result []jiramodels.JiraTransition) {
 	for _, h := range histories {
 		for _, i := range h.Items {
 			if i.Field == "status" {
-				jt := JiraTransition{
+				jt := jiramodels.JiraTransition{
 					FromState:      i.FromString,
 					ToState:        i.ToString,
 					TransitionedAt: h.Created.Time,

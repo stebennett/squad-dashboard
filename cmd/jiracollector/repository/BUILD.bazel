@@ -6,7 +6,7 @@ go_library(
     importpath = "github.com/stebennett/squad-dashboard/cmd/jiracollector/repository",
     visibility = ["//visibility:public"],
     deps = [
-        "//cmd/jiracollector/models",
+        "//pkg/jiramodels",
         "//vendor/github.com/lib/pq",
     ],
 )

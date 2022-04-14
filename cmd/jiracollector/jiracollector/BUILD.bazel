@@ -8,6 +8,7 @@ go_library(
     deps = [
         "//cmd/jiracollector/models",
         "//cmd/jiracollector/repository",
+        "//pkg/jiramodels",
         "//pkg/jiraservice",
         "//pkg/util",
     ],

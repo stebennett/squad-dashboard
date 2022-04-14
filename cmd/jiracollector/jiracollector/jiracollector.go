@@ -8,6 +8,7 @@ import (
 
 	"github.com/stebennett/squad-dashboard/cmd/jiracollector/models"
 	"github.com/stebennett/squad-dashboard/cmd/jiracollector/repository"
+	"github.com/stebennett/squad-dashboard/pkg/jiramodels"
 	"github.com/stebennett/squad-dashboard/pkg/jiraservice"
 	"github.com/stebennett/squad-dashboard/pkg/util"
 )
@@ -29,8 +30,8 @@ func (jc *JiraCollector) Execute(jql string, epicField string) error {
 }
 
 func (jc *JiraCollector) execute(startAt int, maxResults int, jql string, epicField string,
-	saveIssue func(ctx context.Context, jiraIssue models.JiraIssue) (int64, error),
-	saveTransition func(ctx context.Context, issueKey string, jiraTransitions []models.JiraTransition) (int64, error)) error {
+	saveIssue func(ctx context.Context, jiraIssue jiramodels.JiraIssue) (int64, error),
+	saveTransition func(ctx context.Context, issueKey string, jiraTransitions []jiramodels.JiraTransition) (int64, error)) error {
 
 	query := jiraservice.JiraSearchQuery{
 		Jql:        jql,
@@ -84,11 +85,11 @@ func (jc *JiraCollector) execute(startAt int, maxResults int, jql string, epicFi
 	return jc.execute(nextPageStartAt, maxResults, jql, epicField, saveIssue, saveTransition)
 }
 
-func (jc *JiraCollector) fetchTransitions(jiraIssue models.JiraResultIssue) ([]models.JiraTransition, error) {
+func (jc *JiraCollector) fetchTransitions(jiraIssue models.JiraResultIssue) ([]jiramodels.JiraTransition, error) {
 	if jiraIssue.ChangeLog.Total > jiraIssue.ChangeLog.MaxResults {
 		issueHistory, err := jc.fetchTransitionsFromIssue(jiraIssue.Key, 0, 100)
 		if err != nil {
-			return []models.JiraTransition{}, err
+			return []jiramodels.JiraTransition{}, err
 		}
 
 		return models.CreateTransitions(issueHistory), nil

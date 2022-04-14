@@ -20,5 +20,3 @@ container_image(
     entrypoint = ["/jiraissuecalculator"],
     files = [":jiraissuecalculator"],
 )
-
-
