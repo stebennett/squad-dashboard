@@ -11,6 +11,14 @@ import (
 type JiraRepository interface {
 	SaveIssue(ctx context.Context, jiraIssue jiramodels.JiraIssue) (int64, error)
 	SaveTransition(ctx context.Context, issueKey string, jiraTransition []jiramodels.JiraTransition) (int64, error)
+	GetIssuesWithStateTransition(ctx context.Context, toState string) ([]string, error)
+	GetTransitionsForIssue(ctx context.Context, issueKey string) ([]jiramodels.JiraTransition, error)
+	SaveCreateWeekDate(ctx context.Context, issueKey string, year int, week int) (int64, error)
+	SaveStartWeekDate(ctx context.Context, issueKey string, year int, week int) (int64, error)
+	SaveCompleteWeekDate(ctx context.Context, issueKey string, year int, week int) (int64, error)
+	SaveCycleTime(ctx context.Context, issueKey string, cycleTime int, workingCycleTime int) (int64, error)
+	SaveLeadTime(ctx context.Context, issueKey string, leadTime int, workingLeadTime int) (int64, error)
+	SaveSystemDelayTime(ctx context.Context, issueKey string, systemDelayTime int, workingSystemDelayTime int) (int64, error)
 }
 
 type PostgresJiraRepository struct {
@@ -196,6 +204,78 @@ func (p *PostgresJiraRepository) SaveCompleteWeekDate(ctx context.Context, issue
 		issueKey,
 		week,
 		year,
+	)
+
+	if err != nil {
+		return -1, err
+	}
+
+	return result.RowsAffected()
+}
+
+func (p *PostgresJiraRepository) SaveCycleTime(ctx context.Context, issueKey string, cycleTime int, workingCycleTime int) (int64, error) {
+	insertStatement := `
+		INSERT INTO jira_issues_calculations(issue_key, cycle_time, working_cycle_time)
+		VALUES ($1, $2, $3)
+		ON CONFLICT (issue_key)
+		DO UPDATE
+		SET cycle_time = $2, working_cycle_time = $3
+		WHERE jira_issues_calculations.issue_key = $1
+	`
+
+	result, err := p.db.ExecContext(ctx,
+		insertStatement,
+		issueKey,
+		cycleTime,
+		workingCycleTime,
+	)
+
+	if err != nil {
+		return -1, err
+	}
+
+	return result.RowsAffected()
+}
+
+func (p *PostgresJiraRepository) SaveLeadTime(ctx context.Context, issueKey string, leadTime int, workingLeadTime int) (int64, error) {
+	insertStatement := `
+		INSERT INTO jira_issues_calculations(issue_key, lead_time, working_lead_time)
+		VALUES ($1, $2, $3)
+		ON CONFLICT (issue_key)
+		DO UPDATE
+		SET lead_time = $2, working_lead_time = $3
+		WHERE jira_issues_calculations.issue_key = $1
+	`
+
+	result, err := p.db.ExecContext(ctx,
+		insertStatement,
+		issueKey,
+		leadTime,
+		workingLeadTime,
+	)
+
+	if err != nil {
+		return -1, err
+	}
+
+	return result.RowsAffected()
+}
+
+func (p *PostgresJiraRepository) SaveSystemDelayTime(ctx context.Context, issueKey string, systemDelayTime int, workingSystemDelayTime int) (int64, error) {
+	insertStatement := `
+		INSERT INTO jira_issues_calculations(issue_key, system_delay_time, working_system_delay_time)
+		VALUES ($1, $2, $3)
+		ON CONFLICT (issue_key)
+		DO UPDATE
+		SET system_delay_time = $2, working_system_delay_time = $3
+		WHERE jira_issues_calculations.issue_key = $1
+	`
+
+	result, err := p.db.ExecContext(ctx,
+		insertStatement,
+		issueKey,
+		systemDelayTime,
+		workingSystemDelayTime,
 	)
 
 	if err != nil {
