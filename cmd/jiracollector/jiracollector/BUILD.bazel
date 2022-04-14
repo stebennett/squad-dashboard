@@ -7,8 +7,8 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//cmd/jiracollector/models",
-        "//cmd/jiracollector/repository",
         "//pkg/jiramodels",
+        "//pkg/jirarepository",
         "//pkg/jiraservice",
         "//pkg/util",
     ],

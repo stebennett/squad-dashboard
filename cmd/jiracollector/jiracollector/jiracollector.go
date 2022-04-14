@@ -7,18 +7,18 @@ import (
 	"strings"
 
 	"github.com/stebennett/squad-dashboard/cmd/jiracollector/models"
-	"github.com/stebennett/squad-dashboard/cmd/jiracollector/repository"
 	"github.com/stebennett/squad-dashboard/pkg/jiramodels"
+	"github.com/stebennett/squad-dashboard/pkg/jirarepository"
 	"github.com/stebennett/squad-dashboard/pkg/jiraservice"
 	"github.com/stebennett/squad-dashboard/pkg/util"
 )
 
 type JiraCollector struct {
-	repo repository.IssueRepository
+	repo jirarepository.JiraRepository
 	jira *jiraservice.JiraService
 }
 
-func NewJiraCollector(jira *jiraservice.JiraService, repo repository.IssueRepository) *JiraCollector {
+func NewJiraCollector(jira *jiraservice.JiraService, repo jirarepository.JiraRepository) *JiraCollector {
 	return &JiraCollector{
 		repo: repo,
 		jira: jira,

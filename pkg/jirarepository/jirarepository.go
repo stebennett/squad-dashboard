@@ -1,4 +1,4 @@
-package repository
+package jirarepository
 
 import (
 	"context"
@@ -8,22 +8,22 @@ import (
 	"github.com/stebennett/squad-dashboard/pkg/jiramodels"
 )
 
-type IssueRepository interface {
+type JiraRepository interface {
 	SaveIssue(ctx context.Context, jiraIssue jiramodels.JiraIssue) (int64, error)
 	SaveTransition(ctx context.Context, issueKey string, jiraTransition []jiramodels.JiraTransition) (int64, error)
 }
 
-type PostgresIssueRepository struct {
+type PostgresJiraRepository struct {
 	db *sql.DB
 }
 
-func NewPostgresIssueRepository(db *sql.DB) *PostgresIssueRepository {
-	return &PostgresIssueRepository{
+func NewPostgresJiraRepository(db *sql.DB) *PostgresJiraRepository {
+	return &PostgresJiraRepository{
 		db: db,
 	}
 }
 
-func (p *PostgresIssueRepository) SaveIssue(ctx context.Context, jiraIssue jiramodels.JiraIssue) (int64, error) {
+func (p *PostgresJiraRepository) SaveIssue(ctx context.Context, jiraIssue jiramodels.JiraIssue) (int64, error) {
 	insertIssueStatement := `
 		INSERT INTO jira_issues(issue_key, issue_type, parent_key, created_at, updated_at)
 		VALUES ($1, $2, $3, $4, $5)
@@ -49,7 +49,7 @@ func (p *PostgresIssueRepository) SaveIssue(ctx context.Context, jiraIssue jiram
 	return result.RowsAffected()
 }
 
-func (p *PostgresIssueRepository) SaveTransition(ctx context.Context, issueKey string, jiraTransitions []jiramodels.JiraTransition) (int64, error) {
+func (p *PostgresJiraRepository) SaveTransition(ctx context.Context, issueKey string, jiraTransitions []jiramodels.JiraTransition) (int64, error) {
 	var inserted int64 = 0
 
 	for _, transition := range jiraTransitions {
@@ -79,7 +79,7 @@ func (p *PostgresIssueRepository) SaveTransition(ctx context.Context, issueKey s
 	return inserted, nil
 }
 
-func (p *PostgresIssueRepository) GetIssuesWithStateTransition(ctx context.Context, toState string) ([]string, error) {
+func (p *PostgresJiraRepository) GetIssuesWithStateTransition(ctx context.Context, toState string) ([]string, error) {
 	selectStatement := `
 		SELECT DISTINCT issue_key
 		FROM jira_transitions
@@ -106,7 +106,7 @@ func (p *PostgresIssueRepository) GetIssuesWithStateTransition(ctx context.Conte
 	return result, nil
 }
 
-func (p *PostgresIssueRepository) GetTransitionsForIssue(ctx context.Context, issueKey string) ([]jiramodels.JiraTransition, error) {
+func (p *PostgresJiraRepository) GetTransitionsForIssue(ctx context.Context, issueKey string) ([]jiramodels.JiraTransition, error) {
 	selectStatement := `
 		SELECT from_state, to_state, created_at
 		FROM jira_transitions
