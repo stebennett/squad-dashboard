@@ -10,6 +10,6 @@ go_library(
         "//pkg/jiramodels",
         "//pkg/jirarepository",
         "//pkg/jiraservice",
-        "//pkg/util",
+        "//pkg/paginator",
     ],
 )

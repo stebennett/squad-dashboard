@@ -10,7 +10,7 @@ import (
 	"github.com/stebennett/squad-dashboard/pkg/jiramodels"
 	"github.com/stebennett/squad-dashboard/pkg/jirarepository"
 	"github.com/stebennett/squad-dashboard/pkg/jiraservice"
-	"github.com/stebennett/squad-dashboard/pkg/util"
+	"github.com/stebennett/squad-dashboard/pkg/paginator"
 )
 
 type JiraCollector struct {
@@ -76,7 +76,7 @@ func (jc *JiraCollector) execute(project string, startAt int, maxResults int, jq
 		}
 	}
 
-	var nextPageStartAt = util.NextPaginationArgs(startAt, maxResults, len(jiraResult.Issues), jiraResult.Total)
+	var nextPageStartAt = paginator.NextPaginationArgs(startAt, maxResults, len(jiraResult.Issues), jiraResult.Total)
 	if nextPageStartAt == -1 {
 		log.Println("No new pages to fetch.")
 		return nil
@@ -114,7 +114,7 @@ func (jc *JiraCollector) fetchTransitionsFromIssue(issueKey string, startAt int,
 		return []models.JiraHistory{}, err
 	}
 
-	nextStartAt := util.NextPaginationArgs(jiraResult.StartAt, maxResults, len(jiraResult.Histories), jiraResult.Total)
+	nextStartAt := paginator.NextPaginationArgs(jiraResult.StartAt, maxResults, len(jiraResult.Histories), jiraResult.Total)
 
 	nextResults, err := jc.fetchTransitionsFromIssue(issueKey, nextStartAt, maxResults)
 	if err != nil {

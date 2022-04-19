@@ -1,4 +1,4 @@
-package util
+package paginator
 
 func NextPaginationArgs(currentStartAt int, totalPerPage int, currentCount int, totalCount int) int {
 	if currentStartAt+currentCount < totalCount {

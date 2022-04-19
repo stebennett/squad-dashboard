@@ -1,14 +1,14 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
-    name = "util",
+    name = "paginator",
     srcs = ["paginator.go"],
-    importpath = "github.com/stebennett/squad-dashboard/pkg/util",
+    importpath = "github.com/stebennett/squad-dashboard/pkg/paginator",
     visibility = ["//visibility:public"],
 )
 
 go_test(
-    name = "util_test",
+    name = "paginator_test",
     srcs = ["paginator_test.go"],
-    embed = [":util"],
+    embed = [":paginator"],
 )

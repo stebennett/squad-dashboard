@@ -1,0 +1,12 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "calculator",
+    srcs = ["calculator.go"],
+    importpath = "github.com/stebennett/squad-dashboard/cmd/jiraissuecalculator/calculator",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/dateutil",
+        "//pkg/jiramodels",
+    ],
+)
