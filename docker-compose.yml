@@ -13,14 +13,25 @@ services:
     ports:
       - "5432:5432"
 
+  metabasedb:
+    image: postgres:14.1
+    volumes:
+      - metabase_db_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ${MB_DB_USER}
+      POSTGRES_PASSWORD: ${MB_DB_PASSWORD}
+      POSTGRES_DB: ${MB_DB_DBNAME}
+    ports:
+      - "5433:5432"
+
   migration:
     image: bazel/cmd/dbmigration:image
     environment:
-      - DB_USERNAME
-      - DB_PASSWORD
-      - DB_NAME
-      - DB_HOST
-      - DB_PORT
+      DB_USERNAME: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_NAME: ${POSTGRES_DB}
+      DB_HOST: db
+      DB_PORT: 5432
 
   jiracollector:
     image: bazel/cmd/jiracollector:image
@@ -32,21 +43,36 @@ services:
       - JIRA_QUERY
       - JIRA_EPIC_FIELD
       - JIRA_PROJECT
-      - DB_USERNAME
-      - DB_PASSWORD
-      - DB_NAME
-      - DB_HOST
-      - DB_PORT
+      - DB_USERNAME=${POSTGRES_USER}
+      - DB_PASSWORD=${POSTGRES_PASSWORD}
+      - DB_NAME=${POSTGRES_DB}
+      - DB_HOST=db
+      - DB_PORT=5432
 
   jiraissuecalculator:
     image: bazel/cmd/jiraissuecalculator:image
     environment:
-      - DB_USERNAME
-      - DB_PASSWORD
-      - DB_NAME
-      - DB_HOST
-      - DB_PORT
+      - DB_USERNAME=${POSTGRES_USER}
+      - DB_PASSWORD=${POSTGRES_PASSWORD}
+      - DB_NAME=${POSTGRES_DB}
+      - DB_HOST=db
+      - DB_PORT=5432
       - JIRA_PROJECT
+
+  metabase:
+    image: metabase/metabase
+    volumes:
+      - metabase_data:/metabase-data
+    ports:
+      - "3000:3000"
+    environment:
+      MB_DB_TYPE: postgres
+      MB_DB_DBNAME: metabase
+      MB_DB_USER: ${MB_DB_USER}
+      MB_DB_PASS: ${MB_DB_PASSWORD} 
+      MB_DB_HOST: metabasedb
 
 volumes:
   db_data:
+  metabase_db_data:
+  metabase_data:
