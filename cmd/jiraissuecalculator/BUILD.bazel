@@ -6,6 +6,7 @@ go_library(
     srcs = ["main.go"],
     importpath = "github.com/stebennett/squad-dashboard/cmd/jiraissuecalculator",
     visibility = ["//visibility:private"],
+    deps = ["//pkg/jirarepository"],
 )
 
 go_binary(

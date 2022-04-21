@@ -9,6 +9,7 @@ import (
 )
 
 type JiraRepository interface {
+	GetIssues(ctx context.Context, project string) ([]jiramodels.JiraIssue, error)
 	SaveIssue(ctx context.Context, project string, jiraIssue jiramodels.JiraIssue) (int64, error)
 	SaveTransition(ctx context.Context, issueKey string, jiraTransition []jiramodels.JiraTransition) (int64, error)
 	GetIssuesWithStateTransition(ctx context.Context, toState string) ([]string, error)
@@ -29,6 +30,33 @@ func NewPostgresJiraRepository(db *sql.DB) *PostgresJiraRepository {
 	return &PostgresJiraRepository{
 		db: db,
 	}
+}
+
+func (p *PostgresJiraRepository) GetIssues(ctx context.Context, project string) ([]jiramodels.JiraIssue, error) {
+	selectStatement := `
+		SELECT issue_key, parent_key, created_at, updated_at, issue_type
+		FROM jira_issues
+		WHERE project = $1
+	`
+	rows, err := p.db.QueryContext(ctx, selectStatement, project)
+	if err != nil {
+		return []jiramodels.JiraIssue{}, err
+	}
+
+	var result = []jiramodels.JiraIssue{}
+
+	for rows.Next() {
+		issue := jiramodels.JiraIssue{}
+
+		err = rows.Scan(&issue.Key, &issue.ParentKey, &issue.CreatedAt, &issue.UpdatedAt, &issue.IssueType)
+		if err != nil {
+			return result, err
+		}
+
+		result = append(result, issue)
+	}
+
+	return result, nil
 }
 
 func (p *PostgresJiraRepository) SaveIssue(ctx context.Context, project string, jiraIssue jiramodels.JiraIssue) (int64, error) {
@@ -144,11 +172,11 @@ func (p *PostgresJiraRepository) GetTransitionsForIssue(ctx context.Context, iss
 
 func (p *PostgresJiraRepository) SaveCreateWeekDate(ctx context.Context, issueKey string, year int, week int) (int64, error) {
 	insertStatement := `
-		INSERT INTO jira_issues_calculations(issue_key, create_week, create_year)
+		INSERT INTO jira_issues_calculations(issue_key, week_create, year_create)
 		VALUES ($1, $2, $3)
 		ON CONFLICT (issue_key)
 		DO UPDATE
-		SET create_week = $2, create_year = $3
+		SET week_create = $2, year_create = $3
 		WHERE jira_issues_calculations.issue_key = $1
 	`
 
