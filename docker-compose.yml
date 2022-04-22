@@ -61,6 +61,7 @@ services:
       - JIRA_PROJECT
       - WORK_START_STATES
       - WORK_TODO_STATES
+      - WORK_COMPLETE_STATES
 
   metabase:
     image: metabase/metabase

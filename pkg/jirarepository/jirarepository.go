@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/lib/pq"
-	_ "github.com/lib/pq"
 	"github.com/stebennett/squad-dashboard/pkg/jiramodels"
 )
 
@@ -15,6 +14,7 @@ type JiraRepository interface {
 	SaveIssue(ctx context.Context, project string, jiraIssue jiramodels.JiraIssue) (int64, error)
 	SaveTransition(ctx context.Context, issueKey string, jiraTransition []jiramodels.JiraTransition) (int64, error)
 	GetTransitionTimeByStateChanges(ctx context.Context, project string, fromStates []string, toStates []string) (map[string]time.Time, error)
+	GetTransitionTimeByToState(ctx context.Context, project string, toStates []string) (map[string]time.Time, error)
 	GetTransitionsForIssue(ctx context.Context, issueKey string) ([]jiramodels.JiraTransition, error)
 	SaveCreateWeekDate(ctx context.Context, issueKey string, year int, week int) (int64, error)
 	SaveStartWeekDate(ctx context.Context, issueKey string, year int, week int) (int64, error)
@@ -149,6 +149,37 @@ func (p *PostgresJiraRepository) GetTransitionTimeByStateChanges(ctx context.Con
 	return result, nil
 }
 
+func (p *PostgresJiraRepository) GetTransitionTimeByToState(ctx context.Context, project string, toStates []string) (map[string]time.Time, error) {
+	selectStatement := `
+		SELECT jira_transitions.issue_key, MAX(jira_transitions.created_at)
+		FROM jira_transitions
+		INNER JOIN jira_issues ON jira_transitions.issue_key = jira_issues.issue_key
+		WHERE jira_transitions.to_state = ANY($1) 
+		AND jira_issues.project = $2
+		GROUP BY jira_transitions.issue_key
+	`
+	var result = make(map[string]time.Time)
+
+	rows, err := p.db.QueryContext(ctx, selectStatement, pq.Array(toStates), project)
+	if err != nil {
+		return result, err
+	}
+
+	for rows.Next() {
+		var issueKey string
+		var transitionTime time.Time
+
+		err = rows.Scan(&issueKey, &transitionTime)
+		if err != nil {
+			return result, nil
+		}
+
+		result[issueKey] = transitionTime
+	}
+
+	return result, nil
+}
+
 func (p *PostgresJiraRepository) GetTransitionsForIssue(ctx context.Context, issueKey string) ([]jiramodels.JiraTransition, error) {
 	selectStatement := `
 		SELECT from_state, to_state, created_at
@@ -221,19 +252,19 @@ func (p *PostgresJiraRepository) SaveStartWeekDate(ctx context.Context, issueKey
 
 func (p *PostgresJiraRepository) SaveCompleteWeekDate(ctx context.Context, issueKey string, year int, week int) (int64, error) {
 	insertStatement := `
-		INSERT INTO jira_issues_calculations(issue_key, complete_week, complete_year)
+		INSERT INTO jira_issues_calculations(issue_key, year_complete, week_complete)
 		VALUES ($1, $2, $3)
 		ON CONFLICT (issue_key)
 		DO UPDATE
-		SET complete_week = $2, complete_year = $3
+		SET year_complete = $2, week_complete = $3
 		WHERE jira_issues_calculations.issue_key = $1
 	`
 
 	result, err := p.db.ExecContext(ctx,
 		insertStatement,
 		issueKey,
-		week,
 		year,
+		week,
 	)
 
 	if err != nil {

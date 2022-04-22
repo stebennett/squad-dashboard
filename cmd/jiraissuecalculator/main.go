@@ -13,9 +13,10 @@ import (
 )
 
 type Environment struct {
-	JiraProject     string `env:"JIRA_PROJECT,required=true"`
-	WorkToDoStates  string `env:"WORK_TODO_STATES,required=true"`
-	WorkStartStates string `env:"WORK_START_STATES,required=true"`
+	JiraProject        string `env:"JIRA_PROJECT,required=true"`
+	WorkToDoStates     string `env:"WORK_TODO_STATES,required=true"`
+	WorkStartStates    string `env:"WORK_START_STATES,required=true"`
+	WorkCompleteStates string `env:"WORK_COMPLETE_STATES,required=true"`
 }
 
 func main() {
@@ -46,6 +47,11 @@ func main() {
 	log.Println("Completed update of started year-week for issues")
 
 	// fetch all issues completed and set complete year-week
+	_, err = setCompleteYearWeek(issueRepo, environment.JiraProject, strings.Split(environment.WorkCompleteStates, ","))
+	if err != nil {
+		log.Fatalf("Failed to set completed year-week for issues. %s", err)
+	}
+	log.Println("Completed update of completed year-week for issues")
 
 	// fetch all issues completed and set cycle time
 
@@ -102,6 +108,28 @@ func setStartYearWeek(repo jirarepository.JiraRepository, project string, workSt
 		year, week := transitionTime.UTC().ISOWeek()
 
 		rowsChanged, err := repo.SaveStartWeekDate(context.Background(), issueKey, year, week)
+		if err != nil {
+			return updatedCount, err
+		}
+
+		updatedCount = updatedCount + rowsChanged
+	}
+
+	return updatedCount, nil
+}
+
+func setCompleteYearWeek(repo jirarepository.JiraRepository, project string, workCompleteStates []string) (int64, error) {
+	transitions, err := repo.GetTransitionTimeByToState(context.Background(), project, workCompleteStates)
+	if err != nil {
+		return -1, err
+	}
+
+	updatedCount := int64(0)
+
+	for issueKey, transitionTime := range transitions {
+		year, week := transitionTime.UTC().ISOWeek()
+
+		rowsChanged, err := repo.SaveCompleteWeekDate(context.Background(), issueKey, year, week)
 		if err != nil {
 			return updatedCount, err
 		}
