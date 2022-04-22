@@ -9,13 +9,13 @@ import (
 	"github.com/stebennett/squad-dashboard/pkg/jiramodels"
 )
 
-func calculateCycleTime(transitions []jiramodels.JiraTransition, startState string, stopState string) (int, error) {
+func CalculateCycleTime(transitions []jiramodels.JiraTransition, startState string, stopState string) (int, error) {
 	// filter only to start states
-	startingDates := filter(transitions, func(item jiramodels.JiraTransition) bool {
+	startingDates := Filter(transitions, func(item jiramodels.JiraTransition) bool {
 		return item.ToState == startState
 	})
 	// filter only to stop states
-	stoppingDates := filter(transitions, func(item jiramodels.JiraTransition) bool {
+	stoppingDates := Filter(transitions, func(item jiramodels.JiraTransition) bool {
 		return item.ToState == stopState
 	})
 
@@ -28,11 +28,11 @@ func calculateCycleTime(transitions []jiramodels.JiraTransition, startState stri
 	})
 
 	if len(startingDates) == 0 {
-		return 0, errors.New("Failed to calculate cycle times. No starting states found in transitions.")
+		return 0, errors.New("failed to calculate cycle times. No starting states found in transitions")
 	}
 
 	if len(stoppingDates) == 0 {
-		return 0, errors.New("Failed to calculate cycle times. No stopping states found in transitions.")
+		return 0, errors.New("failed to calculate cycle times. No stopping states found in transitions")
 	}
 
 	startDate := startingDates[0].TransitionedAt
@@ -47,14 +47,14 @@ func calculateCycleTime(transitions []jiramodels.JiraTransition, startState stri
 	return daysBetween, nil
 }
 
-func caculateLeadTime(transitions []jiramodels.JiraTransition, createdAt time.Time, stopState string) (int, error) {
+func CaculateLeadTime(transitions []jiramodels.JiraTransition, createdAt time.Time, stopState string) (int, error) {
 	// filter only to stop states
-	stoppingDates := filter(transitions, func(item jiramodels.JiraTransition) bool {
+	stoppingDates := Filter(transitions, func(item jiramodels.JiraTransition) bool {
 		return item.ToState == stopState
 	})
 
 	if len(stoppingDates) == 0 {
-		return 0, errors.New("Failed to calculate lead times. No stopping states found in transitions.")
+		return 0, errors.New("failed to calculate lead times. No stopping states found in transitions")
 	}
 
 	stopDate := stoppingDates[len(stoppingDates)-1].TransitionedAt
@@ -67,21 +67,21 @@ func caculateLeadTime(transitions []jiramodels.JiraTransition, createdAt time.Ti
 	return daysBetween, nil
 }
 
-func sortByTransitionAtAscending(transitions []jiramodels.JiraTransition) []jiramodels.JiraTransition {
+func SortByTransitionAtAscending(transitions []jiramodels.JiraTransition) []jiramodels.JiraTransition {
 	sort.Slice(transitions, func(i, j int) bool {
 		return transitions[i].TransitionedAt.Before(transitions[j].TransitionedAt)
 	})
 	return transitions
 }
 
-func sortByTransitionAtDescending(transitions []jiramodels.JiraTransition) []jiramodels.JiraTransition {
+func SortByTransitionAtDescending(transitions []jiramodels.JiraTransition) []jiramodels.JiraTransition {
 	sort.Slice(transitions, func(i, j int) bool {
 		return transitions[i].TransitionedAt.After(transitions[j].TransitionedAt)
 	})
 	return transitions
 }
 
-func filter(transitions []jiramodels.JiraTransition, fn func(transition jiramodels.JiraTransition) bool) (results []jiramodels.JiraTransition) {
+func Filter(transitions []jiramodels.JiraTransition, fn func(transition jiramodels.JiraTransition) bool) (results []jiramodels.JiraTransition) {
 	for _, transition := range transitions {
 		if fn(transition) {
 			results = append(results, transition)

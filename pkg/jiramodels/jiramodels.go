@@ -11,6 +11,7 @@ type JiraIssue struct {
 }
 
 type JiraTransition struct {
+	Key            string
 	FromState      string
 	ToState        string
 	TransitionedAt time.Time

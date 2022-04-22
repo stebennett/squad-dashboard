@@ -4,6 +4,7 @@ services:
 
   db:
     image: postgres:14.1
+    command: ["postgres", "-c", "log_statement=all"]
     volumes:
       - db_data:/var/lib/postgresql/data
     environment:
@@ -58,6 +59,8 @@ services:
       - DB_HOST=db
       - DB_PORT=5432
       - JIRA_PROJECT
+      - WORK_START_STATES
+      - WORK_TODO_STATES
 
   metabase:
     image: metabase/metabase
