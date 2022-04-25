@@ -9,36 +9,8 @@ import (
 	"github.com/stebennett/squad-dashboard/pkg/jiramodels"
 )
 
-func CalculateCycleTime(transitions []jiramodels.JiraTransition, startState string, stopState string) (int, error) {
-	// filter only to start states
-	startingDates := Filter(transitions, func(item jiramodels.JiraTransition) bool {
-		return item.ToState == startState
-	})
-	// filter only to stop states
-	stoppingDates := Filter(transitions, func(item jiramodels.JiraTransition) bool {
-		return item.ToState == stopState
-	})
-
-	// sort both ascending
-	sort.Slice(startingDates, func(i, j int) bool {
-		return startingDates[i].TransitionedAt.Before(startingDates[j].TransitionedAt)
-	})
-	sort.Slice(stoppingDates, func(i, j int) bool {
-		return stoppingDates[i].TransitionedAt.Before(stoppingDates[j].TransitionedAt)
-	})
-
-	if len(startingDates) == 0 {
-		return 0, errors.New("failed to calculate cycle times. No starting states found in transitions")
-	}
-
-	if len(stoppingDates) == 0 {
-		return 0, errors.New("failed to calculate cycle times. No stopping states found in transitions")
-	}
-
-	startDate := startingDates[0].TransitionedAt
-	stopDate := stoppingDates[len(stoppingDates)-1].TransitionedAt
-
-	daysBetween := dateutil.DaysBetween(startDate, stopDate)
+func CalculateCycleTime(startDate time.Time, completedDate time.Time) (int, error) {
+	daysBetween := dateutil.DaysBetween(startDate, completedDate)
 	if daysBetween == 0 {
 		// add a day for minimum length
 		daysBetween = 1

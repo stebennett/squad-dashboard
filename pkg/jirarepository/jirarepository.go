@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/lib/pq"
+	"github.com/stebennett/squad-dashboard/pkg/calculatormodels"
 	"github.com/stebennett/squad-dashboard/pkg/jiramodels"
 )
 
@@ -22,6 +23,7 @@ type JiraRepository interface {
 	SaveCycleTime(ctx context.Context, issueKey string, cycleTime int, workingCycleTime int) (int64, error)
 	SaveLeadTime(ctx context.Context, issueKey string, leadTime int, workingLeadTime int) (int64, error)
 	SaveSystemDelayTime(ctx context.Context, issueKey string, systemDelayTime int, workingSystemDelayTime int) (int64, error)
+	GetCompletedIssues(ctx context.Context, project string) (map[string]calculatormodels.IssueCalculations, error)
 }
 
 type PostgresJiraRepository struct {
@@ -352,4 +354,48 @@ func (p *PostgresJiraRepository) SaveSystemDelayTime(ctx context.Context, issueK
 	}
 
 	return result.RowsAffected()
+}
+
+func (p *PostgresJiraRepository) GetCompletedIssues(ctx context.Context, project string) (map[string]calculatormodels.IssueCalculations, error) {
+	selectStatement := `
+	SELECT jira_issues_calculations.issue_key, 
+		jira_issues_calculations.cycle_time, 
+		jira_issues_calculations.lead_time, 
+		jira_issues_calculations.system_delay_time, 
+		jira_issues_calculations.issue_created_at, 
+		jira_issues_calculations.issue_started_at, 
+		jira_issues_calculations.issue_completed_at
+	FROM jira_issues_calculations
+	INNER JOIN jira_issues ON jira_issues_calculations.issue_key = jira_issues.issue_key
+	WHERE jira_issues_calculations.issue_completed_at IS NOT NULL
+	AND jira_issues_calculations.issue_started_at IS NOT NULL
+	AND jira_issues.project = $1
+`
+	var result = make(map[string]calculatormodels.IssueCalculations)
+
+	rows, err := p.db.QueryContext(ctx, selectStatement, project)
+	if err != nil {
+		return result, err
+	}
+
+	for rows.Next() {
+		var issueKey string
+		var calculations calculatormodels.IssueCalculations
+
+		err = rows.Scan(&issueKey,
+			&calculations.CycleTime,
+			&calculations.LeadTime,
+			&calculations.LeadTime,
+			&calculations.IssueCreatedAt,
+			&calculations.IssueStartedAt,
+			&calculations.IssueCompletedAt,
+		)
+		if err != nil {
+			return result, err
+		}
+
+		result[issueKey] = calculations
+	}
+
+	return result, nil
 }

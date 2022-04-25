@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/Netflix/go-env"
+	"github.com/stebennett/squad-dashboard/cmd/jiraissuecalculator/calculator"
 	"github.com/stebennett/squad-dashboard/pkg/jirarepository"
 )
 
@@ -54,11 +55,11 @@ func main() {
 	log.Println("Completed update of completed year-week for issues")
 
 	// fetch all issues completed and set cycle time
-	// _, err = setCycleTimeForCompletedIssues(issueRepo, environment.JiraProject)
-	// if err != nil {
-	// 	log.Fatalf("Failed to set cycle time")
-	// }
-	// log.Println("Completed updating cycle time for completed issues")
+	_, err = setCycleTimeForCompletedIssues(issueRepo, environment.JiraProject)
+	if err != nil {
+		log.Fatalf("Failed to set cycle time. %s", err)
+	}
+	log.Println("Completed updating cycle time for completed issues")
 
 	// fetch all issues completed and set lead time
 
@@ -145,6 +146,36 @@ func setCompleteDates(repo jirarepository.JiraRepository, project string, workCo
 	return updatedCount, nil
 }
 
-// func setCycleTimeForCompletedIssues(repo jirarepository.JiraRepository, project string) (int64, error) {
-// 	repo.GetCompletedIssues(context.Background(), project)
-// }
+func setCycleTimeForCompletedIssues(repo jirarepository.JiraRepository, project string) (int64, error) {
+	calculations, err := repo.GetCompletedIssues(context.Background(), project)
+	if err != nil {
+		return -1, err
+	}
+
+	updatedCount := int64(0)
+
+	for issueKey, calculations := range calculations {
+		if !calculations.IssueStartedAt.Valid {
+			return updatedCount, fmt.Errorf("null start time for issue %s", issueKey)
+		}
+
+		if !calculations.IssueCompletedAt.Valid {
+			return updatedCount, fmt.Errorf("null completed time for issue %s", issueKey)
+		}
+
+		cycleTime, err := calculator.CalculateCycleTime(calculations.IssueStartedAt.Time, calculations.IssueCompletedAt.Time)
+
+		if err != nil {
+			return updatedCount, err
+		}
+
+		rowsChanged, err := repo.SaveCycleTime(context.Background(), issueKey, cycleTime, -1)
+		if err != nil {
+			return updatedCount, err
+		}
+
+		updatedCount = updatedCount + rowsChanged
+	}
+
+	return updatedCount, nil
+}

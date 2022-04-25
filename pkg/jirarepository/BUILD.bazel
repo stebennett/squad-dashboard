@@ -6,6 +6,7 @@ go_library(
     importpath = "github.com/stebennett/squad-dashboard/pkg/jirarepository",
     visibility = ["//visibility:public"],
     deps = [
+        "//pkg/calculatormodels",
         "//pkg/jiramodels",
         "//vendor/github.com/lib/pq",
     ],
