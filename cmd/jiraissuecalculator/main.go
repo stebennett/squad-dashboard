@@ -33,27 +33,32 @@ func main() {
 	log.Printf("running updates for project %s", environment.JiraProject)
 
 	// fetch all issues and set create year-week
-	_, err = setCreateYearWeek(issueRepo, environment.JiraProject)
+	_, err = setCreateDates(issueRepo, environment.JiraProject)
 	if err != nil {
 		log.Fatalf("Failed to set created year-week for issues. %s", err)
 	}
 	log.Println("Completed update of created year-week for issues")
 
 	// fetch all issues started and set started year-week
-	_, err = setStartYearWeek(issueRepo, environment.JiraProject, strings.Split(environment.WorkStartStates, ","), strings.Split(environment.WorkToDoStates, ","))
+	_, err = setStartDates(issueRepo, environment.JiraProject, strings.Split(environment.WorkStartStates, ","), strings.Split(environment.WorkToDoStates, ","))
 	if err != nil {
 		log.Fatalf("Failed to set started year-week for issues. %s", err)
 	}
 	log.Println("Completed update of started year-week for issues")
 
 	// fetch all issues completed and set complete year-week
-	_, err = setCompleteYearWeek(issueRepo, environment.JiraProject, strings.Split(environment.WorkCompleteStates, ","))
+	_, err = setCompleteDates(issueRepo, environment.JiraProject, strings.Split(environment.WorkCompleteStates, ","))
 	if err != nil {
 		log.Fatalf("Failed to set completed year-week for issues. %s", err)
 	}
 	log.Println("Completed update of completed year-week for issues")
 
 	// fetch all issues completed and set cycle time
+	// _, err = setCycleTimeForCompletedIssues(issueRepo, environment.JiraProject)
+	// if err != nil {
+	// 	log.Fatalf("Failed to set cycle time")
+	// }
+	// log.Println("Completed updating cycle time for completed issues")
 
 	// fetch all issues completed and set lead time
 
@@ -74,7 +79,7 @@ func createIssueRepository() jirarepository.JiraRepository {
 	return jirarepository.NewPostgresJiraRepository(db)
 }
 
-func setCreateYearWeek(repo jirarepository.JiraRepository, project string) (int64, error) {
+func setCreateDates(repo jirarepository.JiraRepository, project string) (int64, error) {
 	issues, err := repo.GetIssues(context.Background(), project)
 	if err != nil {
 		return -1, err
@@ -85,7 +90,7 @@ func setCreateYearWeek(repo jirarepository.JiraRepository, project string) (int6
 	for _, issue := range issues {
 		year, week := issue.CreatedAt.UTC().ISOWeek()
 
-		rowsChanged, err := repo.SaveCreateWeekDate(context.Background(), issue.Key, year, week)
+		rowsChanged, err := repo.SaveCreateDates(context.Background(), issue.Key, year, week, issue.CreatedAt)
 		if err != nil {
 			return updatedCount, err
 		}
@@ -96,7 +101,7 @@ func setCreateYearWeek(repo jirarepository.JiraRepository, project string) (int6
 	return updatedCount, nil
 }
 
-func setStartYearWeek(repo jirarepository.JiraRepository, project string, workStartStates []string, workToDoStates []string) (int64, error) {
+func setStartDates(repo jirarepository.JiraRepository, project string, workStartStates []string, workToDoStates []string) (int64, error) {
 	transitions, err := repo.GetTransitionTimeByStateChanges(context.Background(), project, workToDoStates, workStartStates)
 	if err != nil {
 		return -1, err
@@ -107,7 +112,7 @@ func setStartYearWeek(repo jirarepository.JiraRepository, project string, workSt
 	for issueKey, transitionTime := range transitions {
 		year, week := transitionTime.UTC().ISOWeek()
 
-		rowsChanged, err := repo.SaveStartWeekDate(context.Background(), issueKey, year, week)
+		rowsChanged, err := repo.SaveStartDates(context.Background(), issueKey, year, week, transitionTime)
 		if err != nil {
 			return updatedCount, err
 		}
@@ -118,7 +123,7 @@ func setStartYearWeek(repo jirarepository.JiraRepository, project string, workSt
 	return updatedCount, nil
 }
 
-func setCompleteYearWeek(repo jirarepository.JiraRepository, project string, workCompleteStates []string) (int64, error) {
+func setCompleteDates(repo jirarepository.JiraRepository, project string, workCompleteStates []string) (int64, error) {
 	transitions, err := repo.GetTransitionTimeByToState(context.Background(), project, workCompleteStates)
 	if err != nil {
 		return -1, err
@@ -129,7 +134,7 @@ func setCompleteYearWeek(repo jirarepository.JiraRepository, project string, wor
 	for issueKey, transitionTime := range transitions {
 		year, week := transitionTime.UTC().ISOWeek()
 
-		rowsChanged, err := repo.SaveCompleteWeekDate(context.Background(), issueKey, year, week)
+		rowsChanged, err := repo.SaveCompleteDates(context.Background(), issueKey, year, week, transitionTime)
 		if err != nil {
 			return updatedCount, err
 		}
@@ -139,3 +144,7 @@ func setCompleteYearWeek(repo jirarepository.JiraRepository, project string, wor
 
 	return updatedCount, nil
 }
+
+// func setCycleTimeForCompletedIssues(repo jirarepository.JiraRepository, project string) (int64, error) {
+// 	repo.GetCompletedIssues(context.Background(), project)
+// }

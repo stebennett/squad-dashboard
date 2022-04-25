@@ -16,9 +16,9 @@ type JiraRepository interface {
 	GetTransitionTimeByStateChanges(ctx context.Context, project string, fromStates []string, toStates []string) (map[string]time.Time, error)
 	GetTransitionTimeByToState(ctx context.Context, project string, toStates []string) (map[string]time.Time, error)
 	GetTransitionsForIssue(ctx context.Context, issueKey string) ([]jiramodels.JiraTransition, error)
-	SaveCreateWeekDate(ctx context.Context, issueKey string, year int, week int) (int64, error)
-	SaveStartWeekDate(ctx context.Context, issueKey string, year int, week int) (int64, error)
-	SaveCompleteWeekDate(ctx context.Context, issueKey string, year int, week int) (int64, error)
+	SaveCreateDates(ctx context.Context, issueKey string, year int, week int, createdAt time.Time) (int64, error)
+	SaveStartDates(ctx context.Context, issueKey string, year int, week int, startedAt time.Time) (int64, error)
+	SaveCompleteDates(ctx context.Context, issueKey string, year int, week int, completedAt time.Time) (int64, error)
 	SaveCycleTime(ctx context.Context, issueKey string, cycleTime int, workingCycleTime int) (int64, error)
 	SaveLeadTime(ctx context.Context, issueKey string, leadTime int, workingLeadTime int) (int64, error)
 	SaveSystemDelayTime(ctx context.Context, issueKey string, systemDelayTime int, workingSystemDelayTime int) (int64, error)
@@ -207,13 +207,13 @@ func (p *PostgresJiraRepository) GetTransitionsForIssue(ctx context.Context, iss
 	return result, nil
 }
 
-func (p *PostgresJiraRepository) SaveCreateWeekDate(ctx context.Context, issueKey string, year int, week int) (int64, error) {
+func (p *PostgresJiraRepository) SaveCreateDates(ctx context.Context, issueKey string, year int, week int, createdAt time.Time) (int64, error) {
 	insertStatement := `
-		INSERT INTO jira_issues_calculations(issue_key, week_create, year_create)
-		VALUES ($1, $2, $3)
+		INSERT INTO jira_issues_calculations(issue_key, week_create, year_create, issue_created_at)
+		VALUES ($1, $2, $3, $4)
 		ON CONFLICT (issue_key)
 		DO UPDATE
-		SET week_create = $2, year_create = $3
+		SET week_create = $2, year_create = $3, issue_created_at = $4
 		WHERE jira_issues_calculations.issue_key = $1
 	`
 
@@ -222,6 +222,7 @@ func (p *PostgresJiraRepository) SaveCreateWeekDate(ctx context.Context, issueKe
 		issueKey,
 		week,
 		year,
+		createdAt,
 	)
 
 	if err != nil {
@@ -231,32 +232,13 @@ func (p *PostgresJiraRepository) SaveCreateWeekDate(ctx context.Context, issueKe
 	return result.RowsAffected()
 }
 
-func (p *PostgresJiraRepository) SaveStartWeekDate(ctx context.Context, issueKey string, year int, week int) (int64, error) {
+func (p *PostgresJiraRepository) SaveStartDates(ctx context.Context, issueKey string, year int, week int, startedAt time.Time) (int64, error) {
 	insertStatement := `
-		INSERT INTO jira_issues_calculations(issue_key, year_start, week_start)
-		VALUES ($1, $2, $3)
+		INSERT INTO jira_issues_calculations(issue_key, year_start, week_start, issue_started_at)
+		VALUES ($1, $2, $3, $4)
 		ON CONFLICT (issue_key)
 		DO UPDATE
-		SET year_start = $2, week_start = $3
-		WHERE jira_issues_calculations.issue_key = $1
-	`
-
-	result, err := p.db.ExecContext(ctx, insertStatement, issueKey, year, week)
-
-	if err != nil {
-		return -1, err
-	}
-
-	return result.RowsAffected()
-}
-
-func (p *PostgresJiraRepository) SaveCompleteWeekDate(ctx context.Context, issueKey string, year int, week int) (int64, error) {
-	insertStatement := `
-		INSERT INTO jira_issues_calculations(issue_key, year_complete, week_complete)
-		VALUES ($1, $2, $3)
-		ON CONFLICT (issue_key)
-		DO UPDATE
-		SET year_complete = $2, week_complete = $3
+		SET year_start = $2, week_start = $3, issue_started_at = $4
 		WHERE jira_issues_calculations.issue_key = $1
 	`
 
@@ -265,6 +247,32 @@ func (p *PostgresJiraRepository) SaveCompleteWeekDate(ctx context.Context, issue
 		issueKey,
 		year,
 		week,
+		startedAt,
+	)
+
+	if err != nil {
+		return -1, err
+	}
+
+	return result.RowsAffected()
+}
+
+func (p *PostgresJiraRepository) SaveCompleteDates(ctx context.Context, issueKey string, year int, week int, completedAt time.Time) (int64, error) {
+	insertStatement := `
+		INSERT INTO jira_issues_calculations(issue_key, year_complete, week_complete, issue_completed_at)
+		VALUES ($1, $2, $3, $4)
+		ON CONFLICT (issue_key)
+		DO UPDATE
+		SET year_complete = $2, week_complete = $3, issue_completed_at = $4
+		WHERE jira_issues_calculations.issue_key = $1
+	`
+
+	result, err := p.db.ExecContext(ctx,
+		insertStatement,
+		issueKey,
+		year,
+		week,
+		completedAt,
 	)
 
 	if err != nil {
