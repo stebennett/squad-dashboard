@@ -23,6 +23,12 @@ jiracollector: build-all db
 	bazel run --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/jiracollector:image
 	docker-compose up jiracollector
 
+.PHONY: githubprcollector
+githubprcollector: build-all db
+	bazel build --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/githubprcollector:image
+	bazel run --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/githubprcollector:image
+	docker-compose up githubprcollector
+
 .PHONY: jiraissuecalculator
 jiraissuecalculator: build-all db
 	bazel build --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/jiraissuecalculator:image
