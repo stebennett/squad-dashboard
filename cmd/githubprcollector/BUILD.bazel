@@ -6,6 +6,10 @@ go_library(
     srcs = ["main.go"],
     importpath = "github.com/stebennett/squad-dashboard/cmd/githubprcollector",
     visibility = ["//visibility:private"],
+    deps = [
+        "//pkg/githubservice",
+        "//vendor/github.com/Netflix/go-env",
+    ],
 )
 
 go_binary(

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"time"
 
@@ -26,25 +27,21 @@ type GithubTimestamp struct {
 }
 
 type GithubPullRequestResponse struct {
-	PullRequest []struct {
-		Id     int64 `json:"id"`
-		Number int   `json:"number"`
-		User   struct {
-			Login string `json:"login"`
-		}
-		Title     string          `json:"title"`
-		CreatedAt GithubTimestamp `json:"created_at"`
-		UpdatedAt GithubTimestamp `json:"updated_at"`
-		ClosedAt  GithubTimestamp `json:"closed_at"`
-		MergedAt  GithubTimestamp `json:"merged_at"`
+	Id     int64 `json:"id"`
+	Number int   `json:"number"`
+	User   struct {
+		Login string `json:"login"`
 	}
+	Title     string          `json:"title"`
+	CreatedAt GithubTimestamp `json:"created_at"`
+	UpdatedAt GithubTimestamp `json:"updated_at"`
+	ClosedAt  GithubTimestamp `json:"closed_at"`
+	MergedAt  GithubTimestamp `json:"merged_at"`
 }
 
 type GithubReposRequestResponse struct {
-	Repository []struct {
-		Id   int64  `json:"id"`
-		Name string `json:"name"`
-	}
+	Id   int64  `json:"id"`
+	Name string `json:"name"`
 }
 
 func NewGithubService(httpClient *http.Client, githubParams GithubParams) *GithubService {
@@ -63,6 +60,8 @@ func (g *GithubService) GetPullRequestsForRepo(organisation string, repository s
 }
 
 func (g *GithubService) getPullRequestsForRepo(url string, result []githubmodels.GithubPullRequest) ([]githubmodels.GithubPullRequest, error) {
+	log.Printf("fetching pull requests for repo from %s", url)
+
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return result, err
@@ -87,13 +86,13 @@ func (g *GithubService) getPullRequestsForRepo(url string, result []githubmodels
 		return result, err
 	}
 
-	var pullRequestsResponse GithubPullRequestResponse
+	var pullRequestsResponse []GithubPullRequestResponse
 	err = json.Unmarshal(body, &pullRequestsResponse)
 	if err != nil {
 		return []githubmodels.GithubPullRequest{}, err
 	}
 
-	for _, pr := range pullRequestsResponse.PullRequest {
+	for _, pr := range pullRequestsResponse {
 		githubPr := githubmodels.GithubPullRequest{
 			User:      pr.User.Login,
 			Title:     pr.Title,
@@ -133,6 +132,8 @@ func (g *GithubService) GetRepositoriesForOrganisation(organisation string) ([]s
 }
 
 func (g *GithubService) getRepositoriesForOrganisation(url string, result []string) ([]string, error) {
+	log.Printf("fetching repos for org from %s", url)
+
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return []string{}, err
@@ -153,13 +154,13 @@ func (g *GithubService) getRepositoriesForOrganisation(url string, result []stri
 		return []string{}, err
 	}
 
-	var reposResponse GithubReposRequestResponse
+	var reposResponse []GithubReposRequestResponse
 	err = json.Unmarshal(body, &reposResponse)
 	if err != nil {
 		return []string{}, err
 	}
 
-	for _, repo := range reposResponse.Repository {
+	for _, repo := range reposResponse {
 		result = append(result, repo.Name)
 	}
 
@@ -187,6 +188,10 @@ func (p *GithubTimestamp) UnmarshalJSON(bytes []byte) error {
 
 	if err != nil {
 		fmt.Printf("Failed to unmarshal timestamp - %s", err)
+		return err
+	}
+
+	if len(raw) == 0 {
 		return err
 	}
 

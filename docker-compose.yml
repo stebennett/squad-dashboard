@@ -56,6 +56,7 @@ services:
     environment:
       - GITHUB_USERNAME
       - GITHUB_ACCESS_TOKEN
+      - GITHUB_ORGANISATION
       - DB_USERNAME=${POSTGRES_USER}
       - DB_PASSWORD=${POSTGRES_PASSWORD}
       - DB_NAME=${POSTGRES_DB}
