@@ -72,6 +72,7 @@ func (g *GithubService) getPullRequestsForRepo(url string, result []githubmodels
 
 	query := req.URL.Query()
 	query.Add("state", "all")
+	query.Add("per_page", "100")
 	req.URL.RawQuery = query.Encode()
 
 	resp, err := g.httpClient.Do(req)
@@ -141,6 +142,11 @@ func (g *GithubService) getRepositoriesForOrganisation(url string, result []stri
 
 	req.SetBasicAuth(g.githubParams.User, g.githubParams.PersonalAccessToken)
 	req.Header.Set("Content-Type", "application/vnd.github.v3+json")
+
+	query := req.URL.Query()
+	query.Add("sort", "full_name")
+	query.Add("per_page", "100")
+	req.URL.RawQuery = query.Encode()
 
 	resp, err := g.httpClient.Do(req)
 	if err != nil {

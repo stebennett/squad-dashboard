@@ -7,6 +7,7 @@ go_library(
     importpath = "github.com/stebennett/squad-dashboard/cmd/githubprcollector",
     visibility = ["//visibility:private"],
     deps = [
+        "//pkg/githubrepository",
         "//pkg/githubservice",
         "//vendor/github.com/Netflix/go-env",
     ],
