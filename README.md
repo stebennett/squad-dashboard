@@ -1,11 +1,14 @@
 # squad-dashboard
 
-Monorepo inspiration: https://github.com/flowerinthenight/golang-monorepo
+This repository contains a number of commands which can be run to collect data from services and store in a local database for processing.
+
+- Jira Issue Collector - Finds issues based on a Jira Query and adds to database, including information about all transitions
+- Github PR Collector - Under development 🏗 - Collects Pull-Requests in an organisation and stores key information
 
 ## Updating BUILD files
 
 ````
- # bazel run //:gazelle
+ # make deps
 
 ````
 
@@ -14,47 +17,32 @@ Monorepo inspiration: https://github.com/flowerinthenight/golang-monorepo
 Building all services
 
 ````
- # bazel build //...
+ # make build-all
 ````
 
-Building an individual service
+Running all tests
 
 ````
- # bazel build //cmd/jiracollector
+ # make test
 ````
 
-Running a service (locally)
+Building and run a command in docker
 
 ````
- # bazel run //cmd/jiracollector
+ # make {command-name}
 ````
 
-Building a docker container (of a service, to a tar)
+## Populating the database
+
+1. run up the database
+2. run the migrations
+3. run your collectors
+4. run any calculator (if necessary)
+5. run metabase to inspect and build charts
 
 ````
- # bazel build --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/jiracollector:image
-````
-
-Loading a docker container in local docker registry
-
-````
- # bazel run --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/jiracollector:image
-````
-
-Running tests
-
-````
- # bazel test //pkg/util:util_test --test_output=errors
-````
-
-## Running all services
-
-1. build and run all the containers (see above)
-2. run docker compose to start the db
-3. run docker compose to run the other services
-
-````
- # docker compose up -d db
- # docker compose up -d migration
- # docker compose up
+ # make db
+ # make migrate
+ # make {command-name}
+ # make metabase
 ````

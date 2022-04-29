@@ -9,6 +9,11 @@ build-all:
 deps:
 	bazel run //:gazelle
 
+.PHONY: test
+test:
+	bazel test //...
+
+
 .PHONY: metabase
 metabase: 
 	docker-compose up -d metabasedb metabase
