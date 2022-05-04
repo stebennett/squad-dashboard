@@ -13,9 +13,8 @@ deps:
 test:
 	bazel test //...
 
-
 .PHONY: metabase
-metabase: 
+metabase: db
 	docker-compose --env-file ${ENV} up -d metabasedb metabase
 
 .PHONY: db

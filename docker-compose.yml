@@ -75,6 +75,9 @@ services:
       - WORK_START_STATES
       - WORK_TODO_STATES
       - WORK_COMPLETE_STATES
+      - JIRA_REPORT_START_DATE
+      - JIRA_REPORT_ISSUE_TYPES
+      - JIRA_REPORT_END_STATES
 
   metabase:
     image: metabase/metabase

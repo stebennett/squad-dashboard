@@ -3,6 +3,7 @@ package jirarepository
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"time"
 
 	"github.com/lib/pq"
@@ -19,11 +20,16 @@ type JiraRepository interface {
 	GetTransitionsForIssue(ctx context.Context, issueKey string) ([]jiramodels.JiraTransition, error)
 	SaveCreateDates(ctx context.Context, issueKey string, year int, week int, createdAt time.Time) (int64, error)
 	SaveStartDates(ctx context.Context, issueKey string, year int, week int, startedAt time.Time) (int64, error)
-	SaveCompleteDates(ctx context.Context, issueKey string, year int, week int, completedAt time.Time) (int64, error)
+	SaveCompleteDates(ctx context.Context, issueKey string, year int, week int, completedAt time.Time, endState string) (int64, error)
 	SaveCycleTime(ctx context.Context, issueKey string, cycleTime int, workingCycleTime int) (int64, error)
 	SaveLeadTime(ctx context.Context, issueKey string, leadTime int, workingLeadTime int) (int64, error)
 	SaveSystemDelayTime(ctx context.Context, issueKey string, systemDelayTime int, workingSystemDelayTime int) (int64, error)
 	GetCompletedIssues(ctx context.Context, project string) (map[string]calculatormodels.IssueCalculations, error)
+	GetIssuesStartedBetweenDates(ctx context.Context, project string, startDate time.Time, endDate time.Time, issueTypes []string) ([]string, error)
+	SetIssuesStartedInWeekStarting(ctx context.Context, project string, startDate time.Time, count int) (int64, error)
+	GetIssuesCompletedBetweenDates(ctx context.Context, project string, startDate time.Time, endDate time.Time, issueTypes []string, endStates []string) ([]string, error)
+	SetIssuesCompletedInWeekStarting(ctx context.Context, project string, startDate time.Time, count int) (int64, error)
+	GetEndStateForIssue(ctx context.Context, issueKey string, transitionDate time.Time) (string, error)
 }
 
 type PostgresJiraRepository struct {
@@ -259,13 +265,13 @@ func (p *PostgresJiraRepository) SaveStartDates(ctx context.Context, issueKey st
 	return result.RowsAffected()
 }
 
-func (p *PostgresJiraRepository) SaveCompleteDates(ctx context.Context, issueKey string, year int, week int, completedAt time.Time) (int64, error) {
+func (p *PostgresJiraRepository) SaveCompleteDates(ctx context.Context, issueKey string, year int, week int, completedAt time.Time, endState string) (int64, error) {
 	insertStatement := `
-		INSERT INTO jira_issues_calculations(issue_key, year_complete, week_complete, issue_completed_at)
-		VALUES ($1, $2, $3, $4)
+		INSERT INTO jira_issues_calculations(issue_key, year_complete, week_complete, issue_completed_at, issue_end_state)
+		VALUES ($1, $2, $3, $4, $5)
 		ON CONFLICT (issue_key)
 		DO UPDATE
-		SET year_complete = $2, week_complete = $3, issue_completed_at = $4
+		SET year_complete = $2, week_complete = $3, issue_completed_at = $4, issue_end_state = $5
 		WHERE jira_issues_calculations.issue_key = $1
 	`
 
@@ -275,6 +281,7 @@ func (p *PostgresJiraRepository) SaveCompleteDates(ctx context.Context, issueKey
 		year,
 		week,
 		completedAt,
+		endState,
 	)
 
 	if err != nil {
@@ -398,4 +405,166 @@ func (p *PostgresJiraRepository) GetCompletedIssues(ctx context.Context, project
 	}
 
 	return result, nil
+}
+
+func (p *PostgresJiraRepository) GetIssuesStartedBetweenDates(ctx context.Context, project string, startDate time.Time, endDate time.Time, issueTypes []string) ([]string, error) {
+	selectStatement := `
+		SELECT jira_issues_calculations.issue_key from jira_issues_calculations
+		INNER JOIN jira_issues ON jira_issues_calculations.issue_key = jira_issues.issue_key
+		WHERE jira_issues.project = $1
+		AND jira_issues_calculations.issue_started_at >= $2
+		AND jira_issues_calculations.issue_started_at < $3
+		AND jira_issues.issue_type = ANY($4)
+	`
+
+	var result []string
+
+	rows, err := p.db.QueryContext(ctx,
+		selectStatement,
+		project,
+		startDate,
+		endDate,
+		pq.Array(issueTypes),
+	)
+
+	if err != nil {
+		return result, err
+	}
+
+	for rows.Next() {
+		var issueKey string
+
+		err = rows.Scan(&issueKey)
+		if err != nil {
+			return result, err
+		}
+
+		result = append(result, issueKey)
+	}
+
+	return result, nil
+}
+
+func (p *PostgresJiraRepository) SetIssuesStartedInWeekStarting(ctx context.Context, project string, startDate time.Time, count int) (int64, error) {
+	insertStatement := `
+		INSERT INTO jira_issues_reports(project, week_start, number_of_items_started)
+		VALUES ($1, $2, $3)
+		ON CONFLICT (project, week_start)
+		DO UPDATE
+		SET number_of_items_started = $3
+		WHERE jira_issues_reports.project = $1 AND jira_issues_reports.week_start = $2
+	`
+
+	result, err := p.db.ExecContext(ctx,
+		insertStatement,
+		project,
+		startDate,
+		count,
+	)
+
+	if err != nil {
+		return -1, err
+	}
+
+	return result.RowsAffected()
+}
+
+func (p *PostgresJiraRepository) GetIssuesCompletedBetweenDates(ctx context.Context, project string, startDate time.Time, endDate time.Time, issueTypes []string, endStates []string) ([]string, error) {
+	selectStatement := `
+		SELECT jira_issues_calculations.issue_key from jira_issues_calculations
+		INNER JOIN jira_issues ON jira_issues_calculations.issue_key = jira_issues.issue_key
+		WHERE jira_issues.project = $1
+		AND jira_issues_calculations.issue_completed_at >= $2
+		AND jira_issues_calculations.issue_completed_at < $3
+		AND jira_issues_calculations.issue_end_state = ANY($5)
+		AND jira_issues.issue_type = ANY($4)
+	`
+
+	var result []string
+
+	rows, err := p.db.QueryContext(ctx,
+		selectStatement,
+		project,
+		startDate,
+		endDate,
+		pq.Array(issueTypes),
+		pq.Array(endStates),
+	)
+
+	if err != nil {
+		return result, err
+	}
+
+	for rows.Next() {
+		var issueKey string
+
+		err = rows.Scan(&issueKey)
+		if err != nil {
+			return result, err
+		}
+
+		result = append(result, issueKey)
+	}
+
+	return result, nil
+}
+
+func (p *PostgresJiraRepository) SetIssuesCompletedInWeekStarting(ctx context.Context, project string, startDate time.Time, count int) (int64, error) {
+	insertStatement := `
+		INSERT INTO jira_issues_reports(project, week_start, number_of_items_completed)
+		VALUES ($1, $2, $3)
+		ON CONFLICT (project, week_start)
+		DO UPDATE
+		SET number_of_items_completed = $3
+		WHERE jira_issues_reports.project = $1 AND jira_issues_reports.week_start = $2
+	`
+
+	result, err := p.db.ExecContext(ctx,
+		insertStatement,
+		project,
+		startDate,
+		count,
+	)
+
+	if err != nil {
+		return -1, err
+	}
+
+	return result.RowsAffected()
+}
+
+func (p *PostgresJiraRepository) GetEndStateForIssue(ctx context.Context, issueKey string, transitionDate time.Time) (string, error) {
+	selectStatement := `
+		SELECT jira_transitions.to_state from jira_transitions
+		WHERE jira_transitions.issue_key = $1
+		AND jira_transitions.created_at = $2
+	`
+
+	rows, err := p.db.QueryContext(ctx,
+		selectStatement,
+		issueKey,
+		transitionDate,
+	)
+
+	if err != nil {
+		return "", err
+	}
+
+	var result []string
+	for rows.Next() {
+		var issueKey string
+
+		err = rows.Scan(&issueKey)
+		if err != nil {
+			return "", err
+		}
+
+		result = append(result, issueKey)
+	}
+
+	if len(result) != 1 {
+		return "", fmt.Errorf("unexpected length of transitions: %d", len(result))
+	}
+
+	return result[0], nil
 }
