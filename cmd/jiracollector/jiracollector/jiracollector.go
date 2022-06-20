@@ -26,16 +26,17 @@ func NewJiraCollector(jira *jiraservice.JiraService, repo jirarepository.JiraRep
 }
 
 func (jc *JiraCollector) Execute(project string, jql string, epicField string) error {
-	return jc.execute(project, 0, 100, jql, epicField, jc.repo.SaveIssue, jc.repo.SaveTransition)
+	return jc.execute(project, 0, 100, jql, epicField, jc.repo.SaveIssue, jc.repo.SaveTransition, jc.repo.SaveIssueLabels)
 }
 
 func (jc *JiraCollector) execute(project string, startAt int, maxResults int, jql string, epicField string,
 	saveIssue func(ctx context.Context, project string, jiraIssue jiramodels.JiraIssue) (int64, error),
-	saveTransition func(ctx context.Context, issueKey string, jiraTransitions []jiramodels.JiraTransition) (int64, error)) error {
+	saveTransition func(ctx context.Context, issueKey string, jiraTransitions []jiramodels.JiraTransition) (int64, error),
+	saveIssueLabels func(ctx context.Context, issueKey string, labels []string) (int64, error)) error {
 
 	query := jiraservice.JiraSearchQuery{
 		Jql:        jql,
-		Fields:     []string{"summary", "issuetype", epicField, "created", "updated"},
+		Fields:     []string{"summary", "issuetype", epicField, "created", "updated", "labels"},
 		Expand:     []string{"changelog"},
 		StartAt:    startAt,
 		MaxResults: maxResults,
@@ -65,6 +66,11 @@ func (jc *JiraCollector) execute(project string, startAt int, maxResults int, jq
 			log.Fatalf("Error: Failed to save issue %s - %s", saveableIssue.Key, err)
 		}
 
+		_, err = saveIssueLabels(context.Background(), saveableIssue.Key, saveableIssue.Labels)
+		if err != nil {
+			log.Fatalf("Error: Failed to save issue labels %s, %s - %s", saveableIssue.Key, saveableIssue.Labels, err)
+		}
+
 		transitions, err := jc.fetchTransitions(issue)
 		if err != nil {
 			log.Fatalf("Error: Failed to get issue transitions for %s - %s", saveableIssue.Key, err)
@@ -82,7 +88,7 @@ func (jc *JiraCollector) execute(project string, startAt int, maxResults int, jq
 		return nil
 	}
 
-	return jc.execute(project, nextPageStartAt, maxResults, jql, epicField, saveIssue, saveTransition)
+	return jc.execute(project, nextPageStartAt, maxResults, jql, epicField, saveIssue, saveTransition, saveIssueLabels)
 }
 
 func (jc *JiraCollector) fetchTransitions(jiraIssue models.JiraResultIssue) ([]jiramodels.JiraTransition, error) {
@@ -118,7 +124,7 @@ func (jc *JiraCollector) fetchTransitionsFromIssue(issueKey string, startAt int,
 
 	nextResults, err := jc.fetchTransitionsFromIssue(issueKey, nextStartAt, maxResults)
 	if err != nil {
-
+		return []models.JiraHistory{}, err
 	}
 
 	return append(nextResults, jiraResult.Histories...), nil

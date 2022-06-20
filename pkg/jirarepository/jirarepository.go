@@ -30,6 +30,7 @@ type JiraRepository interface {
 	GetIssuesCompletedBetweenDates(ctx context.Context, project string, startDate time.Time, endDate time.Time, issueTypes []string, endStates []string) ([]string, error)
 	SetIssuesCompletedInWeekStarting(ctx context.Context, project string, startDate time.Time, count int) (int64, error)
 	GetEndStateForIssue(ctx context.Context, issueKey string, transitionDate time.Time) (string, error)
+	SaveIssueLabels(ctx context.Context, issueKey string, label []string) (int64, error)
 }
 
 type PostgresJiraRepository struct {
@@ -567,4 +568,35 @@ func (p *PostgresJiraRepository) GetEndStateForIssue(ctx context.Context, issueK
 	}
 
 	return result[0], nil
+}
+
+func (p *PostgresJiraRepository) SaveIssueLabels(ctx context.Context, issueKey string, labels []string) (int64, error) {
+	insertStatement := `
+		INSERT INTO jira_issue_labels(issue_key, label)
+		VALUES ($1, $2)
+		ON CONFLICT (issue_key, label)
+		DO NOTHING
+	`
+	var inserted int64 = 0
+
+	for _, label := range labels {
+		result, err := p.db.ExecContext(ctx,
+			insertStatement,
+			issueKey,
+			label,
+		)
+
+		if err != nil {
+			return inserted, err
+		}
+
+		rowsAffected, err := result.RowsAffected()
+		if err != nil {
+			return inserted, err
+		}
+
+		inserted = inserted + rowsAffected
+	}
+
+	return inserted, nil
 }

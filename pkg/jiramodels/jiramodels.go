@@ -8,6 +8,7 @@ type JiraIssue struct {
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	ParentKey string
+	Labels    []string
 }
 
 type JiraTransition struct {

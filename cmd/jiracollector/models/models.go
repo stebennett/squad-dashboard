@@ -30,6 +30,7 @@ type JiraResultIssue struct {
 		EpicKey string        `json:"epicKey"`
 		Created JiraTimestamp `json:"created"`
 		Updated JiraTimestamp `json:"updated"`
+		Labels  []string      `json:"labels"`
 	} `json:"fields"`
 	ChangeLog struct {
 		StartAt    int           `json:"startAt"`
@@ -73,6 +74,7 @@ func Create(issue JiraResultIssue) (*jiramodels.JiraIssue, error) {
 		ParentKey: issue.Fields.EpicKey,
 		CreatedAt: issue.Fields.Created.Time.UTC(),
 		UpdatedAt: issue.Fields.Updated.Time.UTC(),
+		Labels:    issue.Fields.Labels,
 	}, nil
 }
 
