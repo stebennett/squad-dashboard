@@ -49,11 +49,18 @@ type PagerDutyOncallResponse struct {
 	Total  int  `json:"total"`
 }
 
-func (pds *PagerDutyService) GetOnCalls(since time.Time, until time.Time) ([]pagerdutymodels.OnCall, error) {
-	return pds.getOnCalls(0, 25, since, until)
+func NewPagerDutyService(httpClient *http.Client, params PagerDutyParams) *PagerDutyService {
+	return &PagerDutyService{
+		params:     params,
+		httpClient: httpClient,
+	}
 }
 
-func (pds *PagerDutyService) getOnCalls(offset int, limit int, since time.Time, until time.Time) ([]pagerdutymodels.OnCall, error) {
+func (pds *PagerDutyService) GetOnCalls(since time.Time, until time.Time) ([]pagerdutymodels.OnCall, error) {
+	return pds.getOnCalls(0, 25, since, until, []pagerdutymodels.OnCall{})
+}
+
+func (pds *PagerDutyService) getOnCalls(offset int, limit int, since time.Time, until time.Time, result []pagerdutymodels.OnCall) ([]pagerdutymodels.OnCall, error) {
 	log.Printf("Fetching PagerDuty Oncalls with offset %d", offset)
 
 	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("https://%s/oncalls", pds.params.BaseUrl), nil)
@@ -72,6 +79,8 @@ func (pds *PagerDutyService) getOnCalls(offset int, limit int, since time.Time, 
 	query.Add("until", until.Format(time.RFC3339))
 	req.URL.RawQuery = query.Encode()
 
+	log.Printf("query - %s", req.URL.RawQuery)
+
 	resp, err := pds.httpClient.Do(req)
 	if err != nil {
 		return []pagerdutymodels.OnCall{}, err
@@ -88,7 +97,6 @@ func (pds *PagerDutyService) getOnCalls(offset int, limit int, since time.Time, 
 		return []pagerdutymodels.OnCall{}, err
 	}
 
-	var result []pagerdutymodels.OnCall
 	for _, onCallResp := range oncallPageResponse.OnCalls {
 		onCall := pagerdutymodels.OnCall{
 			User: pagerdutymodels.PagerDutyEntitySummary{
@@ -112,14 +120,14 @@ func (pds *PagerDutyService) getOnCalls(offset int, limit int, since time.Time, 
 
 	if oncallPageResponse.More {
 		newOffset := offset + limit
-		nextResults, err := pds.getOnCalls(newOffset, limit, since, until)
+		newResult, err := pds.getOnCalls(newOffset, limit, since, until, result)
 		if err != nil {
 			return result, err
 		}
-		result = append(result, nextResults...)
+		result = append(result, newResult...)
 	}
 
-	return result, err
+	return result, nil
 }
 
 func (p *PagerDutyTimestamp) UnmarshalJSON(bytes []byte) error {
@@ -135,6 +143,6 @@ func (p *PagerDutyTimestamp) UnmarshalJSON(bytes []byte) error {
 		return err
 	}
 
-	p.Time, err = time.Parse("2006-01-02T15:04:05Z", raw)
+	p.Time, err = time.Parse(time.RFC3339, raw)
 	return err
 }

@@ -5,4 +5,5 @@ go_library(
     srcs = ["pagerdutyservice.go"],
     importpath = "github.com/stebennett/squad-dashboard/pkg/pagerdutyservice",
     visibility = ["//visibility:public"],
+    deps = ["//pkg/pagerdutymodels"],
 )

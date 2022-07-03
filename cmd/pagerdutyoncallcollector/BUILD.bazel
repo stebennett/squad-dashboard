@@ -1,0 +1,26 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+load("@io_bazel_rules_docker//container:container.bzl", "container_image")
+
+go_library(
+    name = "pagerdutyoncallcollector_lib",
+    srcs = ["main.go"],
+    importpath = "github.com/stebennett/squad-dashboard/cmd/pagerdutyoncallcollector",
+    visibility = ["//visibility:private"],
+    deps = [
+        "//pkg/pagerdutyservice",
+        "//vendor/github.com/Netflix/go-env",
+    ],
+)
+
+go_binary(
+    name = "pagerdutyoncallcollector",
+    embed = [":pagerdutyoncallcollector_lib"],
+    visibility = ["//visibility:public"],
+)
+
+container_image(
+    name = "image",
+    base = "@alpine_linux_amd64//image",
+    entrypoint = ["/pagerdutyoncallcollector"],
+    files = [":pagerdutyoncallcollector"],
+)

@@ -63,6 +63,17 @@ services:
       - DB_HOST=db
       - DB_PORT=5432
 
+  pagerdutyoncallcollector:
+    image: bazel/cmd/pagerdutyoncallcollector:image
+    command: bash -c 'while !</dev/tcp/db/5432; do sleep 1; done; run --logtostderr'
+    environment:
+      - PAGERDUTY_AUTH_TOKEN
+      - DB_USERNAME=${POSTGRES_USER}
+      - DB_PASSWORD=${POSTGRES_PASSWORD}
+      - DB_NAME=${POSTGRES_DB}
+      - DB_HOST=db
+      - DB_PORT=5432
+
   jiraissuecalculator:
     image: bazel/cmd/jiraissuecalculator:image
     environment:
