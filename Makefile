@@ -29,7 +29,7 @@ jiracollector: build-all db
 	docker-compose --env-file ${ENV} up jiracollector
 
 .PHONY: init
-init: build-all db
+init: build-all db migrate
 	bazel build --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/configloader:image
 	bazel run --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/configloader:image
 	docker-compose --env-file ${ENV} up configloader
