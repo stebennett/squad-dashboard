@@ -90,6 +90,18 @@ services:
       - JIRA_REPORT_ISSUE_TYPES
       - JIRA_REPORT_END_STATES
 
+  configloader:
+    image: bazel/cmd/configloader:image
+    environment:
+      - DB_USERNAME=${POSTGRES_USER}
+      - DB_PASSWORD=${POSTGRES_PASSWORD}
+      - DB_NAME=${POSTGRES_DB}
+      - DB_HOST=db
+      - DB_PORT=5432
+      - WORK_START_STATES
+      - WORK_TODO_STATES
+      - WORK_COMPLETE_STATES
+
   metabase:
     image: metabase/metabase
     volumes:
