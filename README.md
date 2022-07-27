@@ -14,10 +14,10 @@ This repository contains a number of commands which can be run to collect data f
 
 ## Building and Running
 
-Building all services
+Build all services and init the databases
 
 ````
- # make build-all
+ # make init
 ````
 
 Running all tests

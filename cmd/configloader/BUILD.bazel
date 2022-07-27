@@ -6,6 +6,10 @@ go_library(
     srcs = ["main.go"],
     importpath = "github.com/stebennett/squad-dashboard/cmd/configloader",
     visibility = ["//visibility:private"],
+    deps = [
+        "//pkg/jirarepository",
+        "//vendor/github.com/Netflix/go-env",
+    ],
 )
 
 go_binary(
@@ -14,11 +18,9 @@ go_binary(
     visibility = ["//visibility:public"],
 )
 
-
 container_image(
     name = "image",
     base = "@alpine_linux_amd64//image",
     entrypoint = ["/configloader"],
     files = [":configloader"],
 )
-

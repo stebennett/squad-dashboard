@@ -31,6 +31,9 @@ type JiraRepository interface {
 	SetIssuesCompletedInWeekStarting(ctx context.Context, project string, startDate time.Time, count int) (int64, error)
 	GetEndStateForIssue(ctx context.Context, issueKey string, transitionDate time.Time) (string, error)
 	SaveIssueLabels(ctx context.Context, issueKey string, label []string) (int64, error)
+	SaveJiraToDoStates(ctx context.Context, project string, states []string) (int64, error)
+	SaveJiraInProgressStates(ctx context.Context, project string, states []string) (int64, error)
+	SaveJiraDoneStates(ctx context.Context, project string, states []string) (int64, error)
 }
 
 type PostgresJiraRepository struct {
@@ -584,6 +587,52 @@ func (p *PostgresJiraRepository) SaveIssueLabels(ctx context.Context, issueKey s
 			insertStatement,
 			issueKey,
 			label,
+		)
+
+		if err != nil {
+			return inserted, err
+		}
+
+		rowsAffected, err := result.RowsAffected()
+		if err != nil {
+			return inserted, err
+		}
+
+		inserted = inserted + rowsAffected
+	}
+
+	return inserted, nil
+}
+
+func (p *PostgresJiraRepository) SaveJiraToDoStates(ctx context.Context, project string, states []string) (int64, error) {
+	return p.saveJiraWorkStates(ctx, project, states, "todo")
+}
+
+func (p *PostgresJiraRepository) SaveJiraInProgressStates(ctx context.Context, project string, states []string) (int64, error) {
+	return p.saveJiraWorkStates(ctx, project, states, "in progress")
+}
+
+func (p *PostgresJiraRepository) SaveJiraDoneStates(ctx context.Context, project string, states []string) (int64, error) {
+	return p.saveJiraWorkStates(ctx, project, states, "done")
+}
+
+func (p *PostgresJiraRepository) saveJiraWorkStates(ctx context.Context, project string, states []string, workState string) (int64, error) {
+	insertStatement := `
+		INSERT INTO jira_work_states(project, state_type, state_name)
+		VALUES ($1, $2, $3)
+		ON CONFLICT (project, state_name)
+		DO UPDATE
+		SET state_type=$2
+		WHERE jira_work_states.project=$1 AND jira_work_states.state_name=$3
+	`
+	var inserted int64 = 0
+
+	for _, stateName := range states {
+		result, err := p.db.ExecContext(ctx,
+			insertStatement,
+			project,
+			workState,
+			stateName,
 		)
 
 		if err != nil {
