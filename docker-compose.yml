@@ -124,6 +124,7 @@ services:
       - DB_NAME=${POSTGRES_DB}
       - DB_HOST=db
       - DB_PORT=5432
+      - PORT=3001
     ports:
       - "3001:3001"
 
