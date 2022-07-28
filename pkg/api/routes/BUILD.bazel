@@ -1,0 +1,12 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "routes",
+    srcs = ["health_routes.go"],
+    importpath = "github.com/stebennett/squad-dashboard/pkg/api/routes",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/api/controllers",
+        "//vendor/github.com/gorilla/mux",
+    ],
+)

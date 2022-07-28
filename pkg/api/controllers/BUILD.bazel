@@ -1,0 +1,8 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "controllers",
+    srcs = ["health_controller.go"],
+    importpath = "github.com/stebennett/squad-dashboard/pkg/api/controllers",
+    visibility = ["//visibility:public"],
+)

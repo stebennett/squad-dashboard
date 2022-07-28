@@ -6,7 +6,10 @@ go_library(
     srcs = ["main.go"],
     importpath = "github.com/stebennett/squad-dashboard/cmd/api",
     visibility = ["//visibility:private"],
-    deps = ["//vendor/github.com/gorilla/mux"],
+    deps = [
+        "//pkg/api/routes",
+        "//vendor/github.com/gorilla/mux",
+    ],
 )
 
 go_binary(

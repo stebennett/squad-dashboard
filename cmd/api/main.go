@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"log"
 	"net/http"
 	"os"
@@ -11,15 +10,17 @@ import (
 	"time"
 
 	mux "github.com/gorilla/mux"
+	"github.com/stebennett/squad-dashboard/pkg/api/routes"
 )
 
 func main() {
-	r := mux.NewRouter()
+	router := mux.NewRouter()
+	apiRouter := router.PathPrefix("/api/v1").Subrouter()
 
-	r.HandleFunc("/api/v1/health", HealthHandler).Methods("GET")
+	routes.HealthRoutes(apiRouter)
 
 	srv := &http.Server{
-		Handler:      r,
+		Handler:      router,
 		Addr:         os.ExpandEnv(":$PORT"),
 		WriteTimeout: 30 * time.Second,
 		ReadTimeout:  30 * time.Second,
@@ -49,9 +50,4 @@ func main() {
 	}
 
 	log.Print("Server Shutdown")
-}
-
-func HealthHandler(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]bool{"ok": true})
 }
