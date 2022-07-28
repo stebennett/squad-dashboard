@@ -18,6 +18,7 @@ func main() {
 	apiRouter := router.PathPrefix("/api/v1").Subrouter()
 
 	routes.HealthRoutes(apiRouter)
+	routes.JiraStatsRoutes(apiRouter)
 
 	srv := &http.Server{
 		Handler:      router,

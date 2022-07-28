@@ -2,7 +2,10 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "routes",
-    srcs = ["health_routes.go"],
+    srcs = [
+        "health_routes.go",
+        "jira_stats_routes.go",
+    ],
     importpath = "github.com/stebennett/squad-dashboard/pkg/api/routes",
     visibility = ["//visibility:public"],
     deps = [
