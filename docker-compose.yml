@@ -116,6 +116,17 @@ services:
       MB_DB_PASS: ${MB_DB_PASSWORD} 
       MB_DB_HOST: metabasedb
 
+  api:
+    image: bazel/cmd/api:image
+    environment:
+      - DB_USERNAME=${POSTGRES_USER}
+      - DB_PASSWORD=${POSTGRES_PASSWORD}
+      - DB_NAME=${POSTGRES_DB}
+      - DB_HOST=db
+      - DB_PORT=5432
+    ports:
+      - "3001:3001"
+
 volumes:
   db_data:
   metabase_db_data:
