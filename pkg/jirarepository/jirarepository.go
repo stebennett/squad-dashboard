@@ -37,6 +37,7 @@ type JiraRepository interface {
 	SaveJiraDoneStates(ctx context.Context, project string, states []string) (int64, error)
 	GetWeeklyThroughputByProject(ctx context.Context, project string, endDate time.Time, numberOfWeeks int) ([]statsmodels.WeeklyTimeItem, error)
 	GetWeeklyThroughputAllProjects(ctx context.Context, endDate time.Time, numberOfWeeks int) ([]statsmodels.ProjectWeeklyTimeItem, error)
+	GetWeeklyCycleTimeByProject(ctx context.Context, project string, endDate time.Time, numberOfWeeks int) ([]statsmodels.WeeklyCycleTimeItem, error)
 }
 
 type PostgresJiraRepository struct {
@@ -726,6 +727,45 @@ func (p *PostgresJiraRepository) GetWeeklyThroughputAllProjects(ctx context.Cont
 		}
 
 		result = append(result, tp)
+	}
+
+	return result, nil
+}
+
+func (p *PostgresJiraRepository) GetWeeklyCycleTimeByProject(ctx context.Context, project string, endDate time.Time, numberOfWeeks int) ([]statsmodels.WeeklyCycleTimeItem, error) {
+	selectStatement := fmt.Sprintf(`
+		SELECT percentile_cont(0.5) WITHIN GROUP (ORDER BY jira_issues_calculations.cycle_time) as cycle_time, 
+			date_trunc('week', jira_issues_calculations.issue_completed_at) AS "completed_week"
+		FROM jira_issues_calculations
+		INNER JOIN jira_issues ON jira_issues_calculations.issue_key = jira_issues.issue_key
+		WHERE jira_issues_calculations.cycle_time > 0
+		AND jira_issues_calculations.issue_completed_at > date_trunc('week', $1::timestamp - interval '%d weeks') 
+		AND jira_issues.issue_type IN ('Task', 'Story')
+		AND lower(jira_issues.project) = lower($2)
+		AND jira_issues_calculations.issue_end_state IN (
+			SELECT state_name FROM jira_work_states WHERE jira_work_states.state_type = 'done' AND lower(jira_work_states.project) = lower($2)
+		)
+		GROUP BY date_trunc('week', jira_issues_calculations.issue_completed_at)
+		ORDER BY date_trunc('week', jira_issues_calculations.issue_completed_at) ASC
+	`, numberOfWeeks)
+
+	rows, err := p.db.QueryContext(ctx, selectStatement, endDate, project)
+
+	if err != nil {
+		return []statsmodels.WeeklyCycleTimeItem{}, err
+	}
+
+	var result = []statsmodels.WeeklyCycleTimeItem{}
+
+	for rows.Next() {
+		ct := statsmodels.WeeklyCycleTimeItem{}
+
+		err = rows.Scan(&ct.CycleTime, &ct.WeekStarting)
+		if err != nil {
+			return result, err
+		}
+
+		result = append(result, ct)
 	}
 
 	return result, nil

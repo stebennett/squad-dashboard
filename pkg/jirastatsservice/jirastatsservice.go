@@ -20,7 +20,7 @@ func (jss JiraStatsService) FetchThrougputDataForProject(project string) (statsm
 		return statsmodels.ThrouputResult{}, err
 	}
 
-	trendline, err := statsutil.CalculateTrendline(throughputItems)
+	trendline, err := statsutil.CalculateTrendlineForWeeklyTimeItems(throughputItems)
 	if err != nil {
 		return statsmodels.ThrouputResult{}, err
 	}
@@ -47,7 +47,7 @@ func (jss JiraStatsService) FetchThrougputDataForAllProjects() ([]statsmodels.Th
 
 	results := []statsmodels.ThrouputResult{}
 	for k, v := range throughtputMap {
-		trendline, err := statsutil.CalculateTrendline(v)
+		trendline, err := statsutil.CalculateTrendlineForWeeklyTimeItems(v)
 		if err != nil {
 			return []statsmodels.ThrouputResult{}, err
 		}
@@ -59,4 +59,22 @@ func (jss JiraStatsService) FetchThrougputDataForAllProjects() ([]statsmodels.Th
 		results = append(results, tr)
 	}
 	return results, nil
+}
+
+func (jss JiraStatsService) FetchCycleTimeDataForProject(project string) (statsmodels.CycleTimeResult, error) {
+	cycleTimeItems, err := jss.JiraRepository.GetWeeklyCycleTimeByProject(context.Background(), project, dateutil.NearestPreviousDateForDay(time.Now(), time.Friday), 12)
+	if err != nil {
+		return statsmodels.CycleTimeResult{}, err
+	}
+
+	trendline, err := statsutil.CalculateTrendlineForCycleTimes(cycleTimeItems)
+	if err != nil {
+		return statsmodels.CycleTimeResult{}, err
+	}
+
+	return statsmodels.CycleTimeResult{
+		Project:        project,
+		CycleTimeItems: cycleTimeItems,
+		Trendline:      trendline,
+	}, nil
 }
