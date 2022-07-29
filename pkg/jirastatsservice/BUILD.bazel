@@ -5,5 +5,9 @@ go_library(
     srcs = ["jirastatsservice.go"],
     importpath = "github.com/stebennett/squad-dashboard/pkg/jirastatsservice",
     visibility = ["//visibility:public"],
-    deps = ["//pkg/jirarepository"],
+    deps = [
+        "//pkg/dateutil",
+        "//pkg/jiramodels",
+        "//pkg/jirarepository",
+    ],
 )

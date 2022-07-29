@@ -34,6 +34,7 @@ type JiraRepository interface {
 	SaveJiraToDoStates(ctx context.Context, project string, states []string) (int64, error)
 	SaveJiraInProgressStates(ctx context.Context, project string, states []string) (int64, error)
 	SaveJiraDoneStates(ctx context.Context, project string, states []string) (int64, error)
+	GetWeeklyThroughputByProject(ctx context.Context, project string, endDate time.Time, numberOfWeeks int) ([]jiramodels.ThroughputItem, error)
 }
 
 type PostgresJiraRepository struct {
@@ -648,4 +649,43 @@ func (p *PostgresJiraRepository) saveJiraWorkStates(ctx context.Context, project
 	}
 
 	return inserted, nil
+}
+
+func (p *PostgresJiraRepository) GetWeeklyThroughputByProject(ctx context.Context, project string, endDate time.Time, numberOfWeeks int) ([]jiramodels.ThroughputItem, error) {
+	selectStatement := fmt.Sprintf(`
+		SELECT count(jira_issues_calculations.issue_key), 
+			date_trunc('week', jira_issues_calculations.issue_completed_at) AS "completed_week"
+		FROM jira_issues_calculations
+		INNER JOIN jira_issues ON jira_issues_calculations.issue_key = jira_issues.issue_key
+		WHERE jira_issues_calculations.cycle_time > 0
+		AND jira_issues_calculations.issue_completed_at > date_trunc('week', $1::timestamp - interval '%d weeks') 
+		AND jira_issues.issue_type IN ('Task', 'Story')
+		AND lower(jira_issues.project) = lower($2)
+		AND jira_issues_calculations.issue_end_state IN (
+			SELECT state_name FROM jira_work_states WHERE lower(jira_work_states.project) = lower($2)
+		)
+		GROUP BY date_trunc('week', "public"."jira_issues_calculations"."issue_completed_at")
+		ORDER BY date_trunc('week', "public"."jira_issues_calculations"."issue_completed_at") ASC
+	`, numberOfWeeks)
+
+	rows, err := p.db.QueryContext(ctx, selectStatement, endDate, project)
+
+	if err != nil {
+		return []jiramodels.ThroughputItem{}, err
+	}
+
+	var result = []jiramodels.ThroughputItem{}
+
+	for rows.Next() {
+		tp := jiramodels.ThroughputItem{}
+
+		err = rows.Scan(&tp.NumberOfItems, &tp.WeekStarting)
+		if err != nil {
+			return result, err
+		}
+
+		result = append(result, tp)
+	}
+
+	return result, nil
 }

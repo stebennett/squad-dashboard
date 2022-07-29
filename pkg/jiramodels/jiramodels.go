@@ -17,3 +17,8 @@ type JiraTransition struct {
 	ToState        string
 	TransitionedAt time.Time
 }
+
+type ThroughputItem struct {
+	WeekStarting  time.Time
+	NumberOfItems int
+}
