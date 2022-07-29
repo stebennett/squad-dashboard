@@ -17,3 +17,8 @@ type ThrouputResult struct {
 	ThroughputItems []WeeklyTimeItem
 	Trendline       []TrendlineItem
 }
+
+type ProjectWeeklyTimeItem struct {
+	Project  string
+	TimeItem WeeklyTimeItem
+}

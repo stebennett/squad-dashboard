@@ -32,3 +32,19 @@ func (s StatsContoller) ThroughputByProject(w http.ResponseWriter, r *http.Reque
 
 	json.NewEncoder(w).Encode(results)
 }
+
+func (s StatsContoller) ThroughputAllProjects(w http.ResponseWriter, r *http.Request) {
+	// fetch throughput data for project - last 12 weeks based on previous friday
+	results, err := s.StatsService.FetchThrougputDataForAllProjects()
+
+	if err != nil {
+		fmt.Println(fmt.Errorf("failed to get throughput for all projects, %w", err))
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+
+	// return to api
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+
+	json.NewEncoder(w).Encode(results)
+}

@@ -36,6 +36,7 @@ type JiraRepository interface {
 	SaveJiraInProgressStates(ctx context.Context, project string, states []string) (int64, error)
 	SaveJiraDoneStates(ctx context.Context, project string, states []string) (int64, error)
 	GetWeeklyThroughputByProject(ctx context.Context, project string, endDate time.Time, numberOfWeeks int) ([]statsmodels.WeeklyTimeItem, error)
+	GetWeeklyThroughputAllProjects(ctx context.Context, endDate time.Time, numberOfWeeks int) ([]statsmodels.ProjectWeeklyTimeItem, error)
 }
 
 type PostgresJiraRepository struct {
@@ -681,6 +682,45 @@ func (p *PostgresJiraRepository) GetWeeklyThroughputByProject(ctx context.Contex
 		tp := statsmodels.WeeklyTimeItem{}
 
 		err = rows.Scan(&tp.NumberOfItems, &tp.WeekStarting)
+		if err != nil {
+			return result, err
+		}
+
+		result = append(result, tp)
+	}
+
+	return result, nil
+}
+
+func (p *PostgresJiraRepository) GetWeeklyThroughputAllProjects(ctx context.Context, endDate time.Time, numberOfWeeks int) ([]statsmodels.ProjectWeeklyTimeItem, error) {
+	selectStatement := fmt.Sprintf(`
+		SELECT count(jira_issues_calculations.issue_key), 
+			date_trunc('week', jira_issues_calculations.issue_completed_at) AS "completed_week",
+			jira_issues.project
+		FROM jira_issues_calculations
+		INNER JOIN jira_issues ON jira_issues_calculations.issue_key = jira_issues.issue_key
+		WHERE jira_issues_calculations.cycle_time > 0
+		AND jira_issues_calculations.issue_completed_at > date_trunc('week', $1::timestamp - interval '%d weeks') 
+		AND jira_issues.issue_type IN ('Task', 'Story')
+		AND jira_issues_calculations.issue_end_state IN (
+			SELECT state_name FROM jira_work_states WHERE jira_work_states.project = jira_issues.project
+		)
+		GROUP BY date_trunc('week', "public"."jira_issues_calculations"."issue_completed_at"), jira_issues.project
+		ORDER BY date_trunc('week', "public"."jira_issues_calculations"."issue_completed_at") ASC
+	`, numberOfWeeks)
+
+	rows, err := p.db.QueryContext(ctx, selectStatement, endDate)
+
+	if err != nil {
+		return []statsmodels.ProjectWeeklyTimeItem{}, err
+	}
+
+	var result = []statsmodels.ProjectWeeklyTimeItem{}
+
+	for rows.Next() {
+		tp := statsmodels.ProjectWeeklyTimeItem{}
+
+		err = rows.Scan(&tp.TimeItem.NumberOfItems, &tp.TimeItem.WeekStarting, &tp.Project)
 		if err != nil {
 			return result, err
 		}

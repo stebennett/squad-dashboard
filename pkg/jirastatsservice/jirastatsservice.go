@@ -31,3 +31,32 @@ func (jss JiraStatsService) FetchThrougputDataForProject(project string) (statsm
 		Trendline:       trendline,
 	}, nil
 }
+
+func (jss JiraStatsService) FetchThrougputDataForAllProjects() ([]statsmodels.ThrouputResult, error) {
+	projectThroughputItems, err := jss.JiraRepository.GetWeeklyThroughputAllProjects(context.Background(), dateutil.NearestPreviousDateForDay(time.Now(), time.Friday), 12)
+	if err != nil {
+		return []statsmodels.ThrouputResult{}, err
+	}
+
+	throughtputMap := map[string][]statsmodels.WeeklyTimeItem{}
+	for _, pti := range projectThroughputItems {
+		items := throughtputMap[pti.Project]
+		items = append(items, pti.TimeItem)
+		throughtputMap[pti.Project] = items
+	}
+
+	results := []statsmodels.ThrouputResult{}
+	for k, v := range throughtputMap {
+		trendline, err := statsutil.CalculateTrendline(v)
+		if err != nil {
+			return []statsmodels.ThrouputResult{}, err
+		}
+		tr := statsmodels.ThrouputResult{
+			Project:         k,
+			ThroughputItems: v,
+			Trendline:       trendline,
+		}
+		results = append(results, tr)
+	}
+	return results, nil
+}
