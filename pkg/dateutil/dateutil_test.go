@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-func TestLastCompleteWeekFriday(t *testing.T) {
+func TestNearestPreviousDateForDay(t *testing.T) {
 	tables := []struct {
 		inputDate  time.Time
 		outputDate time.Time
@@ -20,7 +20,7 @@ func TestLastCompleteWeekFriday(t *testing.T) {
 	}
 
 	for _, table := range tables {
-		result := LastCompleteWeekFriday(table.inputDate)
+		result := NearestPreviousDateForDay(table.inputDate, time.Friday)
 		if !result.Equal(table.outputDate) {
 			t.Errorf("Last Friday Date incorrect for input %s, got %s, expected %s", table.inputDate, result.String(), table.outputDate.String())
 		}
