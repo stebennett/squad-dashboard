@@ -39,6 +39,7 @@ type JiraRepository interface {
 	GetWeeklyThroughputAllProjects(ctx context.Context, endDate time.Time, numberOfWeeks int) ([]statsmodels.ProjectWeeklyTimeItem, error)
 	GetWeeklyCycleTimeByProject(ctx context.Context, project string, endDate time.Time, numberOfWeeks int) ([]statsmodels.WeeklyCycleTimeItem, error)
 	GetWeeklyCycleTimeAllProjects(ctx context.Context, endDate time.Time, numberOfWeeks int) ([]statsmodels.ProjectWeeklyCycleTimeItem, error)
+	GetProjects(ctx context.Context) ([]string, error)
 }
 
 type PostgresJiraRepository struct {
@@ -805,6 +806,25 @@ func (p *PostgresJiraRepository) GetWeeklyCycleTimeAllProjects(ctx context.Conte
 		}
 
 		result = append(result, ct)
+	}
+
+	return result, nil
+}
+
+func (p *PostgresJiraRepository) GetProjects(ctx context.Context) ([]string, error) {
+	selectStatement := `
+		SELECT DISTINCT project from jira_issues
+	`
+	rows, err := p.db.QueryContext(ctx, selectStatement)
+	if err != nil {
+		return []string{}, err
+	}
+
+	result := []string{}
+	for rows.Next() {
+		var project string
+		rows.Scan(&project)
+		result = append(result, project)
 	}
 
 	return result, nil

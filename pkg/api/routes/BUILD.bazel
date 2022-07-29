@@ -4,6 +4,7 @@ go_library(
     name = "routes",
     srcs = [
         "health_routes.go",
+        "jira_data_routes.go",
         "jira_stats_routes.go",
     ],
     importpath = "github.com/stebennett/squad-dashboard/pkg/api/routes",

@@ -31,8 +31,12 @@ func main() {
 			JiraRepository: jiraRepo,
 		},
 	}
+	jiraDataController := controllers.JiraDataController{
+		JiraRepository: jiraRepo,
+	}
 
 	routes.JiraStatsRoutes(statsController, apiRouter)
+	routes.JiraDataRoutes(jiraDataController, apiRouter)
 
 	srv := &http.Server{
 		Handler:      router,
