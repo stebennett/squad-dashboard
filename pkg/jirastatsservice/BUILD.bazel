@@ -9,5 +9,6 @@ go_library(
         "//pkg/dateutil",
         "//pkg/jirarepository",
         "//pkg/statsmodels",
+        "//pkg/statsutil",
     ],
 )

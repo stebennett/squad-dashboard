@@ -1,0 +1,12 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "statsutil",
+    srcs = ["statsutil.go"],
+    importpath = "github.com/stebennett/squad-dashboard/pkg/statsutil",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/statsmodels",
+        "//vendor/github.com/montanaflynn/stats",
+    ],
+)

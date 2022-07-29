@@ -35,7 +35,7 @@ type JiraRepository interface {
 	SaveJiraToDoStates(ctx context.Context, project string, states []string) (int64, error)
 	SaveJiraInProgressStates(ctx context.Context, project string, states []string) (int64, error)
 	SaveJiraDoneStates(ctx context.Context, project string, states []string) (int64, error)
-	GetWeeklyThroughputByProject(ctx context.Context, project string, endDate time.Time, numberOfWeeks int) ([]statsmodels.ThroughputItem, error)
+	GetWeeklyThroughputByProject(ctx context.Context, project string, endDate time.Time, numberOfWeeks int) ([]statsmodels.WeeklyTimeItem, error)
 }
 
 type PostgresJiraRepository struct {
@@ -652,7 +652,7 @@ func (p *PostgresJiraRepository) saveJiraWorkStates(ctx context.Context, project
 	return inserted, nil
 }
 
-func (p *PostgresJiraRepository) GetWeeklyThroughputByProject(ctx context.Context, project string, endDate time.Time, numberOfWeeks int) ([]statsmodels.ThroughputItem, error) {
+func (p *PostgresJiraRepository) GetWeeklyThroughputByProject(ctx context.Context, project string, endDate time.Time, numberOfWeeks int) ([]statsmodels.WeeklyTimeItem, error) {
 	selectStatement := fmt.Sprintf(`
 		SELECT count(jira_issues_calculations.issue_key), 
 			date_trunc('week', jira_issues_calculations.issue_completed_at) AS "completed_week"
@@ -672,13 +672,13 @@ func (p *PostgresJiraRepository) GetWeeklyThroughputByProject(ctx context.Contex
 	rows, err := p.db.QueryContext(ctx, selectStatement, endDate, project)
 
 	if err != nil {
-		return []statsmodels.ThroughputItem{}, err
+		return []statsmodels.WeeklyTimeItem{}, err
 	}
 
-	var result = []statsmodels.ThroughputItem{}
+	var result = []statsmodels.WeeklyTimeItem{}
 
 	for rows.Next() {
-		tp := statsmodels.ThroughputItem{}
+		tp := statsmodels.WeeklyTimeItem{}
 
 		err = rows.Scan(&tp.NumberOfItems, &tp.WeekStarting)
 		if err != nil {

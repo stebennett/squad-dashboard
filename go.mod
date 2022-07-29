@@ -13,6 +13,7 @@ require (
 	github.com/gorilla/mux v1.8.0 // indirect
 	github.com/hashicorp/errwrap v1.0.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.0 // indirect
+	github.com/montanaflynn/stats v0.6.6 // indirect
 	go.uber.org/atomic v1.6.0 // indirect
 )
 
