@@ -5,6 +5,6 @@ import (
 	"github.com/stebennett/squad-dashboard/pkg/api/controllers"
 )
 
-func JiraStatsRoutes(router *mux.Router) {
-	router.HandleFunc("/stats/{project}/throughput", controllers.ThroughputByProject).Methods("GET")
+func JiraStatsRoutes(statsController controllers.StatsContoller, router *mux.Router) {
+	router.HandleFunc("/stats/{project}/throughput", statsController.ThroughputByProject).Methods("GET")
 }

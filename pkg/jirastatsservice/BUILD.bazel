@@ -1,0 +1,9 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "jirastatsservice",
+    srcs = ["jirastatsservice.go"],
+    importpath = "github.com/stebennett/squad-dashboard/pkg/jirastatsservice",
+    visibility = ["//visibility:public"],
+    deps = ["//pkg/jirarepository"],
+)

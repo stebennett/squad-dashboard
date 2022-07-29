@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"database/sql"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -10,15 +12,27 @@ import (
 	"time"
 
 	mux "github.com/gorilla/mux"
+	"github.com/stebennett/squad-dashboard/pkg/api/controllers"
 	"github.com/stebennett/squad-dashboard/pkg/api/routes"
+	"github.com/stebennett/squad-dashboard/pkg/jirarepository"
+	"github.com/stebennett/squad-dashboard/pkg/jirastatsservice"
 )
 
 func main() {
+	jiraRepo := createJiraRepository()
+
 	router := mux.NewRouter()
 	apiRouter := router.PathPrefix("/api/v1").Subrouter()
 
 	routes.HealthRoutes(apiRouter)
-	routes.JiraStatsRoutes(apiRouter)
+
+	statsController := controllers.StatsContoller{
+		StatsService: jirastatsservice.JiraStatsService{
+			JiraRepository: jiraRepo,
+		},
+	}
+
+	routes.JiraStatsRoutes(statsController, apiRouter)
 
 	srv := &http.Server{
 		Handler:      router,
@@ -51,4 +65,18 @@ func main() {
 	}
 
 	log.Print("Server Shutdown")
+}
+
+func createJiraRepository() jirarepository.JiraRepository {
+	var err error
+	var db *sql.DB
+	connStr := os.ExpandEnv("postgres://$DB_USERNAME:$DB_PASSWORD@$DB_HOST:$DB_PORT/$DB_NAME?sslmode=disable") // load from env vars
+
+	db, err = sql.Open("postgres", connStr)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("Database initialised")
+	return jirarepository.NewPostgresJiraRepository(db)
 }
