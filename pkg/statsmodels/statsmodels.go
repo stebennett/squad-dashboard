@@ -33,3 +33,8 @@ type ProjectWeeklyTimeItem struct {
 	Project  string
 	TimeItem WeeklyTimeItem
 }
+
+type ProjectWeeklyCycleTimeItem struct {
+	Project  string
+	TimeItem WeeklyCycleTimeItem
+}

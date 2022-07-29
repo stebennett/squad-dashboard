@@ -78,3 +78,32 @@ func (jss JiraStatsService) FetchCycleTimeDataForProject(project string) (statsm
 		Trendline:      trendline,
 	}, nil
 }
+
+func (jss JiraStatsService) FetchCycleTimeDataForAllProjects() ([]statsmodels.CycleTimeResult, error) {
+	projectCycleTimeItems, err := jss.JiraRepository.GetWeeklyCycleTimeAllProjects(context.Background(), dateutil.NearestPreviousDateForDay(time.Now(), time.Friday), 12)
+	if err != nil {
+		return []statsmodels.CycleTimeResult{}, err
+	}
+
+	cycleTimeMap := map[string][]statsmodels.WeeklyCycleTimeItem{}
+	for _, cti := range projectCycleTimeItems {
+		items := cycleTimeMap[cti.Project]
+		items = append(items, cti.TimeItem)
+		cycleTimeMap[cti.Project] = items
+	}
+
+	results := []statsmodels.CycleTimeResult{}
+	for k, v := range cycleTimeMap {
+		trendline, err := statsutil.CalculateTrendlineForCycleTimes(v)
+		if err != nil {
+			return []statsmodels.CycleTimeResult{}, err
+		}
+		tr := statsmodels.CycleTimeResult{
+			Project:        k,
+			CycleTimeItems: v,
+			Trendline:      trendline,
+		}
+		results = append(results, tr)
+	}
+	return results, nil
+}

@@ -38,6 +38,7 @@ type JiraRepository interface {
 	GetWeeklyThroughputByProject(ctx context.Context, project string, endDate time.Time, numberOfWeeks int) ([]statsmodels.WeeklyTimeItem, error)
 	GetWeeklyThroughputAllProjects(ctx context.Context, endDate time.Time, numberOfWeeks int) ([]statsmodels.ProjectWeeklyTimeItem, error)
 	GetWeeklyCycleTimeByProject(ctx context.Context, project string, endDate time.Time, numberOfWeeks int) ([]statsmodels.WeeklyCycleTimeItem, error)
+	GetWeeklyCycleTimeAllProjects(ctx context.Context, endDate time.Time, numberOfWeeks int) ([]statsmodels.ProjectWeeklyCycleTimeItem, error)
 }
 
 type PostgresJiraRepository struct {
@@ -761,6 +762,44 @@ func (p *PostgresJiraRepository) GetWeeklyCycleTimeByProject(ctx context.Context
 		ct := statsmodels.WeeklyCycleTimeItem{}
 
 		err = rows.Scan(&ct.CycleTime, &ct.WeekStarting)
+		if err != nil {
+			return result, err
+		}
+
+		result = append(result, ct)
+	}
+
+	return result, nil
+}
+
+func (p *PostgresJiraRepository) GetWeeklyCycleTimeAllProjects(ctx context.Context, endDate time.Time, numberOfWeeks int) ([]statsmodels.ProjectWeeklyCycleTimeItem, error) {
+	selectStatement := fmt.Sprintf(`
+		SELECT percentile_cont(0.5) WITHIN GROUP (ORDER BY jira_issues_calculations.cycle_time) as cycle_time, 
+			date_trunc('week', jira_issues_calculations.issue_completed_at) AS "completed_week",
+			jira_issues.project
+		FROM jira_issues_calculations
+		INNER JOIN jira_issues ON jira_issues_calculations.issue_key = jira_issues.issue_key
+		WHERE jira_issues_calculations.cycle_time > 0
+		AND jira_issues_calculations.issue_completed_at > date_trunc('week', $1::timestamp - interval '%d weeks') 
+		AND jira_issues.issue_type IN ('Task', 'Story')
+		AND jira_issues_calculations.issue_end_state IN (
+			SELECT state_name FROM jira_work_states WHERE jira_work_states.state_type = 'done' AND jira_work_states.project = jira_issues.project
+		)
+		GROUP BY date_trunc('week', jira_issues_calculations.issue_completed_at), jira_issues.project
+		ORDER BY date_trunc('week', jira_issues_calculations.issue_completed_at) ASC
+	`, numberOfWeeks)
+	rows, err := p.db.QueryContext(ctx, selectStatement, endDate)
+
+	if err != nil {
+		return []statsmodels.ProjectWeeklyCycleTimeItem{}, err
+	}
+
+	var result = []statsmodels.ProjectWeeklyCycleTimeItem{}
+
+	for rows.Next() {
+		ct := statsmodels.ProjectWeeklyCycleTimeItem{}
+
+		err = rows.Scan(&ct.TimeItem.CycleTime, &ct.TimeItem.WeekStarting, &ct.Project)
 		if err != nil {
 			return result, err
 		}

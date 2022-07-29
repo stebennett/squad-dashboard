@@ -34,7 +34,6 @@ func (s StatsContoller) ThroughputByProject(w http.ResponseWriter, r *http.Reque
 }
 
 func (s StatsContoller) ThroughputAllProjects(w http.ResponseWriter, r *http.Request) {
-	// fetch throughput data for project - last 12 weeks based on previous friday
 	results, err := s.StatsService.FetchThrougputDataForAllProjects()
 
 	if err != nil {
@@ -42,7 +41,6 @@ func (s StatsContoller) ThroughputAllProjects(w http.ResponseWriter, r *http.Req
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 
-	// return to api
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 
@@ -55,7 +53,7 @@ func (s StatsContoller) CycleTimeByProject(w http.ResponseWriter, r *http.Reques
 	// get project parameter
 	project := vars["project"]
 
-	// fetch throughput data for project - last 12 weeks based on previous friday
+	// fetch cycle time data for project - last 12 weeks based on previous friday
 	results, err := s.StatsService.FetchCycleTimeDataForProject(project)
 	if err != nil {
 		fmt.Println(fmt.Errorf("failed to get cycletime, %w", err))
@@ -63,6 +61,20 @@ func (s StatsContoller) CycleTimeByProject(w http.ResponseWriter, r *http.Reques
 	}
 
 	// return to api
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+
+	json.NewEncoder(w).Encode(results)
+}
+
+func (s StatsContoller) CycleTimeAllProjects(w http.ResponseWriter, r *http.Request) {
+	results, err := s.StatsService.FetchCycleTimeDataForAllProjects()
+
+	if err != nil {
+		fmt.Println(fmt.Errorf("failed to get cycletime for all projects, %w", err))
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 
