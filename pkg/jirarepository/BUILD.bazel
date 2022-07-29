@@ -8,6 +8,7 @@ go_library(
     deps = [
         "//pkg/calculatormodels",
         "//pkg/jiramodels",
+        "//pkg/statsmodels",
         "//vendor/github.com/lib/pq",
     ],
 )

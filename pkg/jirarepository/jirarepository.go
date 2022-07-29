@@ -9,6 +9,7 @@ import (
 	"github.com/lib/pq"
 	"github.com/stebennett/squad-dashboard/pkg/calculatormodels"
 	"github.com/stebennett/squad-dashboard/pkg/jiramodels"
+	"github.com/stebennett/squad-dashboard/pkg/statsmodels"
 )
 
 type JiraRepository interface {
@@ -34,7 +35,7 @@ type JiraRepository interface {
 	SaveJiraToDoStates(ctx context.Context, project string, states []string) (int64, error)
 	SaveJiraInProgressStates(ctx context.Context, project string, states []string) (int64, error)
 	SaveJiraDoneStates(ctx context.Context, project string, states []string) (int64, error)
-	GetWeeklyThroughputByProject(ctx context.Context, project string, endDate time.Time, numberOfWeeks int) ([]jiramodels.ThroughputItem, error)
+	GetWeeklyThroughputByProject(ctx context.Context, project string, endDate time.Time, numberOfWeeks int) ([]statsmodels.ThroughputItem, error)
 }
 
 type PostgresJiraRepository struct {
@@ -651,7 +652,7 @@ func (p *PostgresJiraRepository) saveJiraWorkStates(ctx context.Context, project
 	return inserted, nil
 }
 
-func (p *PostgresJiraRepository) GetWeeklyThroughputByProject(ctx context.Context, project string, endDate time.Time, numberOfWeeks int) ([]jiramodels.ThroughputItem, error) {
+func (p *PostgresJiraRepository) GetWeeklyThroughputByProject(ctx context.Context, project string, endDate time.Time, numberOfWeeks int) ([]statsmodels.ThroughputItem, error) {
 	selectStatement := fmt.Sprintf(`
 		SELECT count(jira_issues_calculations.issue_key), 
 			date_trunc('week', jira_issues_calculations.issue_completed_at) AS "completed_week"
@@ -671,13 +672,13 @@ func (p *PostgresJiraRepository) GetWeeklyThroughputByProject(ctx context.Contex
 	rows, err := p.db.QueryContext(ctx, selectStatement, endDate, project)
 
 	if err != nil {
-		return []jiramodels.ThroughputItem{}, err
+		return []statsmodels.ThroughputItem{}, err
 	}
 
-	var result = []jiramodels.ThroughputItem{}
+	var result = []statsmodels.ThroughputItem{}
 
 	for rows.Next() {
-		tp := jiramodels.ThroughputItem{}
+		tp := statsmodels.ThroughputItem{}
 
 		err = rows.Scan(&tp.NumberOfItems, &tp.WeekStarting)
 		if err != nil {
