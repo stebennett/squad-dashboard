@@ -12,6 +12,10 @@ This repository contains a number of commands which can be run to collect data f
 
 ````
 
+## Adding your environment file
+
+Duplicate the `.env_template` file as `.env`
+
 ## Building and Running
 
 Build all services and init the databases
@@ -29,7 +33,7 @@ Running all tests
 Building and run a command in docker
 
 ````
- # make {command-name}
+ # ENV=.env make {command-name}
 ````
 
 ## Populating the database
@@ -41,8 +45,8 @@ Building and run a command in docker
 5. run metabase to inspect and build charts
 
 ````
- # make db
- # make migrate
- # make {command-name}
- # make metabase
+ # ENV=.env make db
+ # ENV=.env make migrate
+ # ENV=.env make {command-name}
+ # ENV=.env make metabase
 ````
