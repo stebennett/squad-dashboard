@@ -50,3 +50,11 @@ Building and run a command in docker
  # ENV=.env make {command-name}
  # ENV=.env make metabase
 ````
+
+## Running JIRA collector and calculator 
+
+1. ENV=.env make db
+2. ENV=.env make migrate
+3. ENV=.env make jiracollector
+4. ENV=.env make jiraissuecalculator
+5. ENV=.env make metabase
