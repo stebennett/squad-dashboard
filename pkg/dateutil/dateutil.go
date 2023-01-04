@@ -13,6 +13,32 @@ func DaysBetween(time1 time.Time, time2 time.Time) int {
 	return int(math.Ceil(t2.Sub(t1).Hours() / 24))
 }
 
+func WeekDaysBetween(time1 time.Time, time2 time.Time) int {
+	// check the ordering of the dates
+	t1, t2 := time1, time2
+	if time1.After(time2) {
+		t2, t1 = time1, time2
+	}
+
+	// loop through the days and count number of non-weekend days
+	dayCounter := 0
+	incDate := t1
+	for {
+		if incDate.After(t2) {
+			break
+		}
+
+		dayOfWeek := incDate.Weekday()
+		if dayOfWeek != time.Saturday && dayOfWeek != time.Sunday {
+			dayCounter++
+		}
+
+		incDate = incDate.AddDate(0, 0, 1)
+	}
+
+	return dayCounter
+}
+
 func NearestPreviousDateForDay(inTime time.Time, targetDay time.Weekday) time.Time {
 	if inTime.Weekday() == targetDay {
 		return inTime
