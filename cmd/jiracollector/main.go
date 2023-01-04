@@ -43,7 +43,11 @@ func main() {
 
 	// execute the job
 	err = jiracollector.Execute(environment.JiraProject, environment.JiraQuery, environment.JiraEpicField)
-	log.Fatal(err)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Printf("Completed loading of issues for %s", environment.JiraProject)
 }
 
 func createIssueRepository() jirarepository.JiraRepository {

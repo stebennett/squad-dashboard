@@ -19,6 +19,16 @@ func CalculateCycleTime(startDate time.Time, completedDate time.Time) (int, erro
 	return daysBetween, nil
 }
 
+func CalculateWorkingCycleTime(startDate time.Time, completedDate time.Time) (int, error) {
+	weekDaysBetween := dateutil.WeekDaysBetween(startDate, completedDate)
+	if weekDaysBetween == 0 {
+		// add a day for minimum length
+		weekDaysBetween = 1
+	}
+
+	return weekDaysBetween, nil
+}
+
 func CaculateLeadTime(transitions []jiramodels.JiraTransition, createdAt time.Time, stopState string) (int, error) {
 	// filter only to stop states
 	stoppingDates := Filter(transitions, func(item jiramodels.JiraTransition) bool {

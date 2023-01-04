@@ -58,7 +58,7 @@ func main() {
 	}
 	log.Println("Completed update of completed year-week for issues")
 
-	// fetch all issues completed and set cycle time
+	// fetch all issues completed and set cycle time (working and complete)
 	_, err = setCycleTimeForCompletedIssues(issueRepo, environment.JiraProject)
 	if err != nil {
 		log.Fatalf("Failed to set cycle time. %s", err)
@@ -79,7 +79,7 @@ func main() {
 	}
 	log.Println("Completed number of items started reports")
 
-	log.Fatal("All calculations complete")
+	log.Printf("All calculations complete for project %s", environment.JiraProject)
 }
 
 func createIssueRepository() jirarepository.JiraRepository {
@@ -185,12 +185,16 @@ func setCycleTimeForCompletedIssues(repo jirarepository.JiraRepository, project 
 		}
 
 		cycleTime, err := calculator.CalculateCycleTime(calculations.IssueStartedAt.Time, calculations.IssueCompletedAt.Time)
-
 		if err != nil {
 			return updatedCount, err
 		}
 
-		rowsChanged, err := repo.SaveCycleTime(context.Background(), issueKey, cycleTime, -1)
+		workingCycleTime, err := calculator.CalculateWorkingCycleTime(calculations.IssueStartedAt.Time, calculations.IssueCompletedAt.Time)
+		if err != nil {
+			return updatedCount, err
+		}
+
+		rowsChanged, err := repo.SaveCycleTime(context.Background(), issueKey, cycleTime, workingCycleTime)
 		if err != nil {
 			return updatedCount, err
 		}
