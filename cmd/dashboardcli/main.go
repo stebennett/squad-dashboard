@@ -40,6 +40,12 @@ func main() {
 		log.Fatal(err)
 	}
 	printer.PrintCycleTimes(cycleTimeReports)
+
+	throughputReports, err := dashboard.GenerateThroughput(12, environment.JiraProject, strings.Split(environment.JiraReportIssueTypes, ","), repo)
+	if err != nil {
+		log.Fatal(err)
+	}
+	printer.PrintThroughput(throughputReports)
 }
 
 func createJiraRepository() jirarepository.JiraRepository {

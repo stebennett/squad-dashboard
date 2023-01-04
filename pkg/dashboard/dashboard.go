@@ -62,3 +62,29 @@ func GenerateCycleTime(weekCount int, project string, issueTypes []string, repo 
 
 	return cycleTimeReports, nil
 }
+
+func GenerateThroughput(weekCount int, project string, issueTypes []string, repo jirarepository.JiraRepository) ([]models.ThroughputReport, error) {
+	// 1. Calculate dates of last weekCount fridays
+	now := time.Now()
+
+	nearestFriday := dateutil.NearestPreviousDateForDay(dateutil.AsDate(now.Year(), now.Month(), now.Day()), time.Friday)
+	weekEndings := dateutil.PreviousWeekDates(nearestFriday, weekCount)
+
+	throughputReports := []models.ThroughputReport{}
+
+	// 2. Get throughput by week
+	for _, d := range weekEndings {
+		startDate := d.AddDate(0, 0, -7)
+		issues, err := repo.GetThroughput(context.Background(), project, issueTypes, startDate, d)
+		if err != nil {
+			return throughputReports, err
+		}
+
+		throughputReports = append(throughputReports, models.ThroughputReport{
+			WeekEnding: d,
+			Throughput: len(issues),
+		})
+	}
+
+	return throughputReports, nil
+}
