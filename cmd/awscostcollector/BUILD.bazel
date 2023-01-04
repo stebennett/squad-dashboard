@@ -6,6 +6,11 @@ go_library(
     srcs = ["main.go"],
     importpath = "github.com/stebennett/squad-dashboard/cmd/awscostcollector",
     visibility = ["//visibility:private"],
+    deps = [
+        "//vendor/github.com/aws/aws-sdk-go-v2/config",
+        "//vendor/github.com/aws/aws-sdk-go-v2/service/costexplorer",
+        "//vendor/github.com/aws/aws-sdk-go-v2/service/costexplorer/types",
+    ],
 )
 
 go_binary(

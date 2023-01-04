@@ -83,6 +83,12 @@ services:
       - DB_NAME=${POSTGRES_DB}
       - DB_HOST=db
       - DB_PORT=5432
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - AWS_SESSION_TOKEN
+      - AWS_REGION
+      - AWS_COST_TAG_NAME
+      - AWS_COST_TAG_VALUE
 
   jiraissuecalculator:
     image: bazel/cmd/jiraissuecalculator:image
