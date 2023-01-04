@@ -77,6 +77,39 @@ func TestContainsDate(t *testing.T) {
 	}
 }
 
+func TestPreviousWeekDates(t *testing.T) {
+	tables := []struct {
+		startDate      time.Time
+		numberOfWeeks  int
+		expectedResult []time.Time
+	}{
+		{asDate(2022, 12, 30), 0, []time.Time{}},
+		{asDate(2022, 12, 30), 1, []time.Time{asDate(2022, 12, 30)}},
+		{asDate(2022, 12, 30), 3, []time.Time{asDate(2022, 12, 30), asDate(2022, 12, 23), asDate(2022, 12, 16)}},
+	}
+
+	for _, table := range tables {
+		result := PreviousWeekDates(table.startDate, table.numberOfWeeks)
+		if !containsExactly(table.expectedResult, result) {
+			t.Errorf("Expected: %s; Got: %s", table.expectedResult, result)
+		}
+	}
+}
+
 func asDate(year int, month time.Month, day int) time.Time {
 	return time.Date(year, month, day, 0, 0, 0, 0, time.UTC)
+}
+
+func containsExactly(times1 []time.Time, times2 []time.Time) bool {
+	if len(times1) != len(times2) {
+		return false
+	}
+
+	for _, t := range times1 {
+		if !ContainsDate(t, times2) {
+			return false
+		}
+	}
+
+	return true
 }

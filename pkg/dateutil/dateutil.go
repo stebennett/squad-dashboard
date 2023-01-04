@@ -59,3 +59,15 @@ func ContainsDate(needle time.Time, haystack []time.Time) bool {
 	}
 	return false
 }
+
+func PreviousWeekDates(startDate time.Time, numberOfWeeks int) []time.Time {
+	if numberOfWeeks == 0 {
+		return []time.Time{}
+	}
+
+	outDates := []time.Time{startDate}
+	for i := 1; i < numberOfWeeks; i++ {
+		outDates = append(outDates, startDate.AddDate(0, 0, i*-7))
+	}
+	return outDates
+}
