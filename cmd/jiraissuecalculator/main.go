@@ -173,6 +173,11 @@ func setCycleTimeForCompletedIssues(repo jirarepository.JiraRepository, project 
 		return -1, err
 	}
 
+	datesToExclude, err := repo.GetNonWorkingDays(context.Background(), project)
+	if err != nil {
+		return -1, err
+	}
+
 	updatedCount := int64(0)
 
 	for issueKey, calculations := range calculations {
@@ -189,7 +194,7 @@ func setCycleTimeForCompletedIssues(repo jirarepository.JiraRepository, project 
 			return updatedCount, err
 		}
 
-		workingCycleTime, err := calculator.CalculateWorkingCycleTime(calculations.IssueStartedAt.Time, calculations.IssueCompletedAt.Time)
+		workingCycleTime, err := calculator.CalculateWorkingCycleTime(calculations.IssueStartedAt.Time, calculations.IssueCompletedAt.Time, datesToExclude)
 		if err != nil {
 			return updatedCount, err
 		}

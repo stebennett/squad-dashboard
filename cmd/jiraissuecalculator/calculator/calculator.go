@@ -19,8 +19,8 @@ func CalculateCycleTime(startDate time.Time, completedDate time.Time) (int, erro
 	return daysBetween, nil
 }
 
-func CalculateWorkingCycleTime(startDate time.Time, completedDate time.Time) (int, error) {
-	weekDaysBetween := dateutil.WeekDaysBetween(startDate, completedDate)
+func CalculateWorkingCycleTime(startDate time.Time, completedDate time.Time, datesToExclude []time.Time) (int, error) {
+	weekDaysBetween := dateutil.WeekDaysBetween(startDate, completedDate, datesToExclude)
 	if weekDaysBetween == 0 {
 		// add a day for minimum length
 		weekDaysBetween = 1
