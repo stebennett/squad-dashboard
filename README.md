@@ -40,9 +40,10 @@ Building and run a command in docker
 
 1. run up the database
 2. run the migrations
-3. run your collectors
-4. run any calculator (if necessary)
-5. run metabase to inspect and build charts
+3. run the config loaders
+4. run your collectors
+5. run any calculator (if necessary)
+6. run metabase to inspect and build charts
 
 ````
  # ENV=.env make db
@@ -55,6 +56,7 @@ Building and run a command in docker
 
 1. ENV=.env make db
 2. ENV=.env make migrate
-3. ENV=.env make jiracollector
-4. ENV=.env make jiraissuecalculator
-5. ENV=.env make metabase
+3. ENV=.env make init
+4. ENV=.env make jiracollector
+5. ENV=.env make jiraissuecalculator
+6. ENV=.env make metabase

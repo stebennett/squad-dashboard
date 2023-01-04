@@ -43,7 +43,7 @@ func main() {
 		log.Fatalf("Failed to save Jira Work Done States. %s", err)
 	}
 
-	log.Fatalf("Loading config")
+	log.Println("Config successfully loaded")
 }
 
 func createJiraRepository() jirarepository.JiraRepository {
