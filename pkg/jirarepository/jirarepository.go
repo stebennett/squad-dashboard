@@ -40,6 +40,8 @@ type JiraRepository interface {
 	GetWeeklyCycleTimeByProject(ctx context.Context, project string, endDate time.Time, numberOfWeeks int) ([]statsmodels.WeeklyCycleTimeItem, error)
 	GetWeeklyCycleTimeAllProjects(ctx context.Context, endDate time.Time, numberOfWeeks int) ([]statsmodels.ProjectWeeklyCycleTimeItem, error)
 	GetProjects(ctx context.Context) ([]string, error)
+	SaveNonWorkingDays(ctx context.Context, project string, nonWorkingDays []string) (int64, error)
+	GetNonWorkingDays(ctx context.Context, project string) ([]time.Time, error)
 }
 
 type PostgresJiraRepository struct {
@@ -825,6 +827,72 @@ func (p *PostgresJiraRepository) GetProjects(ctx context.Context) ([]string, err
 		var project string
 		rows.Scan(&project)
 		result = append(result, project)
+	}
+
+	return result, nil
+}
+
+func (p *PostgresJiraRepository) SaveNonWorkingDays(ctx context.Context, project string, nonWorkingDays []string) (int64, error) {
+	insertStatement := `
+		INSERT INTO non_working_days(project, non_working_day)
+		VALUES ($1, $2)
+		ON CONFLICT (project, non_working_day)
+		DO NOTHING
+	`
+	var inserted int64 = 0
+
+	for _, nwd := range nonWorkingDays {
+		// convert to a date
+		layout := "2006-01-02"
+		nonWorkingDate, err := time.Parse(layout, nwd)
+		if err != nil {
+			return inserted, err
+		}
+
+		result, err := p.db.ExecContext(ctx,
+			insertStatement,
+			project,
+			nonWorkingDate,
+		)
+
+		if err != nil {
+			return inserted, err
+		}
+
+		rowsAffected, err := result.RowsAffected()
+		if err != nil {
+			return inserted, err
+		}
+
+		inserted = inserted + rowsAffected
+	}
+
+	return inserted, nil
+}
+
+func (p *PostgresJiraRepository) GetNonWorkingDays(ctx context.Context, project string) ([]time.Time, error) {
+	selectStatement := `
+		SELECT non_working_day
+		FROM non_working_days
+		WHERE project = $1
+		ORDER BY non_working_day ASC
+	`
+	var result = []time.Time{}
+
+	rows, err := p.db.QueryContext(ctx, selectStatement, project)
+	if err != nil {
+		return result, err
+	}
+
+	for rows.Next() {
+		var nonWorkingDate time.Time
+
+		err = rows.Scan(&nonWorkingDate)
+		if err != nil {
+			return result, nil
+		}
+
+		result = append(result, nonWorkingDate)
 	}
 
 	return result, nil

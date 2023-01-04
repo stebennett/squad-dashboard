@@ -102,6 +102,7 @@ services:
       - WORK_START_STATES
       - WORK_TODO_STATES
       - WORK_COMPLETE_STATES
+      - NON_WORKING_DAYS
 
   metabase:
     image: metabase/metabase

@@ -12,7 +12,7 @@ import (
 func main() {
 	connectionStr := os.ExpandEnv("postgres://$DB_USERNAME:$DB_PASSWORD@$DB_HOST:$DB_PORT/$DB_NAME?sslmode=disable") // load from env vars
 
-	m, err := migrate.New("file://migrations", connectionStr)
+	m, err := migrate.New("file://migrations/migrations", connectionStr)
 
 	if err != nil {
 		log.Fatal(err)
@@ -23,5 +23,5 @@ func main() {
 		log.Fatal(err)
 	}
 
-	log.Println("Migrations complete.")
+	log.Println("Migrations completed successfully.")
 }
