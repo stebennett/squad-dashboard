@@ -129,6 +129,15 @@ services:
     ports:
       - "3001:3001"
 
+  dashboardcli:
+    image: bazel/cmd/dashboardcli:image
+    environment:
+      - DB_USERNAME=${POSTGRES_USER}
+      - DB_PASSWORD=${POSTGRES_PASSWORD}
+      - DB_NAME=${POSTGRES_DB}
+      - DB_HOST=db
+      - DB_PORT=5432
+
 volumes:
   db_data:
   metabase_db_data:
