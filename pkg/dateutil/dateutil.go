@@ -13,7 +13,7 @@ func DaysBetween(time1 time.Time, time2 time.Time) int {
 	return int(math.Ceil(t2.Sub(t1).Hours() / 24))
 }
 
-func WeekDaysBetween(time1 time.Time, time2 time.Time) int {
+func WeekDaysBetween(time1 time.Time, time2 time.Time, datesToExclude []time.Time) int {
 	// check the ordering of the dates
 	t1, t2 := time1, time2
 	if time1.After(time2) {
@@ -29,7 +29,7 @@ func WeekDaysBetween(time1 time.Time, time2 time.Time) int {
 		}
 
 		dayOfWeek := incDate.Weekday()
-		if dayOfWeek != time.Saturday && dayOfWeek != time.Sunday {
+		if dayOfWeek != time.Saturday && dayOfWeek != time.Sunday && !ContainsDate(incDate, datesToExclude) {
 			dayCounter++
 		}
 
@@ -49,4 +49,13 @@ func NearestPreviousDateForDay(inTime time.Time, targetDay time.Weekday) time.Ti
 		daysToMoveToNextFriday := int(targetDay) - int(inTime.Weekday())
 		return inTime.AddDate(0, 0, daysToMoveToNextFriday).AddDate(0, 0, -7)
 	}
+}
+
+func ContainsDate(needle time.Time, haystack []time.Time) bool {
+	for _, d := range haystack {
+		if d.Year() == needle.Year() && d.Month() == needle.Month() && d.Day() == needle.Day() {
+			return true
+		}
+	}
+	return false
 }

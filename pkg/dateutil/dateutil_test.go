@@ -32,20 +32,47 @@ func TestWeekDaysBetween(t *testing.T) {
 	tables := []struct {
 		inputDate1          time.Time
 		inputDate2          time.Time
+		exclude             []time.Time
 		numberOfDaysBetween int
 	}{
-		{asDate(2022, time.December, 4), asDate(2022, time.December, 9), 5},   // monday to friday
-		{asDate(2022, time.December, 4), asDate(2022, time.December, 12), 6},  // monday to monday
-		{asDate(2022, time.December, 12), asDate(2022, time.December, 4), 6},  // monday to monday (reversed)
-		{asDate(2022, time.December, 13), asDate(2022, time.December, 21), 7}, // tuesday to wednesday
-		{asDate(2022, time.December, 4), asDate(2022, time.December, 4), 0},   // monday to monday
-		{asDate(2022, time.December, 9), asDate(2022, time.December, 12), 2},  // friday to monday
+		// simple cases - no excludes
+		{asDate(2022, time.December, 4), asDate(2022, time.December, 9), []time.Time{}, 5},   // monday to friday
+		{asDate(2022, time.December, 4), asDate(2022, time.December, 12), []time.Time{}, 6},  // monday to monday
+		{asDate(2022, time.December, 12), asDate(2022, time.December, 4), []time.Time{}, 6},  // monday to monday (reversed)
+		{asDate(2022, time.December, 13), asDate(2022, time.December, 21), []time.Time{}, 7}, // tuesday to wednesday
+		{asDate(2022, time.December, 4), asDate(2022, time.December, 4), []time.Time{}, 0},   // monday to monday
+		{asDate(2022, time.December, 9), asDate(2022, time.December, 12), []time.Time{}, 2},  // friday to monday
+		// with excluded dates
+		{asDate(2022, time.December, 4), asDate(2022, time.December, 12), []time.Time{asDate(2022, time.December, 6)}, 5},                                    // monday to monday
+		{asDate(2022, time.December, 12), asDate(2022, time.December, 4), []time.Time{asDate(2022, time.December, 6)}, 5},                                    // monday to monday (reversed)
+		{asDate(2022, time.December, 13), asDate(2022, time.December, 21), []time.Time{asDate(2022, time.December, 14), asDate(2022, time.December, 15)}, 5}, // tuesday to wednesday
 	}
 
 	for _, table := range tables {
-		result := WeekDaysBetween(table.inputDate1, table.inputDate2)
+		result := WeekDaysBetween(table.inputDate1, table.inputDate2, table.exclude)
 		if result != table.numberOfDaysBetween {
-			t.Errorf("Weekdays between %s and %s calculated as %d, expected %d", table.inputDate1, table.inputDate2, result, table.numberOfDaysBetween)
+			t.Errorf("Weekdays between %s and %s, excluding %s; calculated: %d, expected: %d", table.inputDate1, table.inputDate2, table.exclude, result, table.numberOfDaysBetween)
+		}
+	}
+}
+
+func TestContainsDate(t *testing.T) {
+	tables := []struct {
+		needle   time.Time
+		haystack []time.Time
+		result   bool
+	}{
+		{asDate(2022, 01, 01), []time.Time{}, false},
+		{asDate(2022, 01, 01), []time.Time{asDate(2022, 01, 01)}, true},
+		{asDate(2022, 01, 01), []time.Time{asDate(2022, 12, 01)}, false},
+		{asDate(2022, 01, 01), []time.Time{asDate(2022, 12, 01), asDate(2022, 12, 07), asDate(2022, 12, 10)}, false},
+		{asDate(2022, 12, 01), []time.Time{asDate(2022, 12, 01), asDate(2022, 12, 07), asDate(2022, 12, 10)}, true},
+	}
+
+	for _, table := range tables {
+		result := ContainsDate(table.needle, table.haystack)
+		if result != table.result {
+			t.Errorf("Needle: %s; Haystack: %s; Expected: %t; Got: %t", table.needle, table.haystack, table.result, result)
 		}
 	}
 }

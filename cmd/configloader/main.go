@@ -17,6 +17,7 @@ type Environment struct {
 	WorkToDoStates     string `env:"WORK_TODO_STATES,required=true"`
 	WorkStartStates    string `env:"WORK_START_STATES,required=true"`
 	WorkCompleteStates string `env:"WORK_COMPLETE_STATES,required=true"`
+	NonWorkingDays     string `env:"NON_WORKING_DAYS,required=true"`
 }
 
 func main() {
@@ -41,6 +42,11 @@ func main() {
 	_, err = repo.SaveJiraDoneStates(context.Background(), environment.JiraProject, strings.Split(environment.WorkCompleteStates, ","))
 	if err != nil {
 		log.Fatalf("Failed to save Jira Work Done States. %s", err)
+	}
+
+	_, err = repo.SaveNonWorkingDays(context.Background(), environment.JiraProject, strings.Split(environment.NonWorkingDays, ","))
+	if err != nil {
+		log.Fatalf("Failed to save non working days. %s", err)
 	}
 
 	log.Println("Config successfully loaded")
