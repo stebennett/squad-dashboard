@@ -139,6 +139,7 @@ services:
       - DB_PORT=5432
       - JIRA_PROJECT
       - JIRA_DEFECT_ISSUE_TYPE
+      - JIRA_REPORT_ISSUE_TYPES
 
 volumes:
   db_data:

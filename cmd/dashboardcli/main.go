@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/Netflix/go-env"
 	"github.com/stebennett/squad-dashboard/pkg/dashboard"
@@ -13,8 +14,9 @@ import (
 )
 
 type Environment struct {
-	JiraProject         string `env:"JIRA_PROJECT,required=true"`
-	JiraDefectIssueType string `env:"JIRA_DEFECT_ISSUE_TYPE,required=true"`
+	JiraProject          string `env:"JIRA_PROJECT,required=true"`
+	JiraDefectIssueType  string `env:"JIRA_DEFECT_ISSUE_TYPE,required=true"`
+	JiraReportIssueTypes string `env:"JIRA_REPORT_ISSUE_TYPES,required=true"`
 }
 
 func main() {
@@ -31,8 +33,13 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	printer.PrintDefectCounts(escapedDefects)
 
-	printer.Print(escapedDefects)
+	cycleTimeReports, err := dashboard.GenerateCycleTime(12, environment.JiraProject, strings.Split(environment.JiraReportIssueTypes, ","), repo)
+	if err != nil {
+		log.Fatal(err)
+	}
+	printer.PrintCycleTimes(cycleTimeReports)
 }
 
 func createJiraRepository() jirarepository.JiraRepository {

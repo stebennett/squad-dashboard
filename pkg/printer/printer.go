@@ -3,5 +3,6 @@ package printer
 import "github.com/stebennett/squad-dashboard/pkg/dashboard/models"
 
 type Printer interface {
-	Print(defectCounts []models.EscapedDefectCount) error
+	PrintDefectCounts(defectCounts []models.EscapedDefectCount) error
+	PrintCycleTimes(cycleTimeReports []models.CycleTimeReport) error
 }

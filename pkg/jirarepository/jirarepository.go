@@ -28,6 +28,7 @@ type JiraRepository interface {
 	SaveNonWorkingDays(ctx context.Context, project string, nonWorkingDays []string) (int64, error)
 	GetNonWorkingDays(ctx context.Context, project string) ([]time.Time, error)
 	GetEscapedDefects(ctx context.Context, project string, issueType string, startDate time.Time, endDate time.Time) ([]string, error)
+	GetCompletedWorkingCycleTimes(ctx context.Context, project string, issueTypes []string, startDate time.Time, endDate time.Time) ([]int, error)
 }
 
 type PostgresJiraRepository struct {
@@ -911,6 +912,37 @@ func (p *PostgresJiraRepository) GetEscapedDefects(ctx context.Context, project 
 		}
 
 		result = append(result, issueKey)
+	}
+
+	return result, nil
+}
+
+func (p *PostgresJiraRepository) GetCompletedWorkingCycleTimes(ctx context.Context, project string, issueTypes []string, startDate time.Time, endDate time.Time) ([]int, error) {
+	selectStatement := `
+		SELECT jira_issues_calculations.working_cycle_time
+		FROM jira_issues_calculations
+		JOIN jira_issues ON jira_issues_calculations.issue_key = jira_issues.issue_key
+		WHERE jira_issues_calculations.issue_completed_at > $3
+		AND jira_issues_calculations.issue_completed_at <= $4
+		AND jira_issues.issue_type = ANY($2)
+		AND jira_issues.project = $1
+	`
+	var result = []int{}
+
+	rows, err := p.db.QueryContext(ctx, selectStatement, project, pq.Array(issueTypes), startDate, endDate)
+	if err != nil {
+		return result, err
+	}
+
+	for rows.Next() {
+		var ct int
+
+		err = rows.Scan(&ct)
+		if err != nil {
+			return result, nil
+		}
+
+		result = append(result, ct)
 	}
 
 	return result, nil
