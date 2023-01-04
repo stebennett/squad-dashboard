@@ -10,13 +10,13 @@ func TestNearestPreviousDateForDay(t *testing.T) {
 		inputDate  time.Time
 		outputDate time.Time
 	}{
-		{asDate(2022, time.July, 24), asDate(2022, time.July, 22)}, // sunday
-		{asDate(2022, time.July, 25), asDate(2022, time.July, 22)}, // monday
-		{asDate(2022, time.July, 26), asDate(2022, time.July, 22)}, // tuesday
-		{asDate(2022, time.July, 27), asDate(2022, time.July, 22)}, // wednesday
-		{asDate(2022, time.July, 28), asDate(2022, time.July, 22)}, // thursday
-		{asDate(2022, time.July, 29), asDate(2022, time.July, 29)}, // friday
-		{asDate(2022, time.July, 30), asDate(2022, time.July, 29)}, // saturday
+		{AsDate(2022, time.July, 24), AsDate(2022, time.July, 22)}, // sunday
+		{AsDate(2022, time.July, 25), AsDate(2022, time.July, 22)}, // monday
+		{AsDate(2022, time.July, 26), AsDate(2022, time.July, 22)}, // tuesday
+		{AsDate(2022, time.July, 27), AsDate(2022, time.July, 22)}, // wednesday
+		{AsDate(2022, time.July, 28), AsDate(2022, time.July, 22)}, // thursday
+		{AsDate(2022, time.July, 29), AsDate(2022, time.July, 29)}, // friday
+		{AsDate(2022, time.July, 30), AsDate(2022, time.July, 29)}, // saturday
 	}
 
 	for _, table := range tables {
@@ -36,16 +36,16 @@ func TestWeekDaysBetween(t *testing.T) {
 		numberOfDaysBetween int
 	}{
 		// simple cases - no excludes
-		{asDate(2022, time.December, 4), asDate(2022, time.December, 9), []time.Time{}, 5},   // monday to friday
-		{asDate(2022, time.December, 4), asDate(2022, time.December, 12), []time.Time{}, 6},  // monday to monday
-		{asDate(2022, time.December, 12), asDate(2022, time.December, 4), []time.Time{}, 6},  // monday to monday (reversed)
-		{asDate(2022, time.December, 13), asDate(2022, time.December, 21), []time.Time{}, 7}, // tuesday to wednesday
-		{asDate(2022, time.December, 4), asDate(2022, time.December, 4), []time.Time{}, 0},   // monday to monday
-		{asDate(2022, time.December, 9), asDate(2022, time.December, 12), []time.Time{}, 2},  // friday to monday
+		{AsDate(2022, time.December, 4), AsDate(2022, time.December, 9), []time.Time{}, 5},   // monday to friday
+		{AsDate(2022, time.December, 4), AsDate(2022, time.December, 12), []time.Time{}, 6},  // monday to monday
+		{AsDate(2022, time.December, 12), AsDate(2022, time.December, 4), []time.Time{}, 6},  // monday to monday (reversed)
+		{AsDate(2022, time.December, 13), AsDate(2022, time.December, 21), []time.Time{}, 7}, // tuesday to wednesday
+		{AsDate(2022, time.December, 4), AsDate(2022, time.December, 4), []time.Time{}, 0},   // monday to monday
+		{AsDate(2022, time.December, 9), AsDate(2022, time.December, 12), []time.Time{}, 2},  // friday to monday
 		// with excluded dates
-		{asDate(2022, time.December, 4), asDate(2022, time.December, 12), []time.Time{asDate(2022, time.December, 6)}, 5},                                    // monday to monday
-		{asDate(2022, time.December, 12), asDate(2022, time.December, 4), []time.Time{asDate(2022, time.December, 6)}, 5},                                    // monday to monday (reversed)
-		{asDate(2022, time.December, 13), asDate(2022, time.December, 21), []time.Time{asDate(2022, time.December, 14), asDate(2022, time.December, 15)}, 5}, // tuesday to wednesday
+		{AsDate(2022, time.December, 4), AsDate(2022, time.December, 12), []time.Time{AsDate(2022, time.December, 6)}, 5},                                    // monday to monday
+		{AsDate(2022, time.December, 12), AsDate(2022, time.December, 4), []time.Time{AsDate(2022, time.December, 6)}, 5},                                    // monday to monday (reversed)
+		{AsDate(2022, time.December, 13), AsDate(2022, time.December, 21), []time.Time{AsDate(2022, time.December, 14), AsDate(2022, time.December, 15)}, 5}, // tuesday to wednesday
 	}
 
 	for _, table := range tables {
@@ -62,11 +62,11 @@ func TestContainsDate(t *testing.T) {
 		haystack []time.Time
 		result   bool
 	}{
-		{asDate(2022, 01, 01), []time.Time{}, false},
-		{asDate(2022, 01, 01), []time.Time{asDate(2022, 01, 01)}, true},
-		{asDate(2022, 01, 01), []time.Time{asDate(2022, 12, 01)}, false},
-		{asDate(2022, 01, 01), []time.Time{asDate(2022, 12, 01), asDate(2022, 12, 07), asDate(2022, 12, 10)}, false},
-		{asDate(2022, 12, 01), []time.Time{asDate(2022, 12, 01), asDate(2022, 12, 07), asDate(2022, 12, 10)}, true},
+		{AsDate(2022, 01, 01), []time.Time{}, false},
+		{AsDate(2022, 01, 01), []time.Time{AsDate(2022, 01, 01)}, true},
+		{AsDate(2022, 01, 01), []time.Time{AsDate(2022, 12, 01)}, false},
+		{AsDate(2022, 01, 01), []time.Time{AsDate(2022, 12, 01), AsDate(2022, 12, 07), AsDate(2022, 12, 10)}, false},
+		{AsDate(2022, 12, 01), []time.Time{AsDate(2022, 12, 01), AsDate(2022, 12, 07), AsDate(2022, 12, 10)}, true},
 	}
 
 	for _, table := range tables {
@@ -83,9 +83,9 @@ func TestPreviousWeekDates(t *testing.T) {
 		numberOfWeeks  int
 		expectedResult []time.Time
 	}{
-		{asDate(2022, 12, 30), 0, []time.Time{}},
-		{asDate(2022, 12, 30), 1, []time.Time{asDate(2022, 12, 30)}},
-		{asDate(2022, 12, 30), 3, []time.Time{asDate(2022, 12, 30), asDate(2022, 12, 23), asDate(2022, 12, 16)}},
+		{AsDate(2022, 12, 30), 0, []time.Time{}},
+		{AsDate(2022, 12, 30), 1, []time.Time{AsDate(2022, 12, 30)}},
+		{AsDate(2022, 12, 30), 3, []time.Time{AsDate(2022, 12, 30), AsDate(2022, 12, 23), AsDate(2022, 12, 16)}},
 	}
 
 	for _, table := range tables {
@@ -94,10 +94,6 @@ func TestPreviousWeekDates(t *testing.T) {
 			t.Errorf("Expected: %s; Got: %s", table.expectedResult, result)
 		}
 	}
-}
-
-func asDate(year int, month time.Month, day int) time.Time {
-	return time.Date(year, month, day, 0, 0, 0, 0, time.UTC)
 }
 
 func containsExactly(times1 []time.Time, times2 []time.Time) bool {

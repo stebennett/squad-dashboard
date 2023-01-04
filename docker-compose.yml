@@ -137,6 +137,8 @@ services:
       - DB_NAME=${POSTGRES_DB}
       - DB_HOST=db
       - DB_PORT=5432
+      - JIRA_PROJECT
+      - JIRA_DEFECT_ISSUE_TYPE
 
 volumes:
   db_data:

@@ -13,6 +13,7 @@ func NewCommandLinePrinter() *CommandLinePrinter {
 }
 
 func (c *CommandLinePrinter) Print(defectCounts []models.EscapedDefectCount) error {
+	log.Printf("printer running")
 	for idx, defectCount := range defectCounts {
 		log.Printf("%d> weekEnding: %s; defectsCreated: %d", idx, defectCount.WeekEnding, defectCount.NumberOfDefectsCreated)
 	}

@@ -6,16 +6,28 @@ import (
 	"log"
 	"os"
 
+	"github.com/Netflix/go-env"
 	"github.com/stebennett/squad-dashboard/pkg/dashboard"
 	"github.com/stebennett/squad-dashboard/pkg/jirarepository"
 	"github.com/stebennett/squad-dashboard/pkg/printer"
 )
 
+type Environment struct {
+	JiraProject         string `env:"JIRA_PROJECT,required=true"`
+	JiraDefectIssueType string `env:"JIRA_DEFECT_ISSUE_TYPE,required=true"`
+}
+
 func main() {
+	var environment Environment
+	_, err := env.UnmarshalFromEnviron(&environment)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	repo := createJiraRepository()
 	printer := createPrinter()
 
-	escapedDefects, err := dashboard.GenerateEscapedDefects(12, repo)
+	escapedDefects, err := dashboard.GenerateEscapedDefects(12, environment.JiraProject, environment.JiraDefectIssueType, repo)
 	if err != nil {
 		log.Fatal(err)
 	}

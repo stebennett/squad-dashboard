@@ -7,6 +7,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/dashboard/models",
+        "//pkg/dateutil",
         "//pkg/jirarepository",
     ],
 )
