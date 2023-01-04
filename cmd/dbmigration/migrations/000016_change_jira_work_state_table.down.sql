@@ -1,3 +1,5 @@
+BEGIN;
+
 DROP TABLE IF EXISTS jira_work_states;
 CREATE TABLE IF NOT EXISTS jira_work_state_start(
     _id INT GENERATED ALWAYS AS IDENTITY,
@@ -7,3 +9,5 @@ CREATE TABLE IF NOT EXISTS jira_work_state_start(
 
     CONSTRAINT jwss_project_state_name_cnstr UNIQUE (project, state_name)
 );
+
+COMMIT;
