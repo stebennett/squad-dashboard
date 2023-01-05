@@ -4,9 +4,16 @@ go_library(
     name = "printer",
     srcs = [
         "commandlineprinter.go",
+        "plotprinter.go",
         "printer.go",
     ],
     importpath = "github.com/stebennett/squad-dashboard/pkg/printer",
     visibility = ["//visibility:public"],
-    deps = ["//pkg/dashboard/models"],
+    deps = [
+        "//pkg/dashboard/models",
+        "//vendor/gonum.org/v1/plot",
+        "//vendor/gonum.org/v1/plot/plotter",
+        "//vendor/gonum.org/v1/plot/vg",
+        "//vendor/gonum.org/v1/plot/vg/draw",
+    ],
 )

@@ -140,6 +140,10 @@ services:
       - JIRA_PROJECT
       - JIRA_DEFECT_ISSUE_TYPE
       - JIRA_REPORT_ISSUE_TYPES
+      - OUTPUT_DIRECTORY=/output
+    volumes:
+      - ./output:/output
+
 
 volumes:
   db_data:

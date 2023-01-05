@@ -17,6 +17,7 @@ type Environment struct {
 	JiraProject          string `env:"JIRA_PROJECT,required=true"`
 	JiraDefectIssueType  string `env:"JIRA_DEFECT_ISSUE_TYPE,required=true"`
 	JiraReportIssueTypes string `env:"JIRA_REPORT_ISSUE_TYPES,required=true"`
+	OutputDirectory      string `env:"OUTPUT_DIRECTORY,required=true"`
 }
 
 func main() {
@@ -27,7 +28,7 @@ func main() {
 	}
 
 	repo := createJiraRepository()
-	printer := createPrinter()
+	printer := createPrinter(environment.OutputDirectory, environment.JiraProject)
 
 	escapedDefects, err := dashboard.GenerateEscapedDefects(12, environment.JiraProject, environment.JiraDefectIssueType, repo)
 	if err != nil {
@@ -62,6 +63,6 @@ func createJiraRepository() jirarepository.JiraRepository {
 	return jirarepository.NewPostgresJiraRepository(db)
 }
 
-func createPrinter() printer.Printer {
-	return printer.NewCommandLinePrinter()
+func createPrinter(outputDirectory string, project string) printer.Printer {
+	return printer.NewPlotPrinter(outputDirectory, project)
 }
