@@ -20,7 +20,7 @@ func NewPlotPrinter(outputDirectory string, project string) *PlotPrinter {
 	return &PlotPrinter{OutputDirectory: outputDirectory, JiraProject: project}
 }
 
-func (pp *PlotPrinter) PrintDefectCounts(defectCounts []models.EscapedDefectCount) error {
+func (pp *PlotPrinter) PrintDefectCounts(defectCounts []models.WeekCount) error {
 	p := plot.New()
 
 	xticks := plot.TimeTicks{Format: "2006-01-02"}
@@ -33,7 +33,7 @@ func (pp *PlotPrinter) PrintDefectCounts(defectCounts []models.EscapedDefectCoun
 	data := make(plotter.XYs, len(defectCounts))
 	for i, d := range defectCounts {
 		data[i].X = float64(d.WeekEnding.Unix())
-		data[i].Y = float64(d.NumberOfDefectsCreated)
+		data[i].Y = float64(d.Count)
 	}
 
 	p.Add(plotter.NewGrid())
@@ -53,10 +53,10 @@ func (pp *PlotPrinter) PrintDefectCounts(defectCounts []models.EscapedDefectCoun
 	return err
 }
 
-func (pp *PlotPrinter) PrintCycleTimes(cycleTimeReports []models.CycleTimeReport) error {
+func (pp *PlotPrinter) PrintCycleTimes(cycleTimeReports []models.WeekCount) error {
 	return nil
 }
 
-func (pp *PlotPrinter) PrintThroughput(throughputReports []models.ThroughputReport) error {
+func (pp *PlotPrinter) PrintThroughput(throughputReports []models.WeekCount) error {
 	return nil
 }

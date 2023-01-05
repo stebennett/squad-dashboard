@@ -10,14 +10,14 @@ import (
 	"github.com/stebennett/squad-dashboard/pkg/mathutil"
 )
 
-func GenerateEscapedDefects(weekCount int, project string, defectIssueType string, repo jirarepository.JiraRepository) ([]models.EscapedDefectCount, error) {
+func GenerateEscapedDefects(weekCount int, project string, defectIssueType string, repo jirarepository.JiraRepository) ([]models.WeekCount, error) {
 	// 1. Calculate dates of last weekCount fridays
 	now := time.Now()
 
 	nearestFriday := dateutil.NearestPreviousDateForDay(dateutil.AsDate(now.Year(), now.Month(), now.Day()), time.Friday)
 	weekEndings := dateutil.PreviousWeekDates(nearestFriday, weekCount)
 
-	escapedDefectCounts := []models.EscapedDefectCount{}
+	escapedDefectCounts := []models.WeekCount{}
 
 	// 2. Count the number of defects created for week
 	for _, d := range weekEndings {
@@ -27,9 +27,9 @@ func GenerateEscapedDefects(weekCount int, project string, defectIssueType strin
 			return escapedDefectCounts, err
 		}
 
-		escapedDefectCounts = append(escapedDefectCounts, models.EscapedDefectCount{
-			WeekEnding:             d,
-			NumberOfDefectsCreated: len(escapedDefects),
+		escapedDefectCounts = append(escapedDefectCounts, models.WeekCount{
+			WeekEnding: d,
+			Count:      len(escapedDefects),
 		})
 	}
 
@@ -37,14 +37,14 @@ func GenerateEscapedDefects(weekCount int, project string, defectIssueType strin
 	return escapedDefectCounts, nil
 }
 
-func GenerateCycleTime(weekCount int, project string, issueTypes []string, repo jirarepository.JiraRepository) ([]models.CycleTimeReport, error) {
+func GenerateCycleTime(weekCount int, project string, issueTypes []string, repo jirarepository.JiraRepository) ([]models.WeekCount, error) {
 	// 1. Calculate dates of last weekCount fridays
 	now := time.Now()
 
 	nearestFriday := dateutil.NearestPreviousDateForDay(dateutil.AsDate(now.Year(), now.Month(), now.Day()), time.Friday)
 	weekEndings := dateutil.PreviousWeekDates(nearestFriday, weekCount)
 
-	cycleTimeReports := []models.CycleTimeReport{}
+	cycleTimeReports := []models.WeekCount{}
 
 	// 2. Get the average cycle time for a week
 	for _, d := range weekEndings {
@@ -54,23 +54,23 @@ func GenerateCycleTime(weekCount int, project string, issueTypes []string, repo 
 			return cycleTimeReports, err
 		}
 
-		cycleTimeReports = append(cycleTimeReports, models.CycleTimeReport{
-			WeekEnding:       d,
-			AverageCycleTime: mathutil.Percentile(0.75, cycleTimes),
+		cycleTimeReports = append(cycleTimeReports, models.WeekCount{
+			WeekEnding: d,
+			Count:      mathutil.Percentile(0.75, cycleTimes),
 		})
 	}
 
 	return cycleTimeReports, nil
 }
 
-func GenerateThroughput(weekCount int, project string, issueTypes []string, repo jirarepository.JiraRepository) ([]models.ThroughputReport, error) {
+func GenerateThroughput(weekCount int, project string, issueTypes []string, repo jirarepository.JiraRepository) ([]models.WeekCount, error) {
 	// 1. Calculate dates of last weekCount fridays
 	now := time.Now()
 
 	nearestFriday := dateutil.NearestPreviousDateForDay(dateutil.AsDate(now.Year(), now.Month(), now.Day()), time.Friday)
 	weekEndings := dateutil.PreviousWeekDates(nearestFriday, weekCount)
 
-	throughputReports := []models.ThroughputReport{}
+	throughputReports := []models.WeekCount{}
 
 	// 2. Get throughput by week
 	for _, d := range weekEndings {
@@ -80,9 +80,9 @@ func GenerateThroughput(weekCount int, project string, issueTypes []string, repo
 			return throughputReports, err
 		}
 
-		throughputReports = append(throughputReports, models.ThroughputReport{
+		throughputReports = append(throughputReports, models.WeekCount{
 			WeekEnding: d,
-			Throughput: len(issues),
+			Count:      len(issues),
 		})
 	}
 

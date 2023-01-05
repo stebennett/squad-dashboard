@@ -12,28 +12,28 @@ func NewCommandLinePrinter() *CommandLinePrinter {
 	return &CommandLinePrinter{}
 }
 
-func (c *CommandLinePrinter) PrintDefectCounts(defectCounts []models.EscapedDefectCount) error {
+func (c *CommandLinePrinter) PrintDefectCounts(defectCounts []models.WeekCount) error {
 	log.Printf("---- defects ----")
 	for idx, defectCount := range defectCounts {
-		log.Printf("%d> weekEnding: %s; defectsCreated: %d", idx, defectCount.WeekEnding, defectCount.NumberOfDefectsCreated)
+		log.Printf("%d> weekEnding: %s; defectsCreated: %d", idx, defectCount.WeekEnding, defectCount.Count)
 	}
 
 	return nil
 }
 
-func (c *CommandLinePrinter) PrintCycleTimes(cycleTimeReports []models.CycleTimeReport) error {
+func (c *CommandLinePrinter) PrintCycleTimes(cycleTimeReports []models.WeekCount) error {
 	log.Printf("---- cycle times ----")
 	for idx, ct := range cycleTimeReports {
-		log.Printf("%d> weekEnding: %s; avgCycleTime: %d", idx, ct.WeekEnding, ct.AverageCycleTime)
+		log.Printf("%d> weekEnding: %s; avgCycleTime: %d", idx, ct.WeekEnding, ct.Count)
 	}
 
 	return nil
 }
 
-func (c *CommandLinePrinter) PrintThroughput(throughputReports []models.ThroughputReport) error {
+func (c *CommandLinePrinter) PrintThroughput(throughputReports []models.WeekCount) error {
 	log.Printf("---- throughput ----")
 	for idx, tp := range throughputReports {
-		log.Printf("%d> weekEnding: %s; throughput: %d", idx, tp.WeekEnding, tp.Throughput)
+		log.Printf("%d> weekEnding: %s; throughput: %d", idx, tp.WeekEnding, tp.Count)
 	}
 
 	return nil
