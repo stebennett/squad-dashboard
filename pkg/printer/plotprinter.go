@@ -21,17 +21,29 @@ func NewPlotPrinter(outputDirectory string, project string) *PlotPrinter {
 }
 
 func (pp *PlotPrinter) PrintDefectCounts(defectCounts []models.WeekCount) error {
+	return pp.printChart(defectCounts, "Escaped Defects", "escaped-defects", color.NRGBA{R: 190, G: 0, B: 0, A: 100}, color.NRGBA{R: 190, G: 0, B: 0, A: 255})
+}
+
+func (pp *PlotPrinter) PrintCycleTimes(cycleTimeReports []models.WeekCount) error {
+	return pp.printChart(cycleTimeReports, "Cycle Time", "cycle-time", color.NRGBA{R: 0, G: 0, B: 190, A: 100}, color.NRGBA{R: 0, G: 0, B: 190, A: 255})
+}
+
+func (pp *PlotPrinter) PrintThroughput(throughputReports []models.WeekCount) error {
+	return pp.printChart(throughputReports, "Throughput", "throughput", color.NRGBA{R: 0, G: 190, B: 0, A: 100}, color.NRGBA{R: 0, G: 190, B: 0, A: 255})
+}
+
+func (pp *PlotPrinter) printChart(weekCounts []models.WeekCount, title string, filename string, plotColor color.Color, trendlineColor color.Color) error {
 	p := plot.New()
 
 	xticks := plot.TimeTicks{Format: "2006-01-02"}
 
-	p.Title.Text = "Escaped Defects - " + pp.JiraProject
+	p.Title.Text = title + " - " + pp.JiraProject
 	p.X.Label.Text = "Week Ending"
 	p.X.Tick.Marker = xticks
 	p.Y.Label.Text = "Number"
 
-	data := make(plotter.XYs, len(defectCounts))
-	for i, d := range defectCounts {
+	data := make(plotter.XYs, len(weekCounts))
+	for i, d := range weekCounts {
 		data[i].X = float64(d.WeekEnding.Unix())
 		data[i].Y = float64(d.Count)
 	}
@@ -43,20 +55,55 @@ func (pp *PlotPrinter) PrintDefectCounts(defectCounts []models.WeekCount) error 
 		return err
 	}
 
-	line.Color = color.RGBA{R: 255, A: 255}
+	line.Color = plotColor
+	line.LineStyle.Dashes = []vg.Length{vg.Points(5), vg.Points(5)}
 	points.Shape = draw.BoxGlyph{}
-	points.Color = color.RGBA{R: 255, A: 255}
+	points.Color = plotColor
 
 	p.Add(line, points)
 
-	err = p.Save(20*vg.Centimeter, 10*vg.Centimeter, pp.OutputDirectory+"/escapeddefects-"+pp.JiraProject+".png")
+	linearRegression := pp.createLinearRegression(data)
+
+	linearRegressionLine, linearRegressionPoints, err := plotter.NewLinePoints(linearRegression)
+	if err != nil {
+		return err
+	}
+
+	linearRegressionLine.Color = trendlineColor
+	linearRegressionPoints.Color = trendlineColor
+
+	p.Add(linearRegressionLine, linearRegressionPoints)
+
+	err = p.Save(20*vg.Centimeter, 10*vg.Centimeter, pp.OutputDirectory+"/"+filename+"-"+pp.JiraProject+".png")
 	return err
 }
 
-func (pp *PlotPrinter) PrintCycleTimes(cycleTimeReports []models.WeekCount) error {
-	return nil
-}
+func (pp *PlotPrinter) createLinearRegression(inData plotter.XYs) plotter.XYs {
+	q := len(inData)
 
-func (pp *PlotPrinter) PrintThroughput(throughputReports []models.WeekCount) error {
-	return nil
+	if q == 0 {
+		return make(plotter.XYs, 0)
+	}
+
+	p := float64(q)
+
+	sum_x, sum_y, sum_xx, sum_xy := 0.0, 0.0, 0.0, 0.0
+
+	for _, p := range inData {
+		sum_x += p.X
+		sum_y += p.Y
+		sum_xx += p.X * p.X
+		sum_xy += p.X * p.Y
+	}
+
+	m := (p*sum_xy - sum_x*sum_y) / (p*sum_xx - sum_x*sum_x)
+	b := (sum_y / p) - (m * sum_x / p)
+
+	r := make(plotter.XYs, q)
+	for i, p := range inData {
+		r[i].X = p.X
+		r[i].Y = p.X*m + b
+	}
+
+	return r
 }
