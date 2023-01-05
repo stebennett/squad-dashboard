@@ -10,6 +10,10 @@ func Percentile(percentile float64, input []int) int {
 		return 0
 	}
 
+	if len(input) == 1 {
+		return input[0]
+	}
+
 	sort.Ints(input)
 	index := int(math.Round(percentile * float64(len(input))))
 	return input[index]
