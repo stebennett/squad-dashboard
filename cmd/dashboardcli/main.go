@@ -30,7 +30,9 @@ func main() {
 	}
 
 	repo := createJiraRepository()
-	printer := createPrinter(environment.OutputDirectory, environment.JiraProject)
+	plotprinter := printer.NewPlotPrinter(environment.OutputDirectory, environment.JiraProject)
+	cliprinter := printer.NewCommandLinePrinter()
+
 	percentile, err := strconv.ParseFloat(environment.CycleTimePercentile, 64)
 	if err != nil {
 		log.Fatal(err)
@@ -40,19 +42,22 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	printer.PrintDefectCounts(escapedDefects)
+	cliprinter.PrintDefectCounts(escapedDefects)
+	plotprinter.PrintDefectCounts(escapedDefects)
 
 	cycleTimeReports, err := dashboard.GenerateCycleTime(12, percentile, environment.JiraProject, strings.Split(environment.JiraReportIssueTypes, ","), repo)
 	if err != nil {
 		log.Fatal(err)
 	}
-	printer.PrintCycleTimes(cycleTimeReports)
+	cliprinter.PrintCycleTimes(cycleTimeReports)
+	plotprinter.PrintCycleTimes(cycleTimeReports)
 
 	throughputReports, err := dashboard.GenerateThroughput(12, environment.JiraProject, strings.Split(environment.JiraReportIssueTypes, ","), repo)
 	if err != nil {
 		log.Fatal(err)
 	}
-	printer.PrintThroughput(throughputReports)
+	cliprinter.PrintThroughput(throughputReports)
+	plotprinter.PrintThroughput(throughputReports)
 }
 
 func createJiraRepository() jirarepository.JiraRepository {
@@ -67,8 +72,4 @@ func createJiraRepository() jirarepository.JiraRepository {
 
 	fmt.Println("Database initialised")
 	return jirarepository.NewPostgresJiraRepository(db)
-}
-
-func createPrinter(outputDirectory string, project string) printer.Printer {
-	return printer.NewPlotPrinter(outputDirectory, project)
 }
