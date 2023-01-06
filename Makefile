@@ -69,3 +69,6 @@ dashboardcli: build-all db
 	bazel build --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/dashboardcli:image
 	bazel run --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/dashboardcli:image
 	docker-compose --env-file ${ENV} up dashboardcli	
+
+.PHONY: report
+report: init jiracollector jiraissuecalculator dashboardcli

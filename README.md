@@ -60,3 +60,9 @@ Building and run a command in docker
 4. ENV=.env make jiracollector
 5. ENV=.env make jiraissuecalculator
 6. ENV=.env make metabase
+
+## Running a report
+
+````
+  # ENV=.env make report
+````

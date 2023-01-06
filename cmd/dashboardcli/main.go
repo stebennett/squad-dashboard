@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/Netflix/go-env"
@@ -18,6 +19,7 @@ type Environment struct {
 	JiraDefectIssueType  string `env:"JIRA_DEFECT_ISSUE_TYPE,required=true"`
 	JiraReportIssueTypes string `env:"JIRA_REPORT_ISSUE_TYPES,required=true"`
 	OutputDirectory      string `env:"OUTPUT_DIRECTORY,required=true"`
+	CycleTimePercentile  string `env:"REPORT_CYCLE_TIME_PERCENTILE,required=true"`
 }
 
 func main() {
@@ -29,6 +31,10 @@ func main() {
 
 	repo := createJiraRepository()
 	printer := createPrinter(environment.OutputDirectory, environment.JiraProject)
+	percentile, err := strconv.ParseFloat(environment.CycleTimePercentile, 64)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	escapedDefects, err := dashboard.GenerateEscapedDefects(12, environment.JiraProject, environment.JiraDefectIssueType, repo)
 	if err != nil {
@@ -36,7 +42,7 @@ func main() {
 	}
 	printer.PrintDefectCounts(escapedDefects)
 
-	cycleTimeReports, err := dashboard.GenerateCycleTime(12, environment.JiraProject, strings.Split(environment.JiraReportIssueTypes, ","), repo)
+	cycleTimeReports, err := dashboard.GenerateCycleTime(12, percentile, environment.JiraProject, strings.Split(environment.JiraReportIssueTypes, ","), repo)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -2,6 +2,7 @@ package printer
 
 import (
 	"image/color"
+	"sort"
 
 	"github.com/stebennett/squad-dashboard/pkg/dashboard/models"
 
@@ -21,15 +22,30 @@ func NewPlotPrinter(outputDirectory string, project string) *PlotPrinter {
 }
 
 func (pp *PlotPrinter) PrintDefectCounts(defectCounts []models.WeekCount) error {
-	return pp.printChart(defectCounts, "Escaped Defects", "escaped-defects", color.NRGBA{R: 190, G: 0, B: 0, A: 100}, color.NRGBA{R: 190, G: 0, B: 0, A: 255})
+	err := pp.printChart(defectCounts, "Escaped Defects", "escaped-defects", color.NRGBA{R: 190, G: 0, B: 0, A: 100}, color.NRGBA{R: 190, G: 0, B: 0, A: 255})
+	if err != nil {
+		return err
+	}
+
+	return pp.printChart(pp.normalizeData(defectCounts), "Escaped Defects - Normalized", "escaped-defects-normalized", color.NRGBA{R: 190, G: 0, B: 0, A: 100}, color.NRGBA{R: 190, G: 0, B: 0, A: 255})
 }
 
 func (pp *PlotPrinter) PrintCycleTimes(cycleTimeReports []models.WeekCount) error {
-	return pp.printChart(cycleTimeReports, "Cycle Time", "cycle-time", color.NRGBA{R: 0, G: 0, B: 190, A: 100}, color.NRGBA{R: 0, G: 0, B: 190, A: 255})
+	err := pp.printChart(cycleTimeReports, "Cycle Time", "cycle-time", color.NRGBA{R: 0, G: 0, B: 190, A: 100}, color.NRGBA{R: 0, G: 0, B: 190, A: 255})
+	if err != nil {
+		return err
+	}
+
+	return pp.printChart(pp.normalizeData(cycleTimeReports), "Cycle Time - Normalized", "cycle-time-normalized", color.NRGBA{R: 0, G: 0, B: 190, A: 100}, color.NRGBA{R: 0, G: 0, B: 190, A: 255})
 }
 
 func (pp *PlotPrinter) PrintThroughput(throughputReports []models.WeekCount) error {
-	return pp.printChart(throughputReports, "Throughput", "throughput", color.NRGBA{R: 0, G: 190, B: 0, A: 100}, color.NRGBA{R: 0, G: 190, B: 0, A: 255})
+	err := pp.printChart(throughputReports, "Throughput", "throughput", color.NRGBA{R: 0, G: 190, B: 0, A: 100}, color.NRGBA{R: 0, G: 190, B: 0, A: 255})
+	if err != nil {
+		return err
+	}
+
+	return pp.printChart(pp.normalizeData(throughputReports), "Throughput - Normalized", "throughput-normalized", color.NRGBA{R: 0, G: 190, B: 0, A: 100}, color.NRGBA{R: 0, G: 190, B: 0, A: 255})
 }
 
 func (pp *PlotPrinter) printChart(weekCounts []models.WeekCount, title string, filename string, plotColor color.Color, trendlineColor color.Color) error {
@@ -106,4 +122,27 @@ func (pp *PlotPrinter) createLinearRegression(inData plotter.XYs) plotter.XYs {
 	}
 
 	return r
+}
+
+func (pp *PlotPrinter) normalizeData(data []models.WeekCount) []models.WeekCount {
+	sort.Slice(data, func(i, j int) bool {
+		return data[i].Count < data[j].Count
+	})
+
+	size := len(data)
+	min, max := data[0].Count, data[size-1].Count
+
+	result := make([]models.WeekCount, size)
+	for i, d := range data {
+		result[i] = models.WeekCount{
+			WeekEnding: d.WeekEnding,
+			Count:      int((float64(d.Count-min) / float64(max-min)) * 100.0),
+		}
+	}
+
+	sort.Slice(result, func(i, j int) bool {
+		return result[i].WeekEnding.Before(result[j].WeekEnding)
+	})
+
+	return result
 }

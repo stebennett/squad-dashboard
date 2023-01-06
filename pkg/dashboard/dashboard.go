@@ -37,7 +37,7 @@ func GenerateEscapedDefects(weekCount int, project string, defectIssueType strin
 	return escapedDefectCounts, nil
 }
 
-func GenerateCycleTime(weekCount int, project string, issueTypes []string, repo jirarepository.JiraRepository) ([]models.WeekCount, error) {
+func GenerateCycleTime(weekCount int, percentile float64, project string, issueTypes []string, repo jirarepository.JiraRepository) ([]models.WeekCount, error) {
 	// 1. Calculate dates of last weekCount fridays
 	now := time.Now()
 
@@ -56,7 +56,7 @@ func GenerateCycleTime(weekCount int, project string, issueTypes []string, repo 
 
 		cycleTimeReports = append(cycleTimeReports, models.WeekCount{
 			WeekEnding: d,
-			Count:      mathutil.Percentile(0.75, cycleTimes),
+			Count:      mathutil.Percentile(percentile, cycleTimes),
 		})
 	}
 

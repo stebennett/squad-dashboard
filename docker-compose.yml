@@ -141,6 +141,7 @@ services:
       - JIRA_DEFECT_ISSUE_TYPE
       - JIRA_REPORT_ISSUE_TYPES
       - OUTPUT_DIRECTORY=/output
+      - REPORT_CYCLE_TIME_PERCENTILE
     volumes:
       - ./output:/output
 
