@@ -46,6 +46,12 @@ pagerdutyoncallcollector: build-all db
 	bazel run --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/pagerdutyoncallcollector:image
 	docker-compose --env-file ${ENV} up pagerdutyoncallcollector
 
+.PHONY: awscostcollector
+awscostcollector: build-all db
+	bazel build --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/awscostcollector:image
+	bazel run --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/awscostcollector:image
+	docker-compose --env-file ${ENV} up awscostcollector
+
 .PHONY: jiraissuecalculator
 jiraissuecalculator: build-all db
 	bazel build --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/jiraissuecalculator:image
