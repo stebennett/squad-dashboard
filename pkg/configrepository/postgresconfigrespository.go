@@ -1,4 +1,4 @@
-package jiraconfigrepository
+package configrepository
 
 import (
 	"context"

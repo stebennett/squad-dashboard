@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/Netflix/go-env"
-	"github.com/stebennett/squad-dashboard/pkg/jiraconfigrepository"
+	"github.com/stebennett/squad-dashboard/pkg/configrepository"
 )
 
 type Environment struct {
@@ -52,7 +52,7 @@ func main() {
 	log.Println("Config successfully loaded")
 }
 
-func createConfigRepository() jiraconfigrepository.ConfigRepository {
+func createConfigRepository() configrepository.ConfigRepository {
 	var err error
 	var db *sql.DB
 	connStr := os.ExpandEnv("postgres://$DB_USERNAME:$DB_PASSWORD@$DB_HOST:$DB_PORT/$DB_NAME?sslmode=disable") // load from env vars
@@ -63,5 +63,5 @@ func createConfigRepository() jiraconfigrepository.ConfigRepository {
 	}
 
 	fmt.Println("Database initialised")
-	return jiraconfigrepository.NewPostgresConfigRepository(db)
+	return configrepository.NewPostgresConfigRepository(db)
 }

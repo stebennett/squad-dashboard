@@ -11,8 +11,8 @@ import (
 
 	"github.com/Netflix/go-env"
 	"github.com/stebennett/squad-dashboard/cmd/jiraissuecalculator/calculator"
+	"github.com/stebennett/squad-dashboard/pkg/configrepository"
 	"github.com/stebennett/squad-dashboard/pkg/jiracalculationsrepository"
-	"github.com/stebennett/squad-dashboard/pkg/jiraconfigrepository"
 	"github.com/stebennett/squad-dashboard/pkg/jirarepository"
 )
 
@@ -33,7 +33,7 @@ func main() {
 		log.Fatal(err)
 	}
 	issueRepo := jirarepository.NewPostgresJiraRepository(db)
-	configRepo := jiraconfigrepository.NewPostgresConfigRepository(db)
+	configRepo := configrepository.NewPostgresConfigRepository(db)
 	calaculationsRepo := jiracalculationsrepository.NewPostgresJiraCalculationsRepository(db)
 
 	// load environment vars
@@ -175,7 +175,7 @@ func setCompleteDates(issuesRepo jirarepository.JiraRepository, calaculationsRep
 	return updatedCount, nil
 }
 
-func setCycleTimeForCompletedIssues(issuesRepo jirarepository.JiraRepository, configRepo jiraconfigrepository.ConfigRepository, calaculationsRepo jiracalculationsrepository.JiraCalculationsRepository, project string) (int64, error) {
+func setCycleTimeForCompletedIssues(issuesRepo jirarepository.JiraRepository, configRepo configrepository.ConfigRepository, calaculationsRepo jiracalculationsrepository.JiraCalculationsRepository, project string) (int64, error) {
 	calculations, err := issuesRepo.GetCompletedIssues(context.Background(), project)
 	if err != nil {
 		return -1, err
