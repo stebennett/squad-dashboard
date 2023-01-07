@@ -11,6 +11,8 @@ import (
 
 	"github.com/Netflix/go-env"
 	"github.com/stebennett/squad-dashboard/cmd/jiraissuecalculator/calculator"
+	"github.com/stebennett/squad-dashboard/pkg/configrepository"
+	"github.com/stebennett/squad-dashboard/pkg/jiracalculationsrepository"
 	"github.com/stebennett/squad-dashboard/pkg/jirarepository"
 )
 
@@ -26,11 +28,17 @@ type Environment struct {
 
 func main() {
 	// create a new database to store calculations
-	issueRepo := createIssueRepository()
+	db, err := connectToDatabase()
+	if err != nil {
+		log.Fatal(err)
+	}
+	issueRepo := jirarepository.NewPostgresJiraRepository(db)
+	configRepo := configrepository.NewPostgresConfigRepository(db)
+	calaculationsRepo := jiracalculationsrepository.NewPostgresJiraCalculationsRepository(db)
 
 	// load environment vars
 	var environment Environment
-	_, err := env.UnmarshalFromEnviron(&environment)
+	_, err = env.UnmarshalFromEnviron(&environment)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -38,28 +46,28 @@ func main() {
 	log.Printf("running updates for project %s", environment.JiraProject)
 
 	// fetch all issues and set create year-week
-	_, err = setCreateDates(issueRepo, environment.JiraProject)
+	_, err = setCreateDates(issueRepo, calaculationsRepo, environment.JiraProject)
 	if err != nil {
 		log.Fatalf("Failed to set created year-week for issues. %s", err)
 	}
 	log.Println("Completed update of created year-week for issues")
 
 	// fetch all issues started and set started year-week
-	_, err = setStartDates(issueRepo, environment.JiraProject, strings.Split(environment.WorkStartStates, ","), strings.Split(environment.WorkToDoStates, ","))
+	_, err = setStartDates(issueRepo, calaculationsRepo, environment.JiraProject, strings.Split(environment.WorkStartStates, ","), strings.Split(environment.WorkToDoStates, ","))
 	if err != nil {
 		log.Fatalf("Failed to set started year-week for issues. %s", err)
 	}
 	log.Println("Completed update of started year-week for issues")
 
 	// fetch all issues completed and set complete year-week
-	_, err = setCompleteDates(issueRepo, environment.JiraProject, strings.Split(environment.WorkCompleteStates, ","))
+	_, err = setCompleteDates(issueRepo, calaculationsRepo, environment.JiraProject, strings.Split(environment.WorkCompleteStates, ","))
 	if err != nil {
 		log.Fatalf("Failed to set completed year-week for issues. %s", err)
 	}
 	log.Println("Completed update of completed year-week for issues")
 
 	// fetch all issues completed and set cycle time (working and complete)
-	_, err = setCycleTimeForCompletedIssues(issueRepo, environment.JiraProject)
+	_, err = setCycleTimeForCompletedIssues(issueRepo, configRepo, calaculationsRepo, environment.JiraProject)
 	if err != nil {
 		log.Fatalf("Failed to set cycle time. %s", err)
 	}
@@ -82,22 +90,22 @@ func main() {
 	log.Printf("All calculations complete for project %s", environment.JiraProject)
 }
 
-func createIssueRepository() jirarepository.JiraRepository {
+func connectToDatabase() (*sql.DB, error) {
 	var err error
 	var db *sql.DB
 	connStr := os.ExpandEnv("postgres://$DB_USERNAME:$DB_PASSWORD@$DB_HOST:$DB_PORT/$DB_NAME?sslmode=disable") // load from env vars
 
 	db, err = sql.Open("postgres", connStr)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	fmt.Println("Database initialised")
-	return jirarepository.NewPostgresJiraRepository(db)
+	return db, nil
 }
 
-func setCreateDates(repo jirarepository.JiraRepository, project string) (int64, error) {
-	issues, err := repo.GetIssues(context.Background(), project)
+func setCreateDates(issuesRepo jirarepository.JiraRepository, calaculationsRepo jiracalculationsrepository.JiraCalculationsRepository, project string) (int64, error) {
+	issues, err := issuesRepo.GetIssues(context.Background(), project)
 	if err != nil {
 		return -1, err
 	}
@@ -107,7 +115,7 @@ func setCreateDates(repo jirarepository.JiraRepository, project string) (int64, 
 	for _, issue := range issues {
 		year, week := issue.CreatedAt.UTC().ISOWeek()
 
-		rowsChanged, err := repo.SaveCreateDates(context.Background(), issue.Key, year, week, issue.CreatedAt)
+		rowsChanged, err := calaculationsRepo.SaveCreateDates(context.Background(), issue.Key, year, week, issue.CreatedAt)
 		if err != nil {
 			return updatedCount, err
 		}
@@ -118,8 +126,8 @@ func setCreateDates(repo jirarepository.JiraRepository, project string) (int64, 
 	return updatedCount, nil
 }
 
-func setStartDates(repo jirarepository.JiraRepository, project string, workStartStates []string, workToDoStates []string) (int64, error) {
-	transitions, err := repo.GetTransitionTimeByStateChanges(context.Background(), project, workToDoStates, workStartStates)
+func setStartDates(issuesRepo jirarepository.JiraRepository, calculationsRepo jiracalculationsrepository.JiraCalculationsRepository, project string, workStartStates []string, workToDoStates []string) (int64, error) {
+	transitions, err := issuesRepo.GetTransitionTimeByStateChanges(context.Background(), project, workToDoStates, workStartStates)
 	if err != nil {
 		return -1, err
 	}
@@ -129,7 +137,7 @@ func setStartDates(repo jirarepository.JiraRepository, project string, workStart
 	for issueKey, transitionTime := range transitions {
 		year, week := transitionTime.UTC().ISOWeek()
 
-		rowsChanged, err := repo.SaveStartDates(context.Background(), issueKey, year, week, transitionTime)
+		rowsChanged, err := calculationsRepo.SaveStartDates(context.Background(), issueKey, year, week, transitionTime)
 		if err != nil {
 			return updatedCount, err
 		}
@@ -140,8 +148,8 @@ func setStartDates(repo jirarepository.JiraRepository, project string, workStart
 	return updatedCount, nil
 }
 
-func setCompleteDates(repo jirarepository.JiraRepository, project string, workCompleteStates []string) (int64, error) {
-	transitions, err := repo.GetTransitionTimeByToState(context.Background(), project, workCompleteStates)
+func setCompleteDates(issuesRepo jirarepository.JiraRepository, calaculationsRepo jiracalculationsrepository.JiraCalculationsRepository, project string, workCompleteStates []string) (int64, error) {
+	transitions, err := issuesRepo.GetTransitionTimeByToState(context.Background(), project, workCompleteStates)
 	if err != nil {
 		return -1, err
 	}
@@ -151,12 +159,12 @@ func setCompleteDates(repo jirarepository.JiraRepository, project string, workCo
 	for issueKey, transitionTime := range transitions {
 		year, week := transitionTime.UTC().ISOWeek()
 
-		endState, err := repo.GetEndStateForIssue(context.Background(), issueKey, transitionTime)
+		endState, err := issuesRepo.GetEndStateForIssue(context.Background(), issueKey, transitionTime)
 		if err != nil {
 			return updatedCount, err
 		}
 
-		rowsChanged, err := repo.SaveCompleteDates(context.Background(), issueKey, year, week, transitionTime, endState)
+		rowsChanged, err := calaculationsRepo.SaveCompleteDates(context.Background(), issueKey, year, week, transitionTime, endState)
 		if err != nil {
 			return updatedCount, err
 		}
@@ -167,13 +175,13 @@ func setCompleteDates(repo jirarepository.JiraRepository, project string, workCo
 	return updatedCount, nil
 }
 
-func setCycleTimeForCompletedIssues(repo jirarepository.JiraRepository, project string) (int64, error) {
-	calculations, err := repo.GetCompletedIssues(context.Background(), project)
+func setCycleTimeForCompletedIssues(issuesRepo jirarepository.JiraRepository, configRepo configrepository.ConfigRepository, calaculationsRepo jiracalculationsrepository.JiraCalculationsRepository, project string) (int64, error) {
+	calculations, err := issuesRepo.GetCompletedIssues(context.Background(), project)
 	if err != nil {
 		return -1, err
 	}
 
-	datesToExclude, err := repo.GetNonWorkingDays(context.Background(), project)
+	datesToExclude, err := configRepo.GetNonWorkingDays(context.Background(), project)
 	if err != nil {
 		return -1, err
 	}
@@ -199,7 +207,7 @@ func setCycleTimeForCompletedIssues(repo jirarepository.JiraRepository, project 
 			return updatedCount, err
 		}
 
-		rowsChanged, err := repo.SaveCycleTime(context.Background(), issueKey, cycleTime, workingCycleTime)
+		rowsChanged, err := calaculationsRepo.SaveCycleTime(context.Background(), issueKey, cycleTime, workingCycleTime)
 		if err != nil {
 			return updatedCount, err
 		}
