@@ -2,13 +2,15 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "jirarepository",
-    srcs = ["jirarepository.go"],
+    srcs = [
+        "jirarepository.go",
+        "postgresjirarepository.go",
+    ],
     importpath = "github.com/stebennett/squad-dashboard/pkg/jirarepository",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/calculatormodels",
         "//pkg/jiramodels",
-        "//pkg/statsmodels",
         "//vendor/github.com/lib/pq",
     ],
 )
