@@ -12,6 +12,7 @@ go_library(
     deps = [
         "//pkg/dashboard/models",
         "//pkg/jiracalculationsrepository",
+        "//pkg/mathutil",
         "//vendor/gonum.org/v1/plot",
         "//vendor/gonum.org/v1/plot/plotter",
         "//vendor/gonum.org/v1/plot/vg",

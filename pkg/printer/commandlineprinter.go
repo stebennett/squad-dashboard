@@ -5,6 +5,7 @@ import (
 
 	"github.com/stebennett/squad-dashboard/pkg/dashboard/models"
 	"github.com/stebennett/squad-dashboard/pkg/jiracalculationsrepository"
+	"github.com/stebennett/squad-dashboard/pkg/mathutil"
 )
 
 type CommandLinePrinter struct{}
@@ -26,6 +27,22 @@ func (c *CommandLinePrinter) PrintCycleTimes(cycleTimeReports []models.WeekCount
 	log.Printf("---- cycle times ----")
 	for idx, ct := range cycleTimeReports {
 		log.Printf("%d> weekEnding: %s; avgCycleTime: %d", idx, ct.WeekEnding, ct.Count)
+	}
+
+	log.Printf("-- anomaly issues --")
+
+	ctValues := make([]int, len(allCycleTime))
+	for i, c := range allCycleTime {
+		ctValues[i] = c.Size
+	}
+
+	percentile75th := mathutil.Percentile(0.75, ctValues)
+	log.Printf("> Percentile: %d", percentile75th)
+
+	for _, c := range allCycleTime {
+		if c.Size >= percentile75th {
+			log.Printf("Issue outside percentile: %s; Completed: %s; CycleTime: %d", c.IssueKey, c.Completed, c.Size)
+		}
 	}
 
 	return nil

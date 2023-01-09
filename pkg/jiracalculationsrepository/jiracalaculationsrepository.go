@@ -6,6 +6,7 @@ import (
 )
 
 type CycleTimes struct {
+	IssueKey  string
 	Completed time.Time
 	Size      int
 }
