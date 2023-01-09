@@ -37,7 +37,7 @@ func GenerateEscapedDefects(weekCount int, project string, defectIssueType strin
 	return escapedDefectCounts, nil
 }
 
-func GenerateCycleTime(weekCount int, percentile float64, project string, issueTypes []string, repo jiracalculationsrepository.JiraCalculationsRepository) ([]models.WeekCount, error) {
+func GenerateCycleTime(weekCount int, percentile float64, project string, issueTypes []string, repo jiracalculationsrepository.JiraCalculationsRepository) ([]models.WeekCount, []jiracalculationsrepository.CycleTimes, error) {
 	// 1. Calculate dates of last weekCount fridays
 	now := time.Now()
 
@@ -45,22 +45,30 @@ func GenerateCycleTime(weekCount int, percentile float64, project string, issueT
 	weekEndings := dateutil.PreviousWeekDates(nearestFriday, weekCount)
 
 	cycleTimeReports := []models.WeekCount{}
+	cycleTimeValues := []jiracalculationsrepository.CycleTimes{}
 
 	// 2. Get the average cycle time for a week
 	for _, d := range weekEndings {
 		startDate := d.AddDate(0, 0, -7)
-		cycleTimes, err := repo.GetCompletedWorkingCycleTimes(context.Background(), project, issueTypes, startDate, d)
+		ct, err := repo.GetCompletedWorkingCycleTimes(context.Background(), project, issueTypes, startDate, d)
 		if err != nil {
-			return cycleTimeReports, err
+			return cycleTimeReports, cycleTimeValues, err
+		}
+
+		cycleTimes := make([]int, len(ct))
+		for _, ctitem := range ct {
+			cycleTimes = append(cycleTimes, ctitem.Size)
 		}
 
 		cycleTimeReports = append(cycleTimeReports, models.WeekCount{
 			WeekEnding: d,
 			Count:      mathutil.Percentile(percentile, cycleTimes),
 		})
+
+		cycleTimeValues = append(cycleTimeValues, ct...)
 	}
 
-	return cycleTimeReports, nil
+	return cycleTimeReports, cycleTimeValues, nil
 }
 
 func GenerateThroughput(weekCount int, project string, issueTypes []string, repo jiracalculationsrepository.JiraCalculationsRepository) ([]models.WeekCount, error) {

@@ -6,6 +6,7 @@ import (
 	"sort"
 
 	"github.com/stebennett/squad-dashboard/pkg/dashboard/models"
+	"github.com/stebennett/squad-dashboard/pkg/jiracalculationsrepository"
 
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/plotter"
@@ -23,7 +24,12 @@ func NewPlotPrinter(outputDirectory string, project string) *PlotPrinter {
 }
 
 func (pp *PlotPrinter) PrintDefectCounts(defectCounts []models.WeekCount) error {
-	trend, err := pp.printChart(defectCounts, "Escaped Defects", "escaped-defects", color.NRGBA{R: 190, G: 0, B: 0, A: 100}, color.NRGBA{R: 190, G: 0, B: 0, A: 255})
+	trend, p, err := pp.printChart(defectCounts, "Escaped Defects", color.NRGBA{R: 190, G: 0, B: 0, A: 100}, color.NRGBA{R: 190, G: 0, B: 0, A: 255})
+	if err != nil {
+		return err
+	}
+
+	err = p.Save(20*vg.Centimeter, 10*vg.Centimeter, pp.OutputDirectory+"/escaped-defects-"+pp.JiraProject+".png")
 	if err != nil {
 		return err
 	}
@@ -54,8 +60,18 @@ func (pp *PlotPrinter) PrintDefectCounts(defectCounts []models.WeekCount) error 
 	return nil
 }
 
-func (pp *PlotPrinter) PrintCycleTimes(cycleTimeReports []models.WeekCount) error {
-	trend, err := pp.printChart(cycleTimeReports, "Cycle Time", "cycle-time", color.NRGBA{R: 0, G: 0, B: 190, A: 100}, color.NRGBA{R: 0, G: 0, B: 190, A: 255})
+func (pp *PlotPrinter) PrintCycleTimes(cycleTimeReports []models.WeekCount, allCycleTimes []jiracalculationsrepository.CycleTimes) error {
+	trend, p, err := pp.printChart(cycleTimeReports, "Cycle Time", color.NRGBA{R: 0, G: 0, B: 190, A: 100}, color.NRGBA{R: 0, G: 0, B: 190, A: 255})
+	if err != nil {
+		return err
+	}
+
+	p, err = pp.addPoints(p, allCycleTimes, color.NRGBA{R: 0, G: 0, B: 190, A: 110})
+	if err != nil {
+		return err
+	}
+
+	err = p.Save(20*vg.Centimeter, 10*vg.Centimeter, pp.OutputDirectory+"/cycle-time-"+pp.JiraProject+".png")
 	if err != nil {
 		return err
 	}
@@ -87,7 +103,12 @@ func (pp *PlotPrinter) PrintCycleTimes(cycleTimeReports []models.WeekCount) erro
 }
 
 func (pp *PlotPrinter) PrintThroughput(throughputReports []models.WeekCount) error {
-	trend, err := pp.printChart(throughputReports, "Throughput", "throughput", color.NRGBA{R: 0, G: 190, B: 0, A: 100}, color.NRGBA{R: 0, G: 190, B: 0, A: 255})
+	trend, p, err := pp.printChart(throughputReports, "Throughput", color.NRGBA{R: 0, G: 190, B: 0, A: 100}, color.NRGBA{R: 0, G: 190, B: 0, A: 255})
+	if err != nil {
+		return err
+	}
+
+	err = p.Save(20*vg.Centimeter, 10*vg.Centimeter, pp.OutputDirectory+"/throughput-"+pp.JiraProject+".png")
 	if err != nil {
 		return err
 	}
@@ -118,8 +139,8 @@ func (pp *PlotPrinter) PrintThroughput(throughputReports []models.WeekCount) err
 	return nil
 }
 
-func (pp *PlotPrinter) printChart(weekCounts []models.WeekCount, title string, filename string, plotColor color.Color, trendlineColor color.Color) (trend float64, err error) {
-	p := plot.New()
+func (pp *PlotPrinter) printChart(weekCounts []models.WeekCount, title string, plotColor color.Color, trendlineColor color.Color) (trend float64, p *plot.Plot, err error) {
+	p = plot.New()
 
 	xticks := plot.TimeTicks{Format: "2006-01-02"}
 
@@ -139,7 +160,7 @@ func (pp *PlotPrinter) printChart(weekCounts []models.WeekCount, title string, f
 
 	line, points, err := plotter.NewLinePoints(data)
 	if err != nil {
-		return 0.0, err
+		return 0.0, p, err
 	}
 
 	line.Color = plotColor
@@ -154,7 +175,7 @@ func (pp *PlotPrinter) printChart(weekCounts []models.WeekCount, title string, f
 
 	linearRegressionLine, linearRegressionPoints, err := plotter.NewLinePoints(linearRegression)
 	if err != nil {
-		return trend, err
+		return trend, p, err
 	}
 
 	linearRegressionLine.Color = trendlineColor
@@ -162,8 +183,27 @@ func (pp *PlotPrinter) printChart(weekCounts []models.WeekCount, title string, f
 
 	p.Add(linearRegressionLine, linearRegressionPoints)
 
-	err = p.Save(20*vg.Centimeter, 10*vg.Centimeter, pp.OutputDirectory+"/"+filename+"-"+pp.JiraProject+".png")
-	return trend, err
+	return trend, p, nil
+}
+
+func (pp *PlotPrinter) addPoints(p *plot.Plot, cycleTimes []jiracalculationsrepository.CycleTimes, plotColor color.Color) (*plot.Plot, error) {
+	data := make(plotter.XYs, len(cycleTimes))
+	for i, d := range cycleTimes {
+		data[i].X = float64(d.Completed.Unix())
+		data[i].Y = float64(d.Size)
+	}
+
+	scatter, err := plotter.NewScatter(data)
+	if err != nil {
+		return p, err
+	}
+
+	scatter.Color = plotColor
+	scatter.Shape = draw.CircleGlyph{}
+
+	p.Add(scatter)
+
+	return p, nil
 }
 
 func (pp *PlotPrinter) createLinearRegression(inData plotter.XYs) (r plotter.XYs, m float64, b float64) {

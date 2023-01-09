@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/stebennett/squad-dashboard/pkg/dashboard/models"
+	"github.com/stebennett/squad-dashboard/pkg/jiracalculationsrepository"
 )
 
 type CommandLinePrinter struct{}
@@ -21,7 +22,7 @@ func (c *CommandLinePrinter) PrintDefectCounts(defectCounts []models.WeekCount) 
 	return nil
 }
 
-func (c *CommandLinePrinter) PrintCycleTimes(cycleTimeReports []models.WeekCount) error {
+func (c *CommandLinePrinter) PrintCycleTimes(cycleTimeReports []models.WeekCount, allCycleTime []jiracalculationsrepository.CycleTimes) error {
 	log.Printf("---- cycle times ----")
 	for idx, ct := range cycleTimeReports {
 		log.Printf("%d> weekEnding: %s; avgCycleTime: %d", idx, ct.WeekEnding, ct.Count)

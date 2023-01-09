@@ -45,12 +45,12 @@ func main() {
 	cliprinter.PrintDefectCounts(escapedDefects)
 	plotprinter.PrintDefectCounts(escapedDefects)
 
-	cycleTimeReports, err := dashboard.GenerateCycleTime(12, percentile, environment.JiraProject, strings.Split(environment.JiraReportIssueTypes, ","), repo)
+	cycleTimeReports, allCycleTimes, err := dashboard.GenerateCycleTime(12, percentile, environment.JiraProject, strings.Split(environment.JiraReportIssueTypes, ","), repo)
 	if err != nil {
 		log.Fatal(err)
 	}
-	cliprinter.PrintCycleTimes(cycleTimeReports)
-	plotprinter.PrintCycleTimes(cycleTimeReports)
+	cliprinter.PrintCycleTimes(cycleTimeReports, allCycleTimes)
+	plotprinter.PrintCycleTimes(cycleTimeReports, allCycleTimes)
 
 	throughputReports, err := dashboard.GenerateThroughput(12, environment.JiraProject, strings.Split(environment.JiraReportIssueTypes, ","), repo)
 	if err != nil {

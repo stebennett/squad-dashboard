@@ -197,9 +197,9 @@ func (p *PostgresJiraCalculationsRepository) GetEscapedDefects(ctx context.Conte
 	return result, nil
 }
 
-func (p *PostgresJiraCalculationsRepository) GetCompletedWorkingCycleTimes(ctx context.Context, project string, issueTypes []string, startDate time.Time, endDate time.Time) ([]int, error) {
+func (p *PostgresJiraCalculationsRepository) GetCompletedWorkingCycleTimes(ctx context.Context, project string, issueTypes []string, startDate time.Time, endDate time.Time) ([]CycleTimes, error) {
 	selectStatement := `
-		SELECT jira_issues_calculations.working_cycle_time
+		SELECT jira_issues_calculations.working_cycle_time, jira_issues_calculations.issue_completed_at
 		FROM jira_issues_calculations
 		JOIN jira_issues ON jira_issues_calculations.issue_key = jira_issues.issue_key
 		WHERE jira_issues_calculations.issue_completed_at > $3
@@ -207,7 +207,7 @@ func (p *PostgresJiraCalculationsRepository) GetCompletedWorkingCycleTimes(ctx c
 		AND jira_issues.issue_type = ANY($2)
 		AND jira_issues.project = $1
 	`
-	var result = []int{}
+	var result = []CycleTimes{}
 
 	rows, err := p.db.QueryContext(ctx, selectStatement, project, pq.Array(issueTypes), startDate, endDate)
 	if err != nil {
@@ -215,11 +215,11 @@ func (p *PostgresJiraCalculationsRepository) GetCompletedWorkingCycleTimes(ctx c
 	}
 
 	for rows.Next() {
-		var ct int
+		var ct CycleTimes
 
-		err = rows.Scan(&ct)
+		err = rows.Scan(&ct.Size, &ct.Completed)
 		if err != nil {
-			return result, nil
+			return result, err
 		}
 
 		result = append(result, ct)
