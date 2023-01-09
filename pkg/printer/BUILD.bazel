@@ -4,6 +4,7 @@ go_library(
     name = "printer",
     srcs = [
         "commandlineprinter.go",
+        "pdfreportprinter.go",
         "plotprinter.go",
         "printer.go",
     ],
@@ -13,6 +14,7 @@ go_library(
         "//pkg/dashboard/models",
         "//pkg/jiracalculationsrepository",
         "//pkg/mathutil",
+        "//pkg/report",
         "//vendor/gonum.org/v1/plot",
         "//vendor/gonum.org/v1/plot/plotter",
         "//vendor/gonum.org/v1/plot/vg",

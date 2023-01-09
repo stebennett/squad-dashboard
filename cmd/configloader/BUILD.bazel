@@ -9,6 +9,7 @@ go_library(
     deps = [
         "//pkg/configrepository",
         "//vendor/github.com/Netflix/go-env",
+        "//vendor/github.com/lib/pq",
     ],
 )
 

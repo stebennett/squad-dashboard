@@ -14,6 +14,22 @@ func NewCommandLinePrinter() *CommandLinePrinter {
 	return &CommandLinePrinter{}
 }
 
+func (c *CommandLinePrinter) Print(reports Reports) error {
+	err := c.PrintDefectCounts(reports.EscapedDefects)
+	if err != nil {
+		return err
+	}
+	err = c.PrintCycleTimes(reports.CycleTimeReports, reports.AllCycleTimes)
+	if err != nil {
+		return err
+	}
+	err = c.PrintThroughput(reports.ThroughputReports)
+	if err != nil {
+		return err
+	}
+	return err
+}
+
 func (c *CommandLinePrinter) PrintDefectCounts(defectCounts []models.WeekCount) error {
 	log.Printf("---- defects ----")
 	for idx, defectCount := range defectCounts {

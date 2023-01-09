@@ -3,7 +3,6 @@ package printer
 import (
 	"image/color"
 	"log"
-	"sort"
 
 	"github.com/stebennett/squad-dashboard/pkg/dashboard/models"
 	"github.com/stebennett/squad-dashboard/pkg/jiracalculationsrepository"
@@ -23,13 +22,32 @@ func NewPlotPrinter(outputDirectory string, project string) *PlotPrinter {
 	return &PlotPrinter{OutputDirectory: outputDirectory, JiraProject: project}
 }
 
-func (pp *PlotPrinter) PrintDefectCounts(defectCounts []models.WeekCount) error {
+func (pp *PlotPrinter) Print(reports Reports) error {
+	err := pp.printCycleTimes(reports.CycleTimeReports, reports.AllCycleTimes)
+	if err != nil {
+		return err
+	}
+
+	err = pp.printDefectCounts(reports.EscapedDefects)
+	if err != nil {
+		return err
+	}
+
+	err = pp.printThroughput(reports.ThroughputReports)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (pp *PlotPrinter) printDefectCounts(defectCounts []models.WeekCount) error {
 	trend, p, err := pp.printChart(defectCounts, "Escaped Defects", color.NRGBA{R: 190, G: 0, B: 0, A: 100}, color.NRGBA{R: 190, G: 0, B: 0, A: 255})
 	if err != nil {
 		return err
 	}
 
-	err = p.Save(20*vg.Centimeter, 10*vg.Centimeter, pp.OutputDirectory+"/escaped-defects-"+pp.JiraProject+".png")
+	err = p.Save(20*vg.Centimeter, 10*vg.Centimeter, pp.GetEscapedDefectsChartLocation())
 	if err != nil {
 		return err
 	}
@@ -60,7 +78,7 @@ func (pp *PlotPrinter) PrintDefectCounts(defectCounts []models.WeekCount) error 
 	return nil
 }
 
-func (pp *PlotPrinter) PrintCycleTimes(cycleTimeReports []models.WeekCount, allCycleTimes []jiracalculationsrepository.CycleTimes) error {
+func (pp *PlotPrinter) printCycleTimes(cycleTimeReports []models.WeekCount, allCycleTimes []jiracalculationsrepository.CycleTimes) error {
 	trend, p, err := pp.printChart(cycleTimeReports, "Cycle Time", color.NRGBA{R: 0, G: 0, B: 190, A: 100}, color.NRGBA{R: 0, G: 0, B: 190, A: 255})
 	if err != nil {
 		return err
@@ -71,7 +89,7 @@ func (pp *PlotPrinter) PrintCycleTimes(cycleTimeReports []models.WeekCount, allC
 		return err
 	}
 
-	err = p.Save(20*vg.Centimeter, 10*vg.Centimeter, pp.OutputDirectory+"/cycle-time-"+pp.JiraProject+".png")
+	err = p.Save(20*vg.Centimeter, 10*vg.Centimeter, pp.GetCycleTimeChartLocation())
 	if err != nil {
 		return err
 	}
@@ -102,13 +120,13 @@ func (pp *PlotPrinter) PrintCycleTimes(cycleTimeReports []models.WeekCount, allC
 	return nil
 }
 
-func (pp *PlotPrinter) PrintThroughput(throughputReports []models.WeekCount) error {
+func (pp *PlotPrinter) printThroughput(throughputReports []models.WeekCount) error {
 	trend, p, err := pp.printChart(throughputReports, "Throughput", color.NRGBA{R: 0, G: 190, B: 0, A: 100}, color.NRGBA{R: 0, G: 190, B: 0, A: 255})
 	if err != nil {
 		return err
 	}
 
-	err = p.Save(20*vg.Centimeter, 10*vg.Centimeter, pp.OutputDirectory+"/throughput-"+pp.JiraProject+".png")
+	err = p.Save(20*vg.Centimeter, 10*vg.Centimeter, pp.GetThroughputChartLocation())
 	if err != nil {
 		return err
 	}
@@ -236,28 +254,14 @@ func (pp *PlotPrinter) createLinearRegression(inData plotter.XYs) (r plotter.XYs
 	return r, m, b
 }
 
-func (pp *PlotPrinter) normalizeData(data []models.WeekCount) (result []models.WeekCount) {
-	dataCopy := make([]models.WeekCount, len(data))
-	copy(dataCopy, data)
+func (pp *PlotPrinter) GetCycleTimeChartLocation() string {
+	return pp.OutputDirectory + "/cycle-time-" + pp.JiraProject + ".png"
+}
 
-	sort.Slice(dataCopy, func(i, j int) bool {
-		return dataCopy[i].Count < dataCopy[j].Count
-	})
+func (pp *PlotPrinter) GetThroughputChartLocation() string {
+	return pp.OutputDirectory + "/throughput-" + pp.JiraProject + ".png"
+}
 
-	size := len(data)
-	min, max := dataCopy[0].Count, dataCopy[size-1].Count
-
-	result = make([]models.WeekCount, size)
-	for i, d := range dataCopy {
-		result[i] = models.WeekCount{
-			WeekEnding: d.WeekEnding,
-			Count:      int((float64(d.Count-min) / float64(max-min)) * 100.0),
-		}
-	}
-
-	sort.Slice(result, func(i, j int) bool {
-		return result[i].WeekEnding.Before(result[j].WeekEnding)
-	})
-
-	return result
+func (pp *PlotPrinter) GetEscapedDefectsChartLocation() string {
+	return pp.OutputDirectory + "/escaped-defects-" + pp.JiraProject + ".png"
 }

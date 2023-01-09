@@ -1,9 +1,17 @@
 package printer
 
-import "github.com/stebennett/squad-dashboard/pkg/dashboard/models"
+import (
+	"github.com/stebennett/squad-dashboard/pkg/dashboard/models"
+	"github.com/stebennett/squad-dashboard/pkg/jiracalculationsrepository"
+)
+
+type Reports struct {
+	EscapedDefects    []models.WeekCount
+	CycleTimeReports  []models.WeekCount
+	ThroughputReports []models.WeekCount
+	AllCycleTimes     []jiracalculationsrepository.CycleTimes
+}
 
 type Printer interface {
-	PrintDefectCounts(defectCounts []models.WeekCount) error
-	PrintCycleTimes(cycleTimeReports []models.WeekCount) error
-	PrintThroughput(throughputReports []models.WeekCount) error
+	Print(reports Reports) error
 }

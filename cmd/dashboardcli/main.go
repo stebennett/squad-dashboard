@@ -32,6 +32,12 @@ func main() {
 	repo := createJiraRepository()
 	plotprinter := printer.NewPlotPrinter(environment.OutputDirectory, environment.JiraProject)
 	cliprinter := printer.NewCommandLinePrinter()
+	pdfprinter := printer.NewPdfReportPrinter(
+		plotprinter.GetCycleTimeChartLocation(),
+		plotprinter.GetThroughputChartLocation(),
+		plotprinter.GetEscapedDefectsChartLocation(),
+		environment.JiraProject,
+	)
 
 	percentile, err := strconv.ParseFloat(environment.CycleTimePercentile, 64)
 	if err != nil {
@@ -42,22 +48,26 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	cliprinter.PrintDefectCounts(escapedDefects)
-	plotprinter.PrintDefectCounts(escapedDefects)
 
 	cycleTimeReports, allCycleTimes, err := dashboard.GenerateCycleTime(12, percentile, environment.JiraProject, strings.Split(environment.JiraReportIssueTypes, ","), repo)
 	if err != nil {
 		log.Fatal(err)
 	}
-	cliprinter.PrintCycleTimes(cycleTimeReports, allCycleTimes)
-	plotprinter.PrintCycleTimes(cycleTimeReports, allCycleTimes)
 
 	throughputReports, err := dashboard.GenerateThroughput(12, environment.JiraProject, strings.Split(environment.JiraReportIssueTypes, ","), repo)
 	if err != nil {
 		log.Fatal(err)
 	}
-	cliprinter.PrintThroughput(throughputReports)
-	plotprinter.PrintThroughput(throughputReports)
+
+	reports := printer.Reports{
+		EscapedDefects:    escapedDefects,
+		CycleTimeReports:  cycleTimeReports,
+		ThroughputReports: throughputReports,
+		AllCycleTimes:     allCycleTimes,
+	}
+	plotprinter.Print(reports)
+	cliprinter.Print(reports)
+	pdfprinter.Print(reports)
 }
 
 func createJiraRepository() jiracalculationsrepository.JiraCalculationsRepository {

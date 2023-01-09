@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/Netflix/go-env"
+	_ "github.com/lib/pq"
 	"github.com/stebennett/squad-dashboard/pkg/configrepository"
 )
 
