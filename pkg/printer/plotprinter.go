@@ -23,12 +23,7 @@ func NewPlotPrinter(outputDirectory string, project string) *PlotPrinter {
 }
 
 func (pp *PlotPrinter) PrintDefectCounts(defectCounts []models.WeekCount) error {
-	_, err := pp.printChart(defectCounts, "Escaped Defects", "escaped-defects", color.NRGBA{R: 190, G: 0, B: 0, A: 100}, color.NRGBA{R: 190, G: 0, B: 0, A: 255})
-	if err != nil {
-		return err
-	}
-
-	trend, err := pp.printChart(pp.normalizeData(defectCounts), "Escaped Defects - Normalized", "escaped-defects-normalized", color.NRGBA{R: 190, G: 0, B: 0, A: 100}, color.NRGBA{R: 190, G: 0, B: 0, A: 255})
+	trend, err := pp.printChart(defectCounts, "Escaped Defects", "escaped-defects", color.NRGBA{R: 190, G: 0, B: 0, A: 100}, color.NRGBA{R: 190, G: 0, B: 0, A: 255})
 	if err != nil {
 		return err
 	}
@@ -60,12 +55,7 @@ func (pp *PlotPrinter) PrintDefectCounts(defectCounts []models.WeekCount) error 
 }
 
 func (pp *PlotPrinter) PrintCycleTimes(cycleTimeReports []models.WeekCount) error {
-	_, err := pp.printChart(cycleTimeReports, "Cycle Time", "cycle-time", color.NRGBA{R: 0, G: 0, B: 190, A: 100}, color.NRGBA{R: 0, G: 0, B: 190, A: 255})
-	if err != nil {
-		return err
-	}
-
-	trend, err := pp.printChart(pp.normalizeData(cycleTimeReports), "Cycle Time - Normalized", "cycle-time-normalized", color.NRGBA{R: 0, G: 0, B: 190, A: 100}, color.NRGBA{R: 0, G: 0, B: 190, A: 255})
+	trend, err := pp.printChart(cycleTimeReports, "Cycle Time", "cycle-time", color.NRGBA{R: 0, G: 0, B: 190, A: 100}, color.NRGBA{R: 0, G: 0, B: 190, A: 255})
 	if err != nil {
 		return err
 	}
@@ -97,12 +87,7 @@ func (pp *PlotPrinter) PrintCycleTimes(cycleTimeReports []models.WeekCount) erro
 }
 
 func (pp *PlotPrinter) PrintThroughput(throughputReports []models.WeekCount) error {
-	_, err := pp.printChart(throughputReports, "Throughput", "throughput", color.NRGBA{R: 0, G: 190, B: 0, A: 100}, color.NRGBA{R: 0, G: 190, B: 0, A: 255})
-	if err != nil {
-		return err
-	}
-
-	trend, err := pp.printChart(pp.normalizeData(throughputReports), "Throughput - Normalized", "throughput-normalized", color.NRGBA{R: 0, G: 190, B: 0, A: 100}, color.NRGBA{R: 0, G: 190, B: 0, A: 255})
+	trend, err := pp.printChart(throughputReports, "Throughput", "throughput", color.NRGBA{R: 0, G: 190, B: 0, A: 100}, color.NRGBA{R: 0, G: 190, B: 0, A: 255})
 	if err != nil {
 		return err
 	}
@@ -141,7 +126,8 @@ func (pp *PlotPrinter) printChart(weekCounts []models.WeekCount, title string, f
 	p.Title.Text = title + " - " + pp.JiraProject
 	p.X.Label.Text = "Week Ending"
 	p.X.Tick.Marker = xticks
-	p.Y.Label.Text = "Number"
+	p.Y.Tick.Length = 0
+	p.Y.Tick.Label.Font.Size = 0
 
 	data := make(plotter.XYs, len(weekCounts))
 	for i, d := range weekCounts {

@@ -10,7 +10,7 @@ import (
 
 	"github.com/Netflix/go-env"
 	"github.com/stebennett/squad-dashboard/pkg/dashboard"
-	"github.com/stebennett/squad-dashboard/pkg/jirarepository"
+	"github.com/stebennett/squad-dashboard/pkg/jiracalculationsrepository"
 	"github.com/stebennett/squad-dashboard/pkg/printer"
 )
 
@@ -60,7 +60,7 @@ func main() {
 	plotprinter.PrintThroughput(throughputReports)
 }
 
-func createJiraRepository() jirarepository.JiraRepository {
+func createJiraRepository() jiracalculationsrepository.JiraCalculationsRepository {
 	var err error
 	var db *sql.DB
 	connStr := os.ExpandEnv("postgres://$DB_USERNAME:$DB_PASSWORD@$DB_HOST:$DB_PORT/$DB_NAME?sslmode=disable") // load from env vars
@@ -71,5 +71,5 @@ func createJiraRepository() jirarepository.JiraRepository {
 	}
 
 	fmt.Println("Database initialised")
-	return jirarepository.NewPostgresJiraRepository(db)
+	return jiracalculationsrepository.NewPostgresJiraCalculationsRepository(db)
 }

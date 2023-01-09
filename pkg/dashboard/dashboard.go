@@ -6,11 +6,11 @@ import (
 
 	"github.com/stebennett/squad-dashboard/pkg/dashboard/models"
 	"github.com/stebennett/squad-dashboard/pkg/dateutil"
-	"github.com/stebennett/squad-dashboard/pkg/jirarepository"
+	"github.com/stebennett/squad-dashboard/pkg/jiracalculationsrepository"
 	"github.com/stebennett/squad-dashboard/pkg/mathutil"
 )
 
-func GenerateEscapedDefects(weekCount int, project string, defectIssueType string, repo jirarepository.JiraRepository) ([]models.WeekCount, error) {
+func GenerateEscapedDefects(weekCount int, project string, defectIssueType string, repo jiracalculationsrepository.JiraCalculationsRepository) ([]models.WeekCount, error) {
 	// 1. Calculate dates of last weekCount fridays
 	now := time.Now()
 
@@ -37,7 +37,7 @@ func GenerateEscapedDefects(weekCount int, project string, defectIssueType strin
 	return escapedDefectCounts, nil
 }
 
-func GenerateCycleTime(weekCount int, percentile float64, project string, issueTypes []string, repo jirarepository.JiraRepository) ([]models.WeekCount, error) {
+func GenerateCycleTime(weekCount int, percentile float64, project string, issueTypes []string, repo jiracalculationsrepository.JiraCalculationsRepository) ([]models.WeekCount, error) {
 	// 1. Calculate dates of last weekCount fridays
 	now := time.Now()
 
@@ -63,7 +63,7 @@ func GenerateCycleTime(weekCount int, percentile float64, project string, issueT
 	return cycleTimeReports, nil
 }
 
-func GenerateThroughput(weekCount int, project string, issueTypes []string, repo jirarepository.JiraRepository) ([]models.WeekCount, error) {
+func GenerateThroughput(weekCount int, project string, issueTypes []string, repo jiracalculationsrepository.JiraCalculationsRepository) ([]models.WeekCount, error) {
 	// 1. Calculate dates of last weekCount fridays
 	now := time.Now()
 
