@@ -2,7 +2,6 @@ package configloader
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"github.com/stebennett/squad-dashboard/pkg/configrepository"
