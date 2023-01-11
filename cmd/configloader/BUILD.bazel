@@ -10,7 +10,6 @@ go_library(
         "//pkg/configloader",
         "//pkg/configrepository",
         "//vendor/github.com/Netflix/go-env",
-        "//vendor/github.com/lib/pq",
     ],
 )
 
