@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/Netflix/go-env"
-	_ "github.com/lib/pq"
+	"github.com/stebennett/squad-dashboard/pkg/configloader"
 	"github.com/stebennett/squad-dashboard/pkg/configrepository"
 )
 
@@ -30,27 +30,20 @@ func main() {
 		log.Fatal(err)
 	}
 
-	_, err = repo.SaveJiraToDoStates(context.Background(), environment.JiraProject, strings.Split(environment.WorkToDoStates, ","))
-	if err != nil {
-		log.Fatalf("Failed to save Jira Work ToDo States. %s", err)
+	config := configloader.Config{
+		JiraProject:          environment.JiraProject,
+		JiraToDoStates:       strings.Split(environment.WorkToDoStates, ","),
+		JiraInProgressStates: strings.Split(environment.WorkStartStates, ","),
+		JiraDoneStates:       strings.Split(environment.WorkCompleteStates, ","),
+		NonWorkingDays:       strings.Split(environment.NonWorkingDays, ","),
 	}
 
-	_, err = repo.SaveJiraInProgressStates(context.Background(), environment.JiraProject, strings.Split(environment.WorkStartStates, ","))
+	err = configloader.Load(context.Background(), repo, config)
 	if err != nil {
-		log.Fatalf("Failed to save Jira Work In Progress States. %s", err)
+		log.Fatal(err)
 	}
 
-	_, err = repo.SaveJiraDoneStates(context.Background(), environment.JiraProject, strings.Split(environment.WorkCompleteStates, ","))
-	if err != nil {
-		log.Fatalf("Failed to save Jira Work Done States. %s", err)
-	}
-
-	_, err = repo.SaveNonWorkingDays(context.Background(), environment.JiraProject, strings.Split(environment.NonWorkingDays, ","))
-	if err != nil {
-		log.Fatalf("Failed to save non working days. %s", err)
-	}
-
-	log.Println("Config successfully loaded")
+	log.Print("Config loaded successfully")
 }
 
 func createConfigRepository() configrepository.ConfigRepository {

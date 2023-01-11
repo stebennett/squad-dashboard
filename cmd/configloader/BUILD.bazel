@@ -7,9 +7,9 @@ go_library(
     importpath = "github.com/stebennett/squad-dashboard/cmd/configloader",
     visibility = ["//visibility:private"],
     deps = [
+        "//pkg/configloader",
         "//pkg/configrepository",
         "//vendor/github.com/Netflix/go-env",
-        "//vendor/github.com/lib/pq",
     ],
 )
 
