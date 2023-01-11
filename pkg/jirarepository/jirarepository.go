@@ -23,4 +23,7 @@ type JiraRepository interface {
 	GetEndStateForIssue(ctx context.Context, issueKey string, transitionDate time.Time) (string, error)
 	SaveIssueLabels(ctx context.Context, issueKey string, label []string) (int64, error)
 	GetProjects(ctx context.Context) ([]string, error)
+
+	ClearUnplannedIssuesForProject(ctx context.Context, project string) (int64, error)
+	SaveUnplannedIssue(ctx context.Context, issueKey string) (int64, error)
 }

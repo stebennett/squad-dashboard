@@ -449,3 +449,27 @@ func (p *PostgresJiraRepository) GetProjects(ctx context.Context) ([]string, err
 
 	return result, nil
 }
+
+func (p *PostgresJiraRepository) ClearUnplannedIssuesForProject(ctx context.Context, project string) (int64, error) {
+	updateStatement := `
+		UPDATE jira_issues SET unplanned = FALSE WHERE project = $1
+	`
+
+	result, err := p.db.ExecContext(ctx, updateStatement, project)
+	if err != nil {
+		return -1, err
+	}
+	return result.RowsAffected()
+}
+
+func (p *PostgresJiraRepository) SaveUnplannedIssue(ctx context.Context, issueKey string) (int64, error) {
+	updateStatement := `
+		UPDATE jira_issues SET unplanned = TRUE WHERE issue_key = $1
+	`
+
+	result, err := p.db.ExecContext(ctx, updateStatement, issueKey)
+	if err != nil {
+		return -1, err
+	}
+	return result.RowsAffected()
+}
