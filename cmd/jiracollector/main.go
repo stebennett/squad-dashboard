@@ -16,12 +16,13 @@ import (
 )
 
 type Environment struct {
-	JiraProject   string `env:"JIRA_PROJECT,required=true"`
-	JiraBaseUrl   string `env:"JIRA_HOST,required=true"`
-	JiraUser      string `env:"JIRA_USER,required=true"`
-	JiraAuthToken string `env:"JIRA_AUTH_TOKEN,required=true"`
-	JiraQuery     string `env:"JIRA_QUERY,required=true"`
-	JiraEpicField string `env:"JIRA_EPIC_FIELD,required=true"`
+	JiraProject        string `env:"JIRA_PROJECT,required=true"`
+	JiraBaseUrl        string `env:"JIRA_HOST,required=true"`
+	JiraUser           string `env:"JIRA_USER,required=true"`
+	JiraAuthToken      string `env:"JIRA_AUTH_TOKEN,required=true"`
+	JiraQuery          string `env:"JIRA_QUERY,required=true"`
+	JiraEpicField      string `env:"JIRA_EPIC_FIELD,required=true"`
+	JiraUnplannedQuery string `env:"JIRA_UNPLANNED_QUERY,required=true"`
 }
 
 func main() {
@@ -39,13 +40,16 @@ func main() {
 	jira := createJiraService(environment)
 
 	// create a new collector job
-	jiracollector := jiracollector.NewJiraCollector(jira, issueRepo)
+	jiraIssueCollector := jiracollector.NewJiraIssueCollector(jira, issueRepo, environment.JiraEpicField)
+	jiraUnplannedCollector := jiracollector.NewJiraUnplannedCollector(jira, issueRepo)
 
 	// execute the job
-	err = jiracollector.Execute(environment.JiraProject, environment.JiraQuery, environment.JiraEpicField)
+	err = jiraIssueCollector.Execute(environment.JiraProject, environment.JiraQuery)
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	err = jiraUnplannedCollector.Execute(environment.JiraProject, environment.JiraUnplannedQuery)
 
 	log.Printf("Completed loading of issues for %s", environment.JiraProject)
 }
