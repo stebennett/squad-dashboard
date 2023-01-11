@@ -26,4 +26,8 @@ type JiraRepository interface {
 	SetIssuesStartedInWeekStarting(ctx context.Context, project string, startDate time.Time, count int) (int64, error)
 	GetIssuesCompletedBetweenDates(ctx context.Context, project string, startDate time.Time, endDate time.Time, issueTypes []string, endStates []string) ([]string, error)
 	SetIssuesCompletedInWeekStarting(ctx context.Context, project string, startDate time.Time, count int) (int64, error)
+	GetProjects(ctx context.Context) ([]string, error)
+
+	ClearUnplannedIssuesForProject(ctx context.Context, project string) (int64, error)
+	SaveUnplannedIssue(ctx context.Context, issueKey string) (int64, error)
 }
