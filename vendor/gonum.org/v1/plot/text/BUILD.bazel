@@ -1,0 +1,23 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "text",
+    srcs = [
+        "doc.go",
+        "latex.go",
+        "plain.go",
+        "text.go",
+    ],
+    importmap = "github.com/stebennett/squad-dashboard/vendor/gonum.org/v1/plot/text",
+    importpath = "gonum.org/v1/plot/text",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/go-latex/latex/drawtex",
+        "//vendor/github.com/go-latex/latex/font/ttf",
+        "//vendor/github.com/go-latex/latex/mtex",
+        "//vendor/github.com/go-latex/latex/tex",
+        "//vendor/golang.org/x/image/font",
+        "//vendor/gonum.org/v1/plot/font",
+        "//vendor/gonum.org/v1/plot/vg",
+    ],
+)

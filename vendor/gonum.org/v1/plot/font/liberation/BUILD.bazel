@@ -1,0 +1,26 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "liberation",
+    srcs = ["liberation.go"],
+    importmap = "github.com/stebennett/squad-dashboard/vendor/gonum.org/v1/plot/font/liberation",
+    importpath = "gonum.org/v1/plot/font/liberation",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/go-fonts/liberation/liberationmonobold",
+        "//vendor/github.com/go-fonts/liberation/liberationmonobolditalic",
+        "//vendor/github.com/go-fonts/liberation/liberationmonoitalic",
+        "//vendor/github.com/go-fonts/liberation/liberationmonoregular",
+        "//vendor/github.com/go-fonts/liberation/liberationsansbold",
+        "//vendor/github.com/go-fonts/liberation/liberationsansbolditalic",
+        "//vendor/github.com/go-fonts/liberation/liberationsansitalic",
+        "//vendor/github.com/go-fonts/liberation/liberationsansregular",
+        "//vendor/github.com/go-fonts/liberation/liberationserifbold",
+        "//vendor/github.com/go-fonts/liberation/liberationserifbolditalic",
+        "//vendor/github.com/go-fonts/liberation/liberationserifitalic",
+        "//vendor/github.com/go-fonts/liberation/liberationserifregular",
+        "//vendor/golang.org/x/image/font",
+        "//vendor/golang.org/x/image/font/opentype",
+        "//vendor/gonum.org/v1/plot/font",
+    ],
+)

@@ -1,0 +1,10 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "bezier",
+    srcs = ["bezier.go"],
+    importmap = "github.com/stebennett/squad-dashboard/vendor/gonum.org/v1/plot/tools/bezier",
+    importpath = "gonum.org/v1/plot/tools/bezier",
+    visibility = ["//visibility:public"],
+    deps = ["//vendor/gonum.org/v1/plot/vg"],
+)

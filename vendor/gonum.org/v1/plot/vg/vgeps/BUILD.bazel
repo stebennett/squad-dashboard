@@ -1,0 +1,14 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "vgeps",
+    srcs = ["vgeps.go"],
+    importmap = "github.com/stebennett/squad-dashboard/vendor/gonum.org/v1/plot/vg/vgeps",
+    importpath = "gonum.org/v1/plot/vg/vgeps",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/gonum.org/v1/plot/font",
+        "//vendor/gonum.org/v1/plot/vg",
+        "//vendor/gonum.org/v1/plot/vg/draw",
+    ],
+)
