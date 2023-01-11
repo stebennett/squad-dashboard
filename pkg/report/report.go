@@ -60,8 +60,10 @@ func GeneratePdfReport(reportData ReportData, outputFile string) error {
 	pdf.SetCellMargin(cellMargin)
 	pdf.Cell(0, pdf.PointToUnitConvert(headingFontHeight)+2*cellMargin, "Squad Dashboard Report")
 
-	pdf.SetY(pdf.PointToUnitConvert(headingFontHeight) + margin)
+	pdf.SetY(pdf.PointToUnitConvert(headingFontHeight) + 2*cellMargin + margin)
 	pdf.SetFont(font, "", fontHeight)
+
+	addDashboardView(pdf, reportData)
 
 	pdf.SetFont(font, "B", subheadingFontHeight)
 	for k, v := range reportData.Dashboards {
@@ -74,6 +76,48 @@ func GeneratePdfReport(reportData ReportData, outputFile string) error {
 	}
 
 	return pdf.OutputFileAndClose(outputFile)
+}
+
+func addDashboardView(pdf gofpdf.Pdf, reportData ReportData) {
+	columns := [...]string{"Squad", "Quality", "Speed", "Quantity", "Consistency", "Resilience"}
+
+	cellWidth := float64((pageWidth - (2 * margin) - (len(columns) * 2 * cellMargin)) / len(columns))
+	cellHeight := float64(pdf.PointConvert(fontHeight) + 2*cellMargin)
+
+	pdf.SetFont(font, "B", fontHeight)
+
+	// headings
+	for _, c := range columns {
+		pdf.CellFormat(cellWidth, cellHeight, c, gofpdf.BorderFull, 0, gofpdf.AlignLeft, false, 0, "")
+	}
+
+	pdf.SetFont(font, "B", fontHeight)
+	pdf.SetY(pdf.GetY() + cellHeight)
+
+	for k, v := range reportData.Dashboards {
+		pdf.CellFormat(cellWidth, cellHeight, k, gofpdf.BorderFull, 0, gofpdf.AlignLeft, false, 0, "")
+
+		red, green, blue, _ := v.Quality.BackgroundColor.RGBA()
+		pdf.SetFillColor(int(red), int(green), int(blue))
+		pdf.CellFormat(cellWidth, cellHeight, "", gofpdf.BorderFull, 0, gofpdf.AlignLeft, true, 0, "")
+
+		red, green, blue, _ = v.Speed.BackgroundColor.RGBA()
+		pdf.SetFillColor(int(red), int(green), int(blue))
+		pdf.CellFormat(cellWidth, cellHeight, "", gofpdf.BorderFull, 0, gofpdf.AlignLeft, true, 0, "")
+
+		red, green, blue, _ = v.Quantity.BackgroundColor.RGBA()
+		pdf.SetFillColor(int(red), int(green), int(blue))
+		pdf.CellFormat(cellWidth, cellHeight, "", gofpdf.BorderFull, 0, gofpdf.AlignLeft, true, 0, "")
+
+		red, green, blue, _ = v.UnplannedWork.BackgroundColor.RGBA()
+		pdf.SetFillColor(int(red), int(green), int(blue))
+		pdf.CellFormat(cellWidth, cellHeight, "", gofpdf.BorderFull, 0, gofpdf.AlignLeft, true, 0, "")
+
+		pdf.SetFillColor(163, 163, 163)
+		pdf.CellFormat(cellWidth, cellHeight, "", gofpdf.BorderFull, 0, gofpdf.AlignLeft, true, 0, "")
+
+		pdf.SetY(pdf.GetY() + cellHeight)
+	}
 }
 
 func addChartPage(pdf gofpdf.Pdf, chartTitle string, chartLocation string) *gofpdf.Pdf {

@@ -6,6 +6,7 @@ import (
 
 	"github.com/stebennett/squad-dashboard/pkg/dashboard/models"
 	"github.com/stebennett/squad-dashboard/pkg/jiracalculationsrepository"
+	"github.com/stebennett/squad-dashboard/pkg/mathutil"
 
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/plotter"
@@ -211,9 +212,13 @@ func (pp *PlotPrinter) printChart(weekCounts []models.WeekCount, title string, p
 	p.Y.Tick.Label.Font.Size = 0
 
 	data := make(plotter.XYs, len(weekCounts))
+	xys := make([]mathutil.XY, len(weekCounts))
 	for i, d := range weekCounts {
 		data[i].X = float64(d.WeekEnding.Unix())
 		data[i].Y = float64(d.Count)
+
+		xys[i].X = float64(d.WeekEnding.Unix())
+		xys[i].Y = float64(d.Count)
 	}
 
 	p.Add(plotter.NewGrid())
@@ -230,10 +235,10 @@ func (pp *PlotPrinter) printChart(weekCounts []models.WeekCount, title string, p
 
 	p.Add(line, points)
 
-	linearRegression, gradiant, _ := pp.createLinearRegression(data)
+	linearRegression, gradiant, _ := mathutil.LinearRegression(xys)
 	trend = gradiant * (7 * 24 * 60 * 60)
 
-	linearRegressionLine, linearRegressionPoints, err := plotter.NewLinePoints(linearRegression)
+	linearRegressionLine, linearRegressionPoints, err := plotter.NewLinePoints(asPlotPoints(linearRegression))
 	if err != nil {
 		return trend, p, err
 	}
@@ -266,36 +271,6 @@ func (pp *PlotPrinter) addPoints(p *plot.Plot, cycleTimes []jiracalculationsrepo
 	return p, nil
 }
 
-func (pp *PlotPrinter) createLinearRegression(inData plotter.XYs) (r plotter.XYs, m float64, b float64) {
-	q := len(inData)
-
-	if q == 0 {
-		return make(plotter.XYs, 0), 0, 0
-	}
-
-	p := float64(q)
-
-	sum_x, sum_y, sum_xx, sum_xy := 0.0, 0.0, 0.0, 0.0
-
-	for _, p := range inData {
-		sum_x += p.X
-		sum_y += p.Y
-		sum_xx += p.X * p.X
-		sum_xy += p.X * p.Y
-	}
-
-	m = (p*sum_xy - sum_x*sum_y) / (p*sum_xx - sum_x*sum_x)
-	b = (sum_y / p) - (m * sum_x / p)
-
-	r = make(plotter.XYs, q)
-	for i, p := range inData {
-		r[i].X = p.X
-		r[i].Y = p.X*m + b
-	}
-
-	return r, m, b
-}
-
 func (pp *PlotPrinter) GetCycleTimeChartLocation() string {
 	return pp.OutputDirectory + "/cycle-time-" + pp.JiraProject + ".png"
 }
@@ -310,4 +285,13 @@ func (pp *PlotPrinter) GetEscapedDefectsChartLocation() string {
 
 func (pp *PlotPrinter) GetUnplannedWorkChartLocation() string {
 	return pp.OutputDirectory + "/unplanned-" + pp.JiraProject + ".png"
+}
+
+func asPlotPoints(points []mathutil.XY) plotter.XYs {
+	plotterPoints := make(plotter.XYs, len(points))
+	for i, v := range points {
+		plotterPoints[i].X = v.X
+		plotterPoints[i].Y = v.Y
+	}
+	return plotterPoints
 }
