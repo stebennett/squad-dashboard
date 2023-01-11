@@ -15,14 +15,16 @@ type PdfReportPrinter struct {
 	CycleTimeChart      string
 	ThroughputChart     string
 	EscapedDefectsChart string
+	UnplannedWorkChart  string
 	JiraProject         string
 }
 
-func NewPdfReportPrinter(cycleTimeChart string, throughputChart string, escapedDefectsChart string, project string) *PdfReportPrinter {
+func NewPdfReportPrinter(cycleTimeChart string, throughputChart string, escapedDefectsChart string, unplannedWorkChart string, project string) *PdfReportPrinter {
 	return &PdfReportPrinter{
 		CycleTimeChart:      cycleTimeChart,
 		ThroughputChart:     throughputChart,
 		EscapedDefectsChart: escapedDefectsChart,
+		UnplannedWorkChart:  unplannedWorkChart,
 		JiraProject:         project,
 	}
 }
@@ -42,6 +44,10 @@ func (p *PdfReportPrinter) Print(reports Reports) error {
 		Speed: report.ReportDashboardItem{
 			BackgroundColor: color.Black,
 			Chart:           p.CycleTimeChart,
+		},
+		UnplannedWork: report.ReportDashboardItem{
+			BackgroundColor: color.Black,
+			Chart:           p.UnplannedWorkChart,
 		},
 		SpeedAnomalies: getSpeedAnomalies(reports.CycleTimeReports, reports.AllCycleTimes),
 	}

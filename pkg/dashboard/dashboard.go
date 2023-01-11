@@ -2,6 +2,7 @@ package dashboard
 
 import (
 	"context"
+	"log"
 	"time"
 
 	"github.com/stebennett/squad-dashboard/pkg/dashboard/models"
@@ -95,4 +96,41 @@ func GenerateThroughput(weekCount int, project string, issueTypes []string, repo
 	}
 
 	return throughputReports, nil
+}
+
+func GenerateUnplannedWorkReport(weekCount int, project string, issueTypes []string, repo jiracalculationsrepository.JiraCalculationsRepository) ([]models.WeekCount, error) {
+	// 1. Calculate dates of last weekCount fridays
+	now := time.Now()
+
+	nearestFriday := dateutil.NearestPreviousDateForDay(dateutil.AsDate(now.Year(), now.Month(), now.Day()), time.Friday)
+	weekEndings := dateutil.PreviousWeekDates(nearestFriday, weekCount)
+
+	unplannedWorkReports := []models.WeekCount{}
+
+	for _, d := range weekEndings {
+		startDate := d.AddDate(0, 0, -7)
+		throughputIssues, err := repo.GetThroughput(context.Background(), project, issueTypes, startDate, d)
+		if err != nil {
+			return unplannedWorkReports, err
+		}
+
+		unplannedIssues, err := repo.GetUnplannedThroughput(context.Background(), project, issueTypes, startDate, d)
+		if err != nil {
+			return unplannedWorkReports, err
+		}
+
+		unplannedPercent := 0
+		if len(throughputIssues) > 0 && len(unplannedIssues) > 0 {
+			unplannedPercent = int((float64(len(unplannedIssues)) / float64(len(throughputIssues))) * 100.0)
+		}
+
+		log.Printf("unplanned: %d; all: %d; percent: %d", len(unplannedIssues), len(throughputIssues), unplannedPercent)
+
+		unplannedWorkReports = append(unplannedWorkReports, models.WeekCount{
+			WeekEnding: d,
+			Count:      unplannedPercent,
+		})
+	}
+
+	return unplannedWorkReports, nil
 }

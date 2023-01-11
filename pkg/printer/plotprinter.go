@@ -38,6 +38,11 @@ func (pp *PlotPrinter) Print(reports Reports) error {
 		return err
 	}
 
+	err = pp.printUnplannedWork(reports.UnplannedWorkReports)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -157,6 +162,43 @@ func (pp *PlotPrinter) printThroughput(throughputReports []models.WeekCount) err
 	return nil
 }
 
+func (pp *PlotPrinter) printUnplannedWork(unplannedWorkReports []models.WeekCount) error {
+	trend, p, err := pp.printChart(unplannedWorkReports, "Unplanned Work", color.NRGBA{R: 100, G: 0, B: 100, A: 100}, color.NRGBA{R: 100, G: 0, B: 100, A: 255})
+	if err != nil {
+		return err
+	}
+
+	err = p.Save(20*vg.Centimeter, 10*vg.Centimeter, pp.GetUnplannedWorkChartLocation())
+	if err != nil {
+		return err
+	}
+
+	var color string
+	switch {
+	case trend < 1.0:
+		color = "green"
+	case trend >= 1.0 && trend < 1.5:
+		color = "amber"
+	case trend >= 1.5:
+		color = "red"
+	}
+
+	var lastMove string
+	switch {
+	case len(unplannedWorkReports) < 2:
+		lastMove = "static"
+	case unplannedWorkReports[0].Count > unplannedWorkReports[1].Count:
+		lastMove = "up"
+	case unplannedWorkReports[0].Count < unplannedWorkReports[1].Count:
+		lastMove = "down"
+	default:
+		lastMove = "static"
+	}
+
+	log.Printf("> Unplanned Work: Trend -> %s; Last Move -> %s", color, lastMove)
+	return nil
+}
+
 func (pp *PlotPrinter) printChart(weekCounts []models.WeekCount, title string, plotColor color.Color, trendlineColor color.Color) (trend float64, p *plot.Plot, err error) {
 	p = plot.New()
 
@@ -264,4 +306,8 @@ func (pp *PlotPrinter) GetThroughputChartLocation() string {
 
 func (pp *PlotPrinter) GetEscapedDefectsChartLocation() string {
 	return pp.OutputDirectory + "/escaped-defects-" + pp.JiraProject + ".png"
+}
+
+func (pp *PlotPrinter) GetUnplannedWorkChartLocation() string {
+	return pp.OutputDirectory + "/unplanned-" + pp.JiraProject + ".png"
 }

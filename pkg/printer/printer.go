@@ -6,10 +6,11 @@ import (
 )
 
 type Reports struct {
-	EscapedDefects    []models.WeekCount
-	CycleTimeReports  []models.WeekCount
-	ThroughputReports []models.WeekCount
-	AllCycleTimes     []jiracalculationsrepository.CycleTimes
+	EscapedDefects       []models.WeekCount
+	CycleTimeReports     []models.WeekCount
+	ThroughputReports    []models.WeekCount
+	UnplannedWorkReports []models.WeekCount
+	AllCycleTimes        []jiracalculationsrepository.CycleTimes
 }
 
 type Printer interface {

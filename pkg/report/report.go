@@ -30,9 +30,10 @@ type SpeedAnomaly struct {
 }
 
 type ReportDashboard struct {
-	Quality  ReportDashboardItem
-	Quantity ReportDashboardItem
-	Speed    ReportDashboardItem
+	Quality       ReportDashboardItem
+	Quantity      ReportDashboardItem
+	Speed         ReportDashboardItem
+	UnplannedWork ReportDashboardItem
 
 	SpeedAnomalies []SpeedAnomaly
 }
@@ -66,6 +67,7 @@ func GeneratePdfReport(reportData ReportData, outputFile string) error {
 	for k, v := range reportData.Dashboards {
 		addChartPage(pdf, k+" - Quality", v.Quality.Chart)
 		addChartPage(pdf, k+" - Quantity", v.Quantity.Chart)
+		addChartPage(pdf, k+" - Unplanned work", v.UnplannedWork.Chart)
 		addChartPage(pdf, k+" - Speed", v.Speed.Chart)
 
 		addSpeedAnomaliesTable(pdf, v.SpeedAnomalies)

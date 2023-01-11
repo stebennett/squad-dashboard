@@ -72,3 +72,12 @@ func (c *CommandLinePrinter) PrintThroughput(throughputReports []models.WeekCoun
 
 	return nil
 }
+
+func (c *CommandLinePrinter) PrintUnplannedWorkPercent(unplannedWorkReports []models.WeekCount) error {
+	log.Printf("---- throughput ----")
+	for idx, tp := range unplannedWorkReports {
+		log.Printf("%d> weekEnding: %s; unplannedWork: %d%%", idx, tp.WeekEnding, tp.Count)
+	}
+
+	return nil
+}

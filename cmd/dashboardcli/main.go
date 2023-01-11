@@ -36,6 +36,7 @@ func main() {
 		plotprinter.GetCycleTimeChartLocation(),
 		plotprinter.GetThroughputChartLocation(),
 		plotprinter.GetEscapedDefectsChartLocation(),
+		plotprinter.GetUnplannedWorkChartLocation(),
 		environment.JiraProject,
 	)
 
@@ -59,11 +60,17 @@ func main() {
 		log.Fatal(err)
 	}
 
+	unplannedWorkReports, err := dashboard.GenerateUnplannedWorkReport(12, environment.JiraProject, strings.Split(environment.JiraReportIssueTypes, ","), repo)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	reports := printer.Reports{
-		EscapedDefects:    escapedDefects,
-		CycleTimeReports:  cycleTimeReports,
-		ThroughputReports: throughputReports,
-		AllCycleTimes:     allCycleTimes,
+		EscapedDefects:       escapedDefects,
+		CycleTimeReports:     cycleTimeReports,
+		ThroughputReports:    throughputReports,
+		UnplannedWorkReports: unplannedWorkReports,
+		AllCycleTimes:        allCycleTimes,
 	}
 	plotprinter.Print(reports)
 	cliprinter.Print(reports)
