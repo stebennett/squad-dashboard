@@ -2,7 +2,6 @@ package printer
 
 import (
 	"image/color"
-	"log"
 
 	"github.com/stebennett/squad-dashboard/pkg/dashboard/models"
 	"github.com/stebennett/squad-dashboard/pkg/jiracalculationsrepository"
@@ -48,44 +47,16 @@ func (pp *PlotPrinter) Print(reports Reports) error {
 }
 
 func (pp *PlotPrinter) printDefectCounts(defectCounts []models.WeekCount) error {
-	trend, p, err := pp.printChart(defectCounts, "Escaped Defects", color.NRGBA{R: 190, G: 0, B: 0, A: 100}, color.NRGBA{R: 190, G: 0, B: 0, A: 255})
+	p, err := pp.printChart(defectCounts, "Escaped Defects", color.NRGBA{R: 190, G: 0, B: 0, A: 100}, color.NRGBA{R: 190, G: 0, B: 0, A: 255})
 	if err != nil {
 		return err
 	}
 
-	err = p.Save(20*vg.Centimeter, 10*vg.Centimeter, pp.GetEscapedDefectsChartLocation())
-	if err != nil {
-		return err
-	}
-
-	var color string
-	switch {
-	case trend < 1.0:
-		color = "green"
-	case trend >= 1.0 && trend < 1.5:
-		color = "amber"
-	case trend >= 1.5:
-		color = "red"
-	}
-
-	var lastMove string
-	switch {
-	case len(defectCounts) < 2:
-		lastMove = "static"
-	case defectCounts[0].Count > defectCounts[1].Count:
-		lastMove = "up"
-	case defectCounts[0].Count < defectCounts[1].Count:
-		lastMove = "down"
-	default:
-		lastMove = "static"
-	}
-
-	log.Printf("> Escaped Defects: Trend -> %s; Last Move -> %s", color, lastMove)
-	return nil
+	return p.Save(20*vg.Centimeter, 10*vg.Centimeter, pp.GetEscapedDefectsChartLocation())
 }
 
 func (pp *PlotPrinter) printCycleTimes(cycleTimeReports []models.WeekCount, allCycleTimes []jiracalculationsrepository.CycleTimes) error {
-	trend, p, err := pp.printChart(cycleTimeReports, "Cycle Time", color.NRGBA{R: 0, G: 0, B: 190, A: 100}, color.NRGBA{R: 0, G: 0, B: 190, A: 255})
+	p, err := pp.printChart(cycleTimeReports, "Cycle Time", color.NRGBA{R: 0, G: 0, B: 190, A: 100}, color.NRGBA{R: 0, G: 0, B: 190, A: 255})
 	if err != nil {
 		return err
 	}
@@ -95,112 +66,28 @@ func (pp *PlotPrinter) printCycleTimes(cycleTimeReports []models.WeekCount, allC
 		return err
 	}
 
-	err = p.Save(20*vg.Centimeter, 10*vg.Centimeter, pp.GetCycleTimeChartLocation())
-	if err != nil {
-		return err
-	}
-
-	var color string
-	switch {
-	case trend < 1.0:
-		color = "green"
-	case trend >= 1.0 && trend < 1.5:
-		color = "amber"
-	case trend >= 1.5:
-		color = "red"
-	}
-
-	var lastMove string
-	switch {
-	case len(cycleTimeReports) < 2:
-		lastMove = "static"
-	case cycleTimeReports[0].Count > cycleTimeReports[1].Count:
-		lastMove = "up"
-	case cycleTimeReports[0].Count < cycleTimeReports[1].Count:
-		lastMove = "down"
-	default:
-		lastMove = "static"
-	}
-
-	log.Printf("> Cycle Time: Trend -> %s; Last Move -> %s", color, lastMove)
-	return nil
+	return p.Save(20*vg.Centimeter, 10*vg.Centimeter, pp.GetCycleTimeChartLocation())
 }
 
 func (pp *PlotPrinter) printThroughput(throughputReports []models.WeekCount) error {
-	trend, p, err := pp.printChart(throughputReports, "Throughput", color.NRGBA{R: 0, G: 190, B: 0, A: 100}, color.NRGBA{R: 0, G: 190, B: 0, A: 255})
+	p, err := pp.printChart(throughputReports, "Throughput", color.NRGBA{R: 0, G: 190, B: 0, A: 100}, color.NRGBA{R: 0, G: 190, B: 0, A: 255})
 	if err != nil {
 		return err
 	}
 
-	err = p.Save(20*vg.Centimeter, 10*vg.Centimeter, pp.GetThroughputChartLocation())
-	if err != nil {
-		return err
-	}
-
-	var color string
-	switch {
-	case trend >= 0.0:
-		color = "green"
-	case trend < 0.0 && trend > -1.5:
-		color = "amber"
-	case trend <= 1.5:
-		color = "red"
-	}
-
-	var lastMove string
-	switch {
-	case len(throughputReports) < 2:
-		lastMove = "static"
-	case throughputReports[0].Count > throughputReports[1].Count:
-		lastMove = "up"
-	case throughputReports[0].Count < throughputReports[1].Count:
-		lastMove = "down"
-	default:
-		lastMove = "static"
-	}
-
-	log.Printf("> Throughput: Trend -> %s; Last Move -> %s", color, lastMove)
-	return nil
+	return p.Save(20*vg.Centimeter, 10*vg.Centimeter, pp.GetThroughputChartLocation())
 }
 
 func (pp *PlotPrinter) printUnplannedWork(unplannedWorkReports []models.WeekCount) error {
-	trend, p, err := pp.printChart(unplannedWorkReports, "Unplanned Work", color.NRGBA{R: 100, G: 0, B: 100, A: 100}, color.NRGBA{R: 100, G: 0, B: 100, A: 255})
+	p, err := pp.printChart(unplannedWorkReports, "Unplanned Work", color.NRGBA{R: 100, G: 0, B: 100, A: 100}, color.NRGBA{R: 100, G: 0, B: 100, A: 255})
 	if err != nil {
 		return err
 	}
 
-	err = p.Save(20*vg.Centimeter, 10*vg.Centimeter, pp.GetUnplannedWorkChartLocation())
-	if err != nil {
-		return err
-	}
-
-	var color string
-	switch {
-	case trend < 1.0:
-		color = "green"
-	case trend >= 1.0 && trend < 1.5:
-		color = "amber"
-	case trend >= 1.5:
-		color = "red"
-	}
-
-	var lastMove string
-	switch {
-	case len(unplannedWorkReports) < 2:
-		lastMove = "static"
-	case unplannedWorkReports[0].Count > unplannedWorkReports[1].Count:
-		lastMove = "up"
-	case unplannedWorkReports[0].Count < unplannedWorkReports[1].Count:
-		lastMove = "down"
-	default:
-		lastMove = "static"
-	}
-
-	log.Printf("> Unplanned Work: Trend -> %s; Last Move -> %s", color, lastMove)
-	return nil
+	return p.Save(20*vg.Centimeter, 10*vg.Centimeter, pp.GetUnplannedWorkChartLocation())
 }
 
-func (pp *PlotPrinter) printChart(weekCounts []models.WeekCount, title string, plotColor color.Color, trendlineColor color.Color) (trend float64, p *plot.Plot, err error) {
+func (pp *PlotPrinter) printChart(weekCounts []models.WeekCount, title string, plotColor color.Color, trendlineColor color.Color) (p *plot.Plot, err error) {
 	p = plot.New()
 
 	xticks := plot.TimeTicks{Format: "2006-01-02"}
@@ -225,7 +112,7 @@ func (pp *PlotPrinter) printChart(weekCounts []models.WeekCount, title string, p
 
 	line, points, err := plotter.NewLinePoints(data)
 	if err != nil {
-		return 0.0, p, err
+		return p, err
 	}
 
 	line.Color = plotColor
@@ -235,12 +122,11 @@ func (pp *PlotPrinter) printChart(weekCounts []models.WeekCount, title string, p
 
 	p.Add(line, points)
 
-	linearRegression, gradiant, _ := mathutil.LinearRegression(xys)
-	trend = gradiant * (7 * 24 * 60 * 60)
+	linearRegression, _, _ := mathutil.LinearRegression(xys)
 
 	linearRegressionLine, linearRegressionPoints, err := plotter.NewLinePoints(asPlotPoints(linearRegression))
 	if err != nil {
-		return trend, p, err
+		return p, err
 	}
 
 	linearRegressionLine.Color = trendlineColor
@@ -248,7 +134,7 @@ func (pp *PlotPrinter) printChart(weekCounts []models.WeekCount, title string, p
 
 	p.Add(linearRegressionLine, linearRegressionPoints)
 
-	return trend, p, nil
+	return p, nil
 }
 
 func (pp *PlotPrinter) addPoints(p *plot.Plot, cycleTimes []jiracalculationsrepository.CycleTimes, plotColor color.Color) (*plot.Plot, error) {

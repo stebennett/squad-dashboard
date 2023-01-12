@@ -2,7 +2,6 @@ package report
 
 import (
 	"fmt"
-	"image/color"
 	"sort"
 	"time"
 
@@ -17,8 +16,12 @@ const (
 	Flat
 )
 
+type CellColor struct {
+	R, G, B int
+}
+
 type ReportDashboardItem struct {
-	BackgroundColor color.Color
+	BackgroundColor CellColor
 	Chart           string
 }
 
@@ -60,7 +63,7 @@ func GeneratePdfReport(reportData ReportData, outputFile string) error {
 	pdf.SetCellMargin(cellMargin)
 	pdf.Cell(0, pdf.PointToUnitConvert(headingFontHeight)+2*cellMargin, "Squad Dashboard Report")
 
-	pdf.SetY(pdf.PointToUnitConvert(headingFontHeight) + 2*cellMargin + margin)
+	pdf.SetY(pdf.PointToUnitConvert(headingFontHeight) + 2*cellMargin + 2*margin)
 	pdf.SetFont(font, "", fontHeight)
 
 	addDashboardView(pdf, reportData)
@@ -97,20 +100,16 @@ func addDashboardView(pdf gofpdf.Pdf, reportData ReportData) {
 	for k, v := range reportData.Dashboards {
 		pdf.CellFormat(cellWidth, cellHeight, k, gofpdf.BorderFull, 0, gofpdf.AlignLeft, false, 0, "")
 
-		red, green, blue, _ := v.Quality.BackgroundColor.RGBA()
-		pdf.SetFillColor(int(red), int(green), int(blue))
+		pdf.SetFillColor(v.Quality.BackgroundColor.R, v.Quality.BackgroundColor.G, v.Quality.BackgroundColor.B)
 		pdf.CellFormat(cellWidth, cellHeight, "", gofpdf.BorderFull, 0, gofpdf.AlignLeft, true, 0, "")
 
-		red, green, blue, _ = v.Speed.BackgroundColor.RGBA()
-		pdf.SetFillColor(int(red), int(green), int(blue))
+		pdf.SetFillColor(v.Speed.BackgroundColor.R, v.Speed.BackgroundColor.G, v.Speed.BackgroundColor.B)
 		pdf.CellFormat(cellWidth, cellHeight, "", gofpdf.BorderFull, 0, gofpdf.AlignLeft, true, 0, "")
 
-		red, green, blue, _ = v.Quantity.BackgroundColor.RGBA()
-		pdf.SetFillColor(int(red), int(green), int(blue))
+		pdf.SetFillColor(v.Quantity.BackgroundColor.R, v.Quality.BackgroundColor.G, v.Quality.BackgroundColor.B)
 		pdf.CellFormat(cellWidth, cellHeight, "", gofpdf.BorderFull, 0, gofpdf.AlignLeft, true, 0, "")
 
-		red, green, blue, _ = v.UnplannedWork.BackgroundColor.RGBA()
-		pdf.SetFillColor(int(red), int(green), int(blue))
+		pdf.SetFillColor(v.UnplannedWork.BackgroundColor.R, v.UnplannedWork.BackgroundColor.G, v.UnplannedWork.BackgroundColor.B)
 		pdf.CellFormat(cellWidth, cellHeight, "", gofpdf.BorderFull, 0, gofpdf.AlignLeft, true, 0, "")
 
 		pdf.SetFillColor(163, 163, 163)

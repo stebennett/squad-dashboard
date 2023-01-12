@@ -2,12 +2,12 @@ package printer
 
 import (
 	"fmt"
-	"image/color"
 	"log"
 	"time"
 
 	"github.com/stebennett/squad-dashboard/pkg/dashboard/models"
 	"github.com/stebennett/squad-dashboard/pkg/jiracalculationsrepository"
+	"github.com/stebennett/squad-dashboard/pkg/mathutil"
 	"github.com/stebennett/squad-dashboard/pkg/report"
 )
 
@@ -18,6 +18,12 @@ type PdfReportPrinter struct {
 	UnplannedWorkChart  string
 	JiraProject         string
 }
+
+var (
+	green = report.CellColor{R: 47, G: 247, B: 7}
+	amber = report.CellColor{R: 247, G: 147, B: 7}
+	red   = report.CellColor{R: 247, G: 7, B: 7}
+)
 
 func NewPdfReportPrinter(cycleTimeChart string, throughputChart string, escapedDefectsChart string, unplannedWorkChart string, project string) *PdfReportPrinter {
 	return &PdfReportPrinter{
@@ -34,19 +40,19 @@ func (p *PdfReportPrinter) Print(reports Reports) error {
 
 	reportDashboards[p.JiraProject] = report.ReportDashboard{
 		Quality: report.ReportDashboardItem{
-			BackgroundColor: color.Black,
+			BackgroundColor: pickColorLowerBetter(reports.EscapedDefects),
 			Chart:           p.EscapedDefectsChart,
 		},
 		Quantity: report.ReportDashboardItem{
-			BackgroundColor: color.Black,
+			BackgroundColor: pickColorHigherBetter(reports.ThroughputReports),
 			Chart:           p.ThroughputChart,
 		},
 		Speed: report.ReportDashboardItem{
-			BackgroundColor: color.Black,
+			BackgroundColor: pickColorLowerBetter(reports.CycleTimeReports),
 			Chart:           p.CycleTimeChart,
 		},
 		UnplannedWork: report.ReportDashboardItem{
-			BackgroundColor: color.Black,
+			BackgroundColor: pickColorLowerBetter(reports.UnplannedWorkReports),
 			Chart:           p.UnplannedWorkChart,
 		},
 		SpeedAnomalies: getSpeedAnomalies(reports.CycleTimeReports, reports.AllCycleTimes),
@@ -86,8 +92,6 @@ func filterCycleTimes(cycleTimes []jiracalculationsrepository.CycleTimes, startD
 	compareBeforeYear, compareBeforeMonth, compareBeforeDate := endDate.Date()
 	compareAfterYear, compareAfterMonth, compareAfterDate := startDate.Date()
 
-	log.Printf("filtering issues between [%d, %d, %d] and [%d, %d, %d]", compareAfterYear, compareAfterMonth, compareAfterDate, compareBeforeYear, compareBeforeMonth, compareBeforeDate)
-
 	for _, ct := range cycleTimes {
 		completedYear, completedMonth, completedDate := ct.Completed.Date()
 
@@ -100,4 +104,47 @@ func filterCycleTimes(cycleTimes []jiracalculationsrepository.CycleTimes, startD
 	}
 
 	return filteredCycleTimes
+}
+
+func pickColorLowerBetter(reports []models.WeekCount) (trendColor report.CellColor) {
+	xys := make([]mathutil.XY, len(reports))
+	for i, v := range reports {
+		xys[i].X = float64(v.WeekEnding.Unix())
+		xys[i].Y = float64(v.Count)
+	}
+
+	_, gradiant, _ := mathutil.LinearRegression(xys)
+	trend := gradiant * (7 * 24 * 60 * 60) // weekly ticks
+
+	switch {
+	case trend < 1.0:
+		trendColor = green
+	case trend >= 1.0 && trend < 1.5:
+		trendColor = amber
+	case trend >= 1.5:
+		trendColor = red
+	}
+	return trendColor
+}
+
+func pickColorHigherBetter(reports []models.WeekCount) (trendColor report.CellColor) {
+	xys := make([]mathutil.XY, len(reports))
+	for i, v := range reports {
+		xys[i].X = float64(v.WeekEnding.Unix())
+		xys[i].Y = float64(v.Count)
+	}
+
+	_, gradiant, _ := mathutil.LinearRegression(xys)
+	trend := gradiant * (7 * 24 * 60 * 60)
+
+	switch {
+	case trend >= 0.0:
+		trendColor = red
+	case trend < 0.0 && trend > -1.5:
+		trendColor = amber
+	case trend <= -1.5:
+		trendColor = green
+	}
+
+	return trendColor
 }
