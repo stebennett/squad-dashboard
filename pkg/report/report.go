@@ -106,7 +106,7 @@ func addDashboardView(pdf gofpdf.Pdf, reportData ReportData) {
 		pdf.SetFillColor(v.Speed.BackgroundColor.R, v.Speed.BackgroundColor.G, v.Speed.BackgroundColor.B)
 		pdf.CellFormat(cellWidth, cellHeight, "", gofpdf.BorderFull, 0, gofpdf.AlignLeft, true, 0, "")
 
-		pdf.SetFillColor(v.Quantity.BackgroundColor.R, v.Quality.BackgroundColor.G, v.Quality.BackgroundColor.B)
+		pdf.SetFillColor(v.Quantity.BackgroundColor.R, v.Quantity.BackgroundColor.G, v.Quantity.BackgroundColor.B)
 		pdf.CellFormat(cellWidth, cellHeight, "", gofpdf.BorderFull, 0, gofpdf.AlignLeft, true, 0, "")
 
 		pdf.SetFillColor(v.UnplannedWork.BackgroundColor.R, v.UnplannedWork.BackgroundColor.G, v.UnplannedWork.BackgroundColor.B)
