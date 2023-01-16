@@ -4,6 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"time"
+
+	"github.com/lib/pq"
 )
 
 type PostgresJiraCalculationsRepository struct {
@@ -162,4 +164,129 @@ func (p *PostgresJiraCalculationsRepository) SaveCompleteDates(ctx context.Conte
 	}
 
 	return result.RowsAffected()
+}
+
+func (p *PostgresJiraCalculationsRepository) GetEscapedDefects(ctx context.Context, project string, issueType string, startDate time.Time, endDate time.Time) ([]string, error) {
+	selectStatement := `
+		SELECT jira_issues_calculations.issue_key
+		FROM jira_issues_calculations
+		JOIN jira_issues ON jira_issues_calculations.issue_key = jira_issues.issue_key
+		WHERE jira_issues_calculations.issue_created_at > $3
+		AND jira_issues_calculations.issue_created_at <= $4
+		AND jira_issues.issue_type = $2
+		AND jira_issues.project = $1
+	`
+	var result = []string{}
+
+	rows, err := p.db.QueryContext(ctx, selectStatement, project, issueType, startDate, endDate)
+	if err != nil {
+		return result, err
+	}
+
+	for rows.Next() {
+		var issueKey string
+
+		err = rows.Scan(&issueKey)
+		if err != nil {
+			return result, nil
+		}
+
+		result = append(result, issueKey)
+	}
+
+	return result, nil
+}
+
+func (p *PostgresJiraCalculationsRepository) GetCompletedWorkingCycleTimes(ctx context.Context, project string, issueTypes []string, startDate time.Time, endDate time.Time) ([]CycleTimes, error) {
+	selectStatement := `
+		SELECT jira_issues_calculations.issue_key, jira_issues_calculations.working_cycle_time, jira_issues_calculations.issue_completed_at
+		FROM jira_issues_calculations
+		JOIN jira_issues ON jira_issues_calculations.issue_key = jira_issues.issue_key
+		WHERE jira_issues_calculations.issue_completed_at > $3
+		AND jira_issues_calculations.issue_completed_at <= $4
+		AND jira_issues.issue_type = ANY($2)
+		AND jira_issues.project = $1
+	`
+	var result = []CycleTimes{}
+
+	rows, err := p.db.QueryContext(ctx, selectStatement, project, pq.Array(issueTypes), startDate, endDate)
+	if err != nil {
+		return result, err
+	}
+
+	for rows.Next() {
+		var ct CycleTimes
+
+		err = rows.Scan(&ct.IssueKey, &ct.Size, &ct.Completed)
+		if err != nil {
+			return result, err
+		}
+
+		result = append(result, ct)
+	}
+
+	return result, nil
+}
+
+func (p *PostgresJiraCalculationsRepository) GetThroughput(ctx context.Context, project string, issueTypes []string, startDate time.Time, endDate time.Time) ([]string, error) {
+	selectStatement := `
+		SELECT jira_issues_calculations.issue_key
+		FROM jira_issues_calculations
+		JOIN jira_issues ON jira_issues_calculations.issue_key = jira_issues.issue_key
+		WHERE jira_issues_calculations.issue_completed_at > $3
+		AND jira_issues_calculations.issue_completed_at <= $4
+		AND jira_issues.issue_type = ANY($2)
+		AND jira_issues.project = $1
+	`
+	var result = []string{}
+
+	rows, err := p.db.QueryContext(ctx, selectStatement, project, pq.Array(issueTypes), startDate, endDate)
+	if err != nil {
+		return result, err
+	}
+
+	for rows.Next() {
+		var key string
+
+		err = rows.Scan(&key)
+		if err != nil {
+			return result, nil
+		}
+
+		result = append(result, key)
+	}
+
+	return result, nil
+}
+
+func (p *PostgresJiraCalculationsRepository) GetUnplannedThroughput(ctx context.Context, project string, issueTypes []string, startDate time.Time, endDate time.Time) ([]string, error) {
+	selectStatement := `
+		SELECT jira_issues_calculations.issue_key
+		FROM jira_issues_calculations
+		JOIN jira_issues ON jira_issues_calculations.issue_key = jira_issues.issue_key
+		WHERE jira_issues_calculations.issue_completed_at > $3
+		AND jira_issues_calculations.issue_completed_at <= $4
+		AND jira_issues.issue_type = ANY($2)
+		AND jira_issues.project = $1
+		AND jira_issues.unplanned = TRUE
+	`
+	var result = []string{}
+
+	rows, err := p.db.QueryContext(ctx, selectStatement, project, pq.Array(issueTypes), startDate, endDate)
+	if err != nil {
+		return result, err
+	}
+
+	for rows.Next() {
+		var key string
+
+		err = rows.Scan(&key)
+		if err != nil {
+			return result, nil
+		}
+
+		result = append(result, key)
+	}
+
+	return result, nil
 }

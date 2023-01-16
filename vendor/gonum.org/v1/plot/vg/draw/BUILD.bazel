@@ -1,0 +1,18 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "draw",
+    srcs = [
+        "canvas.go",
+        "doc.go",
+        "text.go",
+        "text_plain.go",
+    ],
+    importmap = "github.com/stebennett/squad-dashboard/vendor/gonum.org/v1/plot/vg/draw",
+    importpath = "gonum.org/v1/plot/vg/draw",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/gonum.org/v1/plot/text",
+        "//vendor/gonum.org/v1/plot/vg",
+    ],
+)

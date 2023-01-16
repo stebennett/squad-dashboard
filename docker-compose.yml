@@ -130,6 +130,23 @@ services:
     ports:
       - "3001:3001"
 
+  dashboardcli:
+    image: bazel/cmd/dashboardcli:image
+    environment:
+      - DB_USERNAME=${POSTGRES_USER}
+      - DB_PASSWORD=${POSTGRES_PASSWORD}
+      - DB_NAME=${POSTGRES_DB}
+      - DB_HOST=db
+      - DB_PORT=5432
+      - JIRA_PROJECT
+      - JIRA_DEFECT_ISSUE_TYPE
+      - JIRA_REPORT_ISSUE_TYPES
+      - OUTPUT_DIRECTORY=/output
+      - REPORT_CYCLE_TIME_PERCENTILE
+    volumes:
+      - ./output:/output
+
+
 volumes:
   db_data:
   metabase_db_data:

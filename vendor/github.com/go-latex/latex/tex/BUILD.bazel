@@ -1,0 +1,15 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "tex",
+    srcs = [
+        "box.go",
+        "state.go",
+        "tex.go",
+        "utils.go",
+    ],
+    importmap = "github.com/stebennett/squad-dashboard/vendor/github.com/go-latex/latex/tex",
+    importpath = "github.com/go-latex/latex/tex",
+    visibility = ["//visibility:public"],
+    deps = ["//vendor/github.com/go-latex/latex/font"],
+)
