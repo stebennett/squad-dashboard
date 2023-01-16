@@ -94,8 +94,8 @@ func addDashboardView(pdf gofpdf.Pdf, reportData ReportData) {
 		pdf.CellFormat(cellWidth, cellHeight, c, gofpdf.BorderFull, 0, gofpdf.AlignLeft, false, 0, "")
 	}
 
-	pdf.SetFont(font, "B", fontHeight)
 	pdf.SetY(pdf.GetY() + cellHeight)
+	pdf.SetFont(font, "B", fontHeight)
 
 	for k, v := range reportData.Dashboards {
 		pdf.CellFormat(cellWidth, cellHeight, k, gofpdf.BorderFull, 0, gofpdf.AlignLeft, false, 0, "")

@@ -2,7 +2,6 @@ package printer
 
 import (
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/stebennett/squad-dashboard/pkg/dashboard/models"
@@ -62,7 +61,7 @@ func (p *PdfReportPrinter) Print(reports Reports) error {
 		Dashboards: reportDashboards,
 	}
 
-	err := report.GeneratePdfReport(reportData, "/output/report.pdf")
+	err := report.GeneratePdfReport(reportData, "/output/report-"+p.JiraProject+".pdf")
 	return err
 }
 
@@ -98,7 +97,6 @@ func filterCycleTimes(cycleTimes []jiracalculationsrepository.CycleTimes, startD
 		if completedYear > compareAfterYear && completedYear <= compareBeforeYear &&
 			completedMonth > compareAfterMonth && completedMonth <= compareBeforeMonth &&
 			completedDate > compareAfterDate && completedDate <= compareBeforeDate {
-			log.Println("Adding item")
 			filteredCycleTimes = append(filteredCycleTimes, ct)
 		}
 	}
@@ -117,12 +115,12 @@ func pickColorLowerBetter(reports []models.WeekCount) (trendColor report.CellCol
 	trend := gradiant * (7 * 24 * 60 * 60) // weekly ticks
 
 	switch {
-	case trend < 1.0:
+	case trend < 0.15: // downward trend
 		trendColor = green
-	case trend >= 1.0 && trend < 1.5:
+	case trend >= 0.15 && trend < 1.0: // slight upward (1 new item per week)
 		trendColor = amber
-	case trend >= 1.5:
-		trendColor = red
+	case trend >= 1.0:
+		trendColor = red // more than 1 item per week
 	}
 	return trendColor
 }
@@ -138,11 +136,11 @@ func pickColorHigherBetter(reports []models.WeekCount) (trendColor report.CellCo
 	trend := gradiant * (7 * 24 * 60 * 60)
 
 	switch {
-	case trend >= 0.0:
+	case trend < -1.0:
 		trendColor = red
-	case trend < 0.0 && trend > -1.5:
+	case trend >= -1.0 && trend < 0.0:
 		trendColor = amber
-	case trend <= -1.5:
+	case trend >= 0.0:
 		trendColor = green
 	}
 
