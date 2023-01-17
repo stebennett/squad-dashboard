@@ -1,0 +1,15 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "opentype",
+    srcs = ["opentype.go"],
+    importmap = "github.com/stebennett/squad-dashboard/vendor/golang.org/x/image/font/opentype",
+    importpath = "golang.org/x/image/font/opentype",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/golang.org/x/image/font",
+        "//vendor/golang.org/x/image/font/sfnt",
+        "//vendor/golang.org/x/image/math/fixed",
+        "//vendor/golang.org/x/image/vector",
+    ],
+)

@@ -1,0 +1,16 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "vgimg",
+    srcs = ["vgimg.go"],
+    importmap = "github.com/stebennett/squad-dashboard/vendor/gonum.org/v1/plot/vg/vgimg",
+    importpath = "gonum.org/v1/plot/vg/vgimg",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/git.sr.ht/~sbinet/gg",
+        "//vendor/golang.org/x/image/tiff",
+        "//vendor/gonum.org/v1/plot/font",
+        "//vendor/gonum.org/v1/plot/vg",
+        "//vendor/gonum.org/v1/plot/vg/draw",
+    ],
+)
