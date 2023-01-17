@@ -5,10 +5,10 @@ go 1.18
 require (
 	github.com/golang-migrate/migrate/v4 v4.15.1
 	github.com/golang/glog v1.0.0
-	github.com/gorilla/mux v1.8.0
-	github.com/montanaflynn/stats v0.6.6
+	github.com/jung-kurt/gofpdf v1.16.2
 	github.com/spf13/cobra v1.0.0
 	github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80
+	gonum.org/v1/plot v0.12.0
 )
 
 require (
@@ -20,11 +20,9 @@ require (
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/hashicorp/errwrap v1.0.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.0 // indirect
-	github.com/jung-kurt/gofpdf v1.16.2 // indirect
 	go.uber.org/atomic v1.6.0 // indirect
 	golang.org/x/image v0.0.0-20220902085622-e7cb96979f69 // indirect
 	golang.org/x/text v0.3.7 // indirect
-	gonum.org/v1/plot v0.12.0 // indirect
 )
 
 require (
