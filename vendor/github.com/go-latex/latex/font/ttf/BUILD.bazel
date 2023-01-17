@@ -1,0 +1,22 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "ttf",
+    srcs = ["ttf.go"],
+    importmap = "github.com/stebennett/squad-dashboard/vendor/github.com/go-latex/latex/font/ttf",
+    importpath = "github.com/go-latex/latex/font/ttf",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/go-latex/latex/drawtex",
+        "//vendor/github.com/go-latex/latex/font",
+        "//vendor/github.com/go-latex/latex/internal/tex2unicode",
+        "//vendor/golang.org/x/image/font",
+        "//vendor/golang.org/x/image/font/gofont/gobold",
+        "//vendor/golang.org/x/image/font/gofont/gobolditalic",
+        "//vendor/golang.org/x/image/font/gofont/goitalic",
+        "//vendor/golang.org/x/image/font/gofont/goregular",
+        "//vendor/golang.org/x/image/font/opentype",
+        "//vendor/golang.org/x/image/font/sfnt",
+        "//vendor/golang.org/x/image/math/fixed",
+    ],
+)
