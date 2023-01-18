@@ -18,6 +18,22 @@ func NewPostgresJiraCalculationsRepository(db *sql.DB) *PostgresJiraCalculations
 	}
 }
 
+func (p *PostgresJiraCalculationsRepository) DropAllCalculations(ctx context.Context, project string) (int64, error) {
+	insertStatement := `
+		DELETE FROM jira_issues_calculations jic
+		USING jira_issues ji
+		WHERE ji.project=$1 AND jic.issue_key = ji.issue_key
+	`
+
+	result, err := p.db.ExecContext(ctx, insertStatement, project)
+
+	if err != nil {
+		return -1, err
+	}
+
+	return result.RowsAffected()
+}
+
 func (p *PostgresJiraCalculationsRepository) SaveCycleTime(ctx context.Context, issueKey string, cycleTime int, workingCycleTime int) (int64, error) {
 	insertStatement := `
 		INSERT INTO jira_issues_calculations(issue_key, cycle_time, working_cycle_time)

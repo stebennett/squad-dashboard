@@ -12,7 +12,6 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/dashboard/models",
-        "//pkg/jiracalculationsrepository",
         "//pkg/mathutil",
         "//pkg/report",
         "//vendor/gonum.org/v1/plot",
