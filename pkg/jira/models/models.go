@@ -1,4 +1,4 @@
-package jiramodels
+package models
 
 import "time"
 

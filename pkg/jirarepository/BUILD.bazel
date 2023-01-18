@@ -10,7 +10,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/calculatormodels",
-        "//pkg/jiramodels",
         "//vendor/github.com/lib/pq",
+        "//pkg/jira/models",
     ],
 )

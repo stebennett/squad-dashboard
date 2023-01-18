@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/stebennett/squad-dashboard/pkg/jiramodels"
+	jiramodels "github.com/stebennett/squad-dashboard/pkg/jira/models"
 )
 
 type JiraTimestamp struct {

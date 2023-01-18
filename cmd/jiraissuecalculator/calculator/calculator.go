@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/stebennett/squad-dashboard/pkg/dateutil"
-	"github.com/stebennett/squad-dashboard/pkg/jiramodels"
+	jiramodels "github.com/stebennett/squad-dashboard/pkg/jira/models"
 )
 
 func CalculateCycleTime(startDate time.Time, completedDate time.Time) (int, error) {

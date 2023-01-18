@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/stebennett/squad-dashboard/cmd/jiracollector/models"
-	"github.com/stebennett/squad-dashboard/pkg/jiramodels"
+	jiramodels "github.com/stebennett/squad-dashboard/pkg/jira/models"
 	"github.com/stebennett/squad-dashboard/pkg/jirarepository"
 	"github.com/stebennett/squad-dashboard/pkg/jiraservice"
 	"github.com/stebennett/squad-dashboard/pkg/paginator"

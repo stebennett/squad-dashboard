@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/stebennett/squad-dashboard/pkg/calculatormodels"
-	"github.com/stebennett/squad-dashboard/pkg/jiramodels"
+	jiramodels "github.com/stebennett/squad-dashboard/pkg/jira/models"
 )
 
 type JiraRepository interface {
