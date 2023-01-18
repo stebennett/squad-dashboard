@@ -12,6 +12,7 @@ go_library(
         "//pkg/jiracalculationsrepository",
         "//pkg/jirarepository",
         "//vendor/github.com/Netflix/go-env",
+        "//vendor/golang.org/x/exp/slices",
     ],
 )
 

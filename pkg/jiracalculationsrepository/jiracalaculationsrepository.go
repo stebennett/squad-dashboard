@@ -22,6 +22,8 @@ type ThroughputIssue struct {
 }
 
 type JiraCalculationsRepository interface {
+	DropAllCalculations(ctx context.Context, project string) (int64, error)
+
 	SaveCreateDates(ctx context.Context, issueKey string, year int, week int, createdAt time.Time) (int64, error)
 	SaveStartDates(ctx context.Context, issueKey string, year int, week int, startedAt time.Time) (int64, error)
 	SaveCompleteDates(ctx context.Context, issueKey string, year int, week int, completedAt time.Time, endState string) (int64, error)

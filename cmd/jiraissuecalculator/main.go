@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sort"
 	"strings"
 	"time"
 
@@ -14,6 +15,7 @@ import (
 	"github.com/stebennett/squad-dashboard/pkg/configrepository"
 	"github.com/stebennett/squad-dashboard/pkg/jiracalculationsrepository"
 	"github.com/stebennett/squad-dashboard/pkg/jirarepository"
+	"golang.org/x/exp/slices"
 )
 
 type Environment struct {
@@ -44,6 +46,12 @@ func main() {
 	}
 
 	log.Printf("running updates for project %s", environment.JiraProject)
+
+	// drop all calculations
+	_, err = calaculationsRepo.DropAllCalculations(context.Background(), environment.JiraProject)
+	if err != nil {
+		log.Fatalf("Failed to drop existing calculations. %s", err)
+	}
 
 	// fetch all issues and set create year-week
 	_, err = setCreateDates(issueRepo, calaculationsRepo, environment.JiraProject)
@@ -157,19 +165,32 @@ func setCompleteDates(issuesRepo jirarepository.JiraRepository, calaculationsRep
 	updatedCount := int64(0)
 
 	for issueKey, transitionTime := range transitions {
-		year, week := transitionTime.UTC().ISOWeek()
-
-		endState, err := issuesRepo.GetEndStateForIssue(context.Background(), issueKey, transitionTime)
+		// get the current state of the issue
+		allTransitions, err := issuesRepo.GetTransitionsForIssue(context.Background(), issueKey)
 		if err != nil {
 			return updatedCount, err
 		}
 
-		rowsChanged, err := calaculationsRepo.SaveCompleteDates(context.Background(), issueKey, year, week, transitionTime, endState)
-		if err != nil {
-			return updatedCount, err
-		}
+		sort.Slice(allTransitions, func(i, j int) bool {
+			return allTransitions[i].TransitionedAt.After(allTransitions[j].TransitionedAt)
+		})
 
-		updatedCount = updatedCount + rowsChanged
+		// is the issue actually complete?
+		if slices.Contains(workCompleteStates, allTransitions[0].ToState) {
+			year, week := transitionTime.UTC().ISOWeek()
+
+			endState, err := issuesRepo.GetEndStateForIssue(context.Background(), issueKey, transitionTime)
+			if err != nil {
+				return updatedCount, err
+			}
+
+			rowsChanged, err := calaculationsRepo.SaveCompleteDates(context.Background(), issueKey, year, week, transitionTime, endState)
+			if err != nil {
+				return updatedCount, err
+			}
+
+			updatedCount = updatedCount + rowsChanged
+		}
 	}
 
 	return updatedCount, nil
