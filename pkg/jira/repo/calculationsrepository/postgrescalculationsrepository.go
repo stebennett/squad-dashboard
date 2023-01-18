@@ -1,4 +1,4 @@
-package jiracalculationsrepository
+package calculationsrepository
 
 import (
 	"context"

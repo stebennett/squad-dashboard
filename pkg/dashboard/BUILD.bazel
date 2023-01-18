@@ -8,7 +8,7 @@ go_library(
     deps = [
         "//pkg/dashboard/models",
         "//pkg/dateutil",
-        "//pkg/jiracalculationsrepository",
+        "//pkg/jira/repo/calculationsrepository",
         "//pkg/mathutil",
     ],
 )

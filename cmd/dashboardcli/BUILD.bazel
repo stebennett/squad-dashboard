@@ -8,9 +8,9 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/dashboard",
-        "//pkg/jiracalculationsrepository",
         "//pkg/printer",
         "//vendor/github.com/Netflix/go-env",
+        "//pkg/jira/repo/calculationsrepository",
     ],
 )
 

@@ -13,7 +13,7 @@ import (
 	"github.com/Netflix/go-env"
 	"github.com/stebennett/squad-dashboard/cmd/jiraissuecalculator/calculator"
 	"github.com/stebennett/squad-dashboard/pkg/configrepository"
-	"github.com/stebennett/squad-dashboard/pkg/jiracalculationsrepository"
+	"github.com/stebennett/squad-dashboard/pkg/jira/repo/calculationsrepository"
 	"github.com/stebennett/squad-dashboard/pkg/jirarepository"
 	"golang.org/x/exp/slices"
 )
@@ -36,7 +36,7 @@ func main() {
 	}
 	issueRepo := jirarepository.NewPostgresJiraRepository(db)
 	configRepo := configrepository.NewPostgresConfigRepository(db)
-	calaculationsRepo := jiracalculationsrepository.NewPostgresJiraCalculationsRepository(db)
+	calaculationsRepo := calculationsrepository.NewPostgresJiraCalculationsRepository(db)
 
 	// load environment vars
 	var environment Environment
@@ -112,7 +112,7 @@ func connectToDatabase() (*sql.DB, error) {
 	return db, nil
 }
 
-func setCreateDates(issuesRepo jirarepository.JiraRepository, calaculationsRepo jiracalculationsrepository.JiraCalculationsRepository, project string) (int64, error) {
+func setCreateDates(issuesRepo jirarepository.JiraRepository, calaculationsRepo calculationsrepository.JiraCalculationsRepository, project string) (int64, error) {
 	issues, err := issuesRepo.GetIssues(context.Background(), project)
 	if err != nil {
 		return -1, err
@@ -134,7 +134,7 @@ func setCreateDates(issuesRepo jirarepository.JiraRepository, calaculationsRepo 
 	return updatedCount, nil
 }
 
-func setStartDates(issuesRepo jirarepository.JiraRepository, calculationsRepo jiracalculationsrepository.JiraCalculationsRepository, project string, workStartStates []string, workToDoStates []string) (int64, error) {
+func setStartDates(issuesRepo jirarepository.JiraRepository, calculationsRepo calculationsrepository.JiraCalculationsRepository, project string, workStartStates []string, workToDoStates []string) (int64, error) {
 	transitions, err := issuesRepo.GetTransitionTimeByStateChanges(context.Background(), project, workToDoStates, workStartStates)
 	if err != nil {
 		return -1, err
@@ -156,7 +156,7 @@ func setStartDates(issuesRepo jirarepository.JiraRepository, calculationsRepo ji
 	return updatedCount, nil
 }
 
-func setCompleteDates(issuesRepo jirarepository.JiraRepository, calaculationsRepo jiracalculationsrepository.JiraCalculationsRepository, project string, workCompleteStates []string) (int64, error) {
+func setCompleteDates(issuesRepo jirarepository.JiraRepository, calaculationsRepo calculationsrepository.JiraCalculationsRepository, project string, workCompleteStates []string) (int64, error) {
 	transitions, err := issuesRepo.GetTransitionTimeByToState(context.Background(), project, workCompleteStates)
 	if err != nil {
 		return -1, err
@@ -195,7 +195,7 @@ func setCompleteDates(issuesRepo jirarepository.JiraRepository, calaculationsRep
 	return updatedCount, nil
 }
 
-func setCycleTimeForCompletedIssues(issuesRepo jirarepository.JiraRepository, configRepo configrepository.ConfigRepository, calaculationsRepo jiracalculationsrepository.JiraCalculationsRepository, project string) (int64, error) {
+func setCycleTimeForCompletedIssues(issuesRepo jirarepository.JiraRepository, configRepo configrepository.ConfigRepository, calaculationsRepo calculationsrepository.JiraCalculationsRepository, project string) (int64, error) {
 	calculations, err := issuesRepo.GetCompletedIssues(context.Background(), project)
 	if err != nil {
 		return -1, err

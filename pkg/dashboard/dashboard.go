@@ -7,11 +7,11 @@ import (
 
 	"github.com/stebennett/squad-dashboard/pkg/dashboard/models"
 	"github.com/stebennett/squad-dashboard/pkg/dateutil"
-	"github.com/stebennett/squad-dashboard/pkg/jiracalculationsrepository"
+	"github.com/stebennett/squad-dashboard/pkg/jira/repo/calculationsrepository"
 	"github.com/stebennett/squad-dashboard/pkg/mathutil"
 )
 
-func GenerateEscapedDefects(weekCount int, project string, defectIssueType string, repo jiracalculationsrepository.JiraCalculationsRepository) (models.EscapedDefectReport, error) {
+func GenerateEscapedDefects(weekCount int, project string, defectIssueType string, repo calculationsrepository.JiraCalculationsRepository) (models.EscapedDefectReport, error) {
 	// 1. Calculate dates of last weekCount fridays
 	now := time.Now()
 
@@ -57,7 +57,7 @@ func GenerateEscapedDefects(weekCount int, project string, defectIssueType strin
 	}, nil
 }
 
-func GenerateCycleTime(weekCount int, percentile float64, project string, issueTypes []string, repo jiracalculationsrepository.JiraCalculationsRepository) (models.CycleTimeReport, error) {
+func GenerateCycleTime(weekCount int, percentile float64, project string, issueTypes []string, repo calculationsrepository.JiraCalculationsRepository) (models.CycleTimeReport, error) {
 	// 1. Calculate dates of last weekCount fridays
 	now := time.Now()
 
@@ -116,7 +116,7 @@ func GenerateCycleTime(weekCount int, percentile float64, project string, issueT
 	}, nil
 }
 
-func GenerateThroughput(weekCount int, project string, issueTypes []string, repo jiracalculationsrepository.JiraCalculationsRepository) (models.ThroughputReport, error) {
+func GenerateThroughput(weekCount int, project string, issueTypes []string, repo calculationsrepository.JiraCalculationsRepository) (models.ThroughputReport, error) {
 	// 1. Calculate dates of last weekCount fridays
 	now := time.Now()
 
@@ -160,7 +160,7 @@ func GenerateThroughput(weekCount int, project string, issueTypes []string, repo
 	}, nil
 }
 
-func GenerateUnplannedWorkReport(weekCount int, project string, issueTypes []string, repo jiracalculationsrepository.JiraCalculationsRepository) (models.UnplannedWorkReport, error) {
+func GenerateUnplannedWorkReport(weekCount int, project string, issueTypes []string, repo calculationsrepository.JiraCalculationsRepository) (models.UnplannedWorkReport, error) {
 	// 1. Calculate dates of last weekCount fridays
 	now := time.Now()
 
