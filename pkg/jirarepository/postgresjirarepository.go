@@ -206,7 +206,6 @@ func (p *PostgresJiraRepository) GetCompletedIssues(ctx context.Context, project
 	FROM jira_issues_calculations
 	INNER JOIN jira_issues ON jira_issues_calculations.issue_key = jira_issues.issue_key
 	WHERE jira_issues_calculations.issue_completed_at IS NOT NULL
-	AND jira_issues_calculations.issue_started_at IS NOT NULL
 	AND jira_issues.project = $1
 `
 	var result = make(map[string]calculatormodels.IssueCalculations)
