@@ -50,7 +50,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	cycleTimeReports, allCycleTimes, err := dashboard.GenerateCycleTime(12, percentile, environment.JiraProject, strings.Split(environment.JiraReportIssueTypes, ","), repo)
+	cycleTimeReports, err := dashboard.GenerateCycleTime(12, percentile, environment.JiraProject, strings.Split(environment.JiraReportIssueTypes, ","), repo)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -70,7 +70,6 @@ func main() {
 		CycleTimeReports:     cycleTimeReports,
 		ThroughputReports:    throughputReports,
 		UnplannedWorkReports: unplannedWorkReports,
-		AllCycleTimes:        allCycleTimes,
 	}
 	plotprinter.Print(reports)
 	cliprinter.Print(reports)

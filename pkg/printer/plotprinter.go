@@ -4,7 +4,6 @@ import (
 	"image/color"
 
 	"github.com/stebennett/squad-dashboard/pkg/dashboard/models"
-	"github.com/stebennett/squad-dashboard/pkg/jiracalculationsrepository"
 	"github.com/stebennett/squad-dashboard/pkg/mathutil"
 
 	"gonum.org/v1/plot"
@@ -23,7 +22,7 @@ func NewPlotPrinter(outputDirectory string, project string) *PlotPrinter {
 }
 
 func (pp *PlotPrinter) Print(reports Reports) error {
-	err := pp.printCycleTimes(reports.CycleTimeReports, reports.AllCycleTimes)
+	err := pp.printCycleTimes(reports.CycleTimeReports)
 	if err != nil {
 		return err
 	}
@@ -46,8 +45,8 @@ func (pp *PlotPrinter) Print(reports Reports) error {
 	return nil
 }
 
-func (pp *PlotPrinter) printDefectCounts(defectCounts []models.WeekCount) error {
-	p, err := pp.printChart(defectCounts, "Escaped Defects", color.NRGBA{R: 190, G: 0, B: 0, A: 100}, color.NRGBA{R: 190, G: 0, B: 0, A: 255})
+func (pp *PlotPrinter) printDefectCounts(defectCounts models.EscapedDefectReport) error {
+	p, err := pp.printChart(defectCounts.WeeklyReports, "Escaped Defects", color.NRGBA{R: 190, G: 0, B: 0, A: 100}, color.NRGBA{R: 190, G: 0, B: 0, A: 255})
 	if err != nil {
 		return err
 	}
@@ -55,13 +54,13 @@ func (pp *PlotPrinter) printDefectCounts(defectCounts []models.WeekCount) error 
 	return p.Save(20*vg.Centimeter, 10*vg.Centimeter, pp.GetEscapedDefectsChartLocation())
 }
 
-func (pp *PlotPrinter) printCycleTimes(cycleTimeReports []models.WeekCount, allCycleTimes []jiracalculationsrepository.CycleTimes) error {
-	p, err := pp.printChart(cycleTimeReports, "Cycle Time", color.NRGBA{R: 0, G: 0, B: 190, A: 100}, color.NRGBA{R: 0, G: 0, B: 190, A: 255})
+func (pp *PlotPrinter) printCycleTimes(cycleTimeReport models.CycleTimeReport) error {
+	p, err := pp.printChart(cycleTimeReport.WeeklyReports, "Cycle Time", color.NRGBA{R: 0, G: 0, B: 190, A: 100}, color.NRGBA{R: 0, G: 0, B: 190, A: 255})
 	if err != nil {
 		return err
 	}
 
-	p, err = pp.addPoints(p, allCycleTimes, color.NRGBA{R: 0, G: 0, B: 190, A: 110})
+	p, err = pp.addPoints(p, cycleTimeReport.AllCycleTimeItems, color.NRGBA{R: 0, G: 0, B: 190, A: 110})
 	if err != nil {
 		return err
 	}
@@ -69,8 +68,8 @@ func (pp *PlotPrinter) printCycleTimes(cycleTimeReports []models.WeekCount, allC
 	return p.Save(20*vg.Centimeter, 10*vg.Centimeter, pp.GetCycleTimeChartLocation())
 }
 
-func (pp *PlotPrinter) printThroughput(throughputReports []models.WeekCount) error {
-	p, err := pp.printChart(throughputReports, "Throughput", color.NRGBA{R: 0, G: 190, B: 0, A: 100}, color.NRGBA{R: 0, G: 190, B: 0, A: 255})
+func (pp *PlotPrinter) printThroughput(throughputReports models.ThroughputReport) error {
+	p, err := pp.printChart(throughputReports.WeeklyReports, "Throughput", color.NRGBA{R: 0, G: 190, B: 0, A: 100}, color.NRGBA{R: 0, G: 190, B: 0, A: 255})
 	if err != nil {
 		return err
 	}
@@ -78,8 +77,8 @@ func (pp *PlotPrinter) printThroughput(throughputReports []models.WeekCount) err
 	return p.Save(20*vg.Centimeter, 10*vg.Centimeter, pp.GetThroughputChartLocation())
 }
 
-func (pp *PlotPrinter) printUnplannedWork(unplannedWorkReports []models.WeekCount) error {
-	p, err := pp.printChart(unplannedWorkReports, "Unplanned Work", color.NRGBA{R: 100, G: 0, B: 100, A: 100}, color.NRGBA{R: 100, G: 0, B: 100, A: 255})
+func (pp *PlotPrinter) printUnplannedWork(unplannedWorkReports models.UnplannedWorkReport) error {
+	p, err := pp.printChart(unplannedWorkReports.WeeklyReports, "Unplanned Work", color.NRGBA{R: 100, G: 0, B: 100, A: 100}, color.NRGBA{R: 100, G: 0, B: 100, A: 255})
 	if err != nil {
 		return err
 	}
@@ -137,10 +136,10 @@ func (pp *PlotPrinter) printChart(weekCounts []models.WeekCount, title string, p
 	return p, nil
 }
 
-func (pp *PlotPrinter) addPoints(p *plot.Plot, cycleTimes []jiracalculationsrepository.CycleTimes, plotColor color.Color) (*plot.Plot, error) {
+func (pp *PlotPrinter) addPoints(p *plot.Plot, cycleTimes []models.CycleTimeItem, plotColor color.Color) (*plot.Plot, error) {
 	data := make(plotter.XYs, len(cycleTimes))
 	for i, d := range cycleTimes {
-		data[i].X = float64(d.Completed.Unix())
+		data[i].X = float64(d.CompletedAt.Unix())
 		data[i].Y = float64(d.Size)
 	}
 

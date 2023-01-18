@@ -2,10 +2,8 @@ package printer
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/stebennett/squad-dashboard/pkg/dashboard/models"
-	"github.com/stebennett/squad-dashboard/pkg/jiracalculationsrepository"
 	"github.com/stebennett/squad-dashboard/pkg/mathutil"
 	"github.com/stebennett/squad-dashboard/pkg/report"
 )
@@ -24,6 +22,20 @@ var (
 	red   = report.CellColor{R: 247, G: 7, B: 7}
 )
 
+const (
+	DateCreated   = "Date Created"
+	DateCompleted = "Date Completed"
+	Link          = "Link"
+	Size          = "Size"
+)
+
+var (
+	EscapedDefectsColumns = []string{DateCreated, Link}
+	QuantityColumns       = []string{DateCompleted, Link}
+	SpeedColumns          = []string{DateCompleted, Size, Link}
+	UnplannedWorkColumns  = []string{DateCompleted, Link}
+)
+
 func NewPdfReportPrinter(cycleTimeChart string, throughputChart string, escapedDefectsChart string, unplannedWorkChart string, project string) *PdfReportPrinter {
 	return &PdfReportPrinter{
 		CycleTimeChart:      cycleTimeChart,
@@ -39,22 +51,25 @@ func (p *PdfReportPrinter) Print(reports Reports) error {
 
 	reportDashboards[p.JiraProject] = report.ReportDashboard{
 		Quality: report.ReportDashboardItem{
-			BackgroundColor: pickColorLowerBetter(reports.EscapedDefects),
+			BackgroundColor: pickColorLowerBetter(reports.EscapedDefects.WeeklyReports),
 			Chart:           p.EscapedDefectsChart,
+			InfoTable:       createEscapedDefectsTable(reports.EscapedDefects),
 		},
 		Quantity: report.ReportDashboardItem{
-			BackgroundColor: pickColorHigherBetter(reports.ThroughputReports),
+			BackgroundColor: pickColorHigherBetter(reports.ThroughputReports.WeeklyReports),
 			Chart:           p.ThroughputChart,
+			InfoTable:       createQuantityTable(reports.ThroughputReports),
 		},
 		Speed: report.ReportDashboardItem{
-			BackgroundColor: pickColorLowerBetter(reports.CycleTimeReports),
+			BackgroundColor: pickColorLowerBetter(reports.CycleTimeReports.WeeklyReports),
 			Chart:           p.CycleTimeChart,
+			InfoTable:       createSpeedTable(reports.CycleTimeReports),
 		},
 		UnplannedWork: report.ReportDashboardItem{
-			BackgroundColor: pickColorLowerBetter(reports.UnplannedWorkReports),
+			BackgroundColor: pickColorLowerBetter(reports.UnplannedWorkReports.WeeklyReports),
 			Chart:           p.UnplannedWorkChart,
+			InfoTable:       createUnplannedTable(reports.UnplannedWorkReports),
 		},
-		SpeedAnomalies: getSpeedAnomalies(reports.CycleTimeReports, reports.AllCycleTimes),
 	}
 
 	reportData := report.ReportData{
@@ -63,45 +78,6 @@ func (p *PdfReportPrinter) Print(reports Reports) error {
 
 	err := report.GeneratePdfReport(reportData, "/output/report-"+p.JiraProject+".pdf")
 	return err
-}
-
-func getSpeedAnomalies(cycleTimesReports []models.WeekCount, allCycleTimes []jiracalculationsrepository.CycleTimes) []report.SpeedAnomaly {
-	speedAnomalies := []report.SpeedAnomaly{}
-
-	for _, ctavg := range cycleTimesReports {
-		cycleTimesInWeek := filterCycleTimes(allCycleTimes, ctavg.WeekEnding.AddDate(0, 0, -7), ctavg.WeekEnding)
-		for _, ct := range cycleTimesInWeek {
-			if ct.Size > ctavg.Count {
-				speedAnomalies = append(speedAnomalies, report.SpeedAnomaly{
-					IssueKey:      ct.IssueKey,
-					Size:          ct.Size,
-					CompletedDate: ct.Completed,
-					Link:          fmt.Sprintf("https://jira/%s", ct.IssueKey),
-				})
-			}
-		}
-	}
-
-	return speedAnomalies
-}
-
-func filterCycleTimes(cycleTimes []jiracalculationsrepository.CycleTimes, startDate time.Time, endDate time.Time) []jiracalculationsrepository.CycleTimes {
-	filteredCycleTimes := []jiracalculationsrepository.CycleTimes{}
-
-	compareBeforeYear, compareBeforeMonth, compareBeforeDate := endDate.Date()
-	compareAfterYear, compareAfterMonth, compareAfterDate := startDate.Date()
-
-	for _, ct := range cycleTimes {
-		completedYear, completedMonth, completedDate := ct.Completed.Date()
-
-		if completedYear > compareAfterYear && completedYear <= compareBeforeYear &&
-			completedMonth > compareAfterMonth && completedMonth <= compareBeforeMonth &&
-			completedDate > compareAfterDate && completedDate <= compareBeforeDate {
-			filteredCycleTimes = append(filteredCycleTimes, ct)
-		}
-	}
-
-	return filteredCycleTimes
 }
 
 func pickColorLowerBetter(reports []models.WeekCount) (trendColor report.CellColor) {
@@ -145,4 +121,73 @@ func pickColorHigherBetter(reports []models.WeekCount) (trendColor report.CellCo
 	}
 
 	return trendColor
+}
+
+func createEscapedDefectsTable(edr models.EscapedDefectReport) report.Table {
+	tableData := make(report.TableData, len(edr.LastWeekEscapedDefectItems))
+
+	for i, v := range edr.LastWeekEscapedDefectItems {
+		row := make(map[string]string, len(EscapedDefectsColumns))
+		row[DateCreated] = v.CreatedAt.Format("2006-01-02")
+		row[Link] = v.IssueKey
+
+		tableData[i] = row
+	}
+
+	return report.Table{
+		Cols: EscapedDefectsColumns,
+		Data: tableData,
+	}
+}
+
+func createQuantityTable(tr models.ThroughputReport) report.Table {
+	tableData := make(report.TableData, len(tr.LastWeekThroughputItems))
+
+	for i, v := range tr.LastWeekThroughputItems {
+		row := make(map[string]string, len(QuantityColumns))
+		row[DateCompleted] = v.CompletedAt.Format("2006-01-02")
+		row[Link] = v.IssueKey
+
+		tableData[i] = row
+	}
+
+	return report.Table{
+		Cols: QuantityColumns,
+		Data: tableData,
+	}
+}
+
+func createSpeedTable(ctr models.CycleTimeReport) report.Table {
+	tableData := make(report.TableData, len(ctr.LastWeekCycleTimeItems))
+
+	for i, v := range ctr.LastWeekCycleTimeItems {
+		row := make(map[string]string, len(SpeedColumns))
+		row[DateCompleted] = v.CompletedAt.Format("2006-01-02")
+		row[Link] = v.IssueKey
+		row[Size] = fmt.Sprintf("%d", v.Size)
+
+		tableData[i] = row
+	}
+
+	return report.Table{
+		Cols: SpeedColumns,
+		Data: tableData,
+	}
+}
+
+func createUnplannedTable(uwr models.UnplannedWorkReport) report.Table {
+	tableData := make(report.TableData, len(uwr.LastWeekUnplannedWorkItems))
+
+	for i, v := range uwr.LastWeekUnplannedWorkItems {
+		row := make(map[string]string, len(UnplannedWorkColumns))
+		row[DateCompleted] = v.CompletedAt.Format("2006-01-02")
+		row[Link] = v.IssueKey
+
+		tableData[i] = row
+	}
+
+	return report.Table{
+		Cols: UnplannedWorkColumns,
+		Data: tableData,
+	}
 }
