@@ -1,8 +1,6 @@
 package report
 
 import (
-	"fmt"
-	"sort"
 	"time"
 
 	"github.com/jung-kurt/gofpdf"
@@ -20,9 +18,18 @@ type CellColor struct {
 	R, G, B int
 }
 
+type Columns []string
+type TableData []map[string]string
+
+type Table struct {
+	Cols Columns
+	Data TableData
+}
+
 type ReportDashboardItem struct {
 	BackgroundColor CellColor
 	Chart           string
+	InfoTable       Table
 }
 
 type SpeedAnomaly struct {
@@ -70,12 +77,10 @@ func GeneratePdfReport(reportData ReportData, outputFile string) error {
 
 	pdf.SetFont(font, "B", subheadingFontHeight)
 	for k, v := range reportData.Dashboards {
-		addChartPage(pdf, k+" - Quality", v.Quality.Chart)
-		addChartPage(pdf, k+" - Quantity", v.Quantity.Chart)
-		addChartPage(pdf, k+" - Unplanned work", v.UnplannedWork.Chart)
-		addChartPage(pdf, k+" - Speed", v.Speed.Chart)
-
-		addSpeedAnomaliesTable(pdf, v.SpeedAnomalies)
+		addQualityPage(pdf, k, v.Quality)
+		addSpeedPage(pdf, k, v.Speed)
+		addQuantityPage(pdf, k, v.Quantity)
+		addConsistencyPage(pdf, k, v.UnplannedWork)
 	}
 
 	return pdf.OutputFileAndClose(outputFile)
@@ -119,7 +124,27 @@ func addDashboardView(pdf gofpdf.Pdf, reportData ReportData) {
 	}
 }
 
-func addChartPage(pdf gofpdf.Pdf, chartTitle string, chartLocation string) *gofpdf.Pdf {
+func addQualityPage(pdf gofpdf.Pdf, squad string, quality ReportDashboardItem) {
+	addChartPage(pdf, squad+" - Quality", quality.Chart)
+	addTable(pdf, quality.InfoTable)
+}
+
+func addSpeedPage(pdf gofpdf.Pdf, squad string, speed ReportDashboardItem) {
+	addChartPage(pdf, squad+" - Speed", speed.Chart)
+	addTable(pdf, speed.InfoTable)
+}
+
+func addQuantityPage(pdf gofpdf.Pdf, squad string, quantity ReportDashboardItem) {
+	addChartPage(pdf, squad+" - Quantity", quantity.Chart)
+	addTable(pdf, quantity.InfoTable)
+}
+
+func addConsistencyPage(pdf gofpdf.Pdf, squad string, consistency ReportDashboardItem) {
+	addChartPage(pdf, squad+" - Consistency", consistency.Chart)
+	addTable(pdf, consistency.InfoTable)
+}
+
+func addChartPage(pdf gofpdf.Pdf, chartTitle string, chartLocation string) {
 	opt := gofpdf.ImageOptions{
 		ImageType: "png",
 	}
@@ -128,43 +153,33 @@ func addChartPage(pdf gofpdf.Pdf, chartTitle string, chartLocation string) *gofp
 	pdf.Cell(0, pdf.PointToUnitConvert(subheadingFontHeight), chartTitle)
 	pdf.SetY(pdf.PointToUnitConvert(subheadingFontHeight) + 2*margin)
 	pdf.ImageOptions(chartLocation, margin, margin, pageWidth-(2*margin), 0, true, opt, 0, "")
-	return &pdf
 }
 
-func addSpeedAnomaliesTable(pdf gofpdf.Pdf, anomalies []SpeedAnomaly) *gofpdf.Pdf {
-	const (
-		colCount = 4
-	)
-	pdf.Cell(0, pdf.PointToUnitConvert(subheadingFontHeight), "Anomalies")
+func addTable(pdf gofpdf.Pdf, table Table) {
+	colCount := len(table.Cols)
+	if colCount == 0 {
+		return
+	}
 
 	pdf.SetY(pdf.GetY() + margin)
 
-	cellWidth := (pageWidth - (2 * margin) - (colCount * 2 * cellMargin)) / colCount
+	cellWidth := float64((pageWidth - (2 * margin) - (colCount * 2 * cellMargin)) / colCount)
 	cellHeight := pdf.PointToUnitConvert(fontHeight) + 2*cellMargin
 
 	pdf.SetFont(font, "B", fontHeight)
 
 	// headings
-	pdf.CellFormat(cellWidth, cellHeight, "Date Completed", gofpdf.BorderFull, 0, gofpdf.AlignLeft, false, 0, "")
-	pdf.CellFormat(cellWidth, cellHeight, "Issue Key", gofpdf.BorderFull, 0, gofpdf.AlignLeft, false, 0, "")
-	pdf.CellFormat(cellWidth, cellHeight, "Cycle Time", gofpdf.BorderFull, 0, gofpdf.AlignLeft, false, 0, "")
-	pdf.CellFormat(cellWidth, cellHeight, "Link", gofpdf.BorderFull, 0, gofpdf.AlignLeft, false, 0, "")
-
-	pdf.SetFont(font, "B", fontHeight)
-	pdf.SetY(pdf.GetY() + cellHeight)
-
-	sort.Slice(anomalies, func(i, j int) bool {
-		return anomalies[i].CompletedDate.After(anomalies[j].CompletedDate)
-	})
-
-	for _, anomaly := range anomalies {
-		pdf.CellFormat(cellWidth, cellHeight, anomaly.CompletedDate.Format("2006-01-02"), gofpdf.BorderFull, 0, gofpdf.AlignLeft, false, 0, "")
-		pdf.CellFormat(cellWidth, cellHeight, anomaly.IssueKey, gofpdf.BorderFull, 0, gofpdf.AlignLeft, false, 0, "")
-		pdf.CellFormat(cellWidth, cellHeight, fmt.Sprintf("%d", anomaly.Size), gofpdf.BorderFull, 0, gofpdf.AlignLeft, false, 0, "")
-		pdf.CellFormat(cellWidth, cellHeight, anomaly.Link, gofpdf.BorderFull, 0, gofpdf.AlignLeft, false, 0, anomaly.Link)
-
-		pdf.SetY(pdf.GetY() + cellHeight)
+	for _, heading := range table.Cols {
+		pdf.CellFormat(cellWidth, cellHeight, heading, gofpdf.BorderFull, 0, gofpdf.AlignLeft, false, 0, "")
 	}
 
-	return &pdf
+	pdf.SetFont(font, "", fontHeight)
+	pdf.SetY(pdf.GetY() + cellHeight)
+
+	for _, row := range table.Data {
+		for _, col := range table.Cols {
+			pdf.CellFormat(cellWidth, cellHeight, row[col], gofpdf.BorderFull, 0, gofpdf.AlignLeft, false, 0, "")
+		}
+		pdf.SetY(pdf.GetY() + cellHeight)
+	}
 }

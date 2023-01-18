@@ -6,9 +6,19 @@ import (
 )
 
 type CycleTimes struct {
+	IssueKey    string
+	CompletedAt time.Time
+	Size        int
+}
+
+type EscapedDefect struct {
 	IssueKey  string
-	Completed time.Time
-	Size      int
+	CreatedAt time.Time
+}
+
+type ThroughputIssue struct {
+	IssueKey    string
+	CompletedAt time.Time
 }
 
 type JiraCalculationsRepository interface {
@@ -20,8 +30,8 @@ type JiraCalculationsRepository interface {
 	SaveLeadTime(ctx context.Context, issueKey string, leadTime int, workingLeadTime int) (int64, error)
 	SaveSystemDelayTime(ctx context.Context, issueKey string, systemDelayTime int, workingSystemDelayTime int) (int64, error)
 
-	GetEscapedDefects(ctx context.Context, project string, issueType string, startDate time.Time, endDate time.Time) ([]string, error)
+	GetEscapedDefects(ctx context.Context, project string, issueType string, startDate time.Time, endDate time.Time) ([]EscapedDefect, error)
 	GetCompletedWorkingCycleTimes(ctx context.Context, project string, issueTypes []string, startDate time.Time, endDate time.Time) ([]CycleTimes, error)
-	GetThroughput(ctx context.Context, project string, issueTypes []string, startDate time.Time, endDate time.Time) ([]string, error)
-	GetUnplannedThroughput(ctx context.Context, project string, issueTypes []string, startDate time.Time, endDate time.Time) ([]string, error)
+	GetThroughput(ctx context.Context, project string, issueTypes []string, startDate time.Time, endDate time.Time) ([]ThroughputIssue, error)
+	GetUnplannedThroughput(ctx context.Context, project string, issueTypes []string, startDate time.Time, endDate time.Time) ([]ThroughputIssue, error)
 }

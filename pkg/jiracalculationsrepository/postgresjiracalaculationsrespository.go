@@ -166,9 +166,9 @@ func (p *PostgresJiraCalculationsRepository) SaveCompleteDates(ctx context.Conte
 	return result.RowsAffected()
 }
 
-func (p *PostgresJiraCalculationsRepository) GetEscapedDefects(ctx context.Context, project string, issueType string, startDate time.Time, endDate time.Time) ([]string, error) {
+func (p *PostgresJiraCalculationsRepository) GetEscapedDefects(ctx context.Context, project string, issueType string, startDate time.Time, endDate time.Time) ([]EscapedDefect, error) {
 	selectStatement := `
-		SELECT jira_issues_calculations.issue_key
+		SELECT jira_issues_calculations.issue_key, jira_issues_calculations.issue_created_at
 		FROM jira_issues_calculations
 		JOIN jira_issues ON jira_issues_calculations.issue_key = jira_issues.issue_key
 		WHERE jira_issues_calculations.issue_created_at > $3
@@ -176,7 +176,7 @@ func (p *PostgresJiraCalculationsRepository) GetEscapedDefects(ctx context.Conte
 		AND jira_issues.issue_type = $2
 		AND jira_issues.project = $1
 	`
-	var result = []string{}
+	var result = []EscapedDefect{}
 
 	rows, err := p.db.QueryContext(ctx, selectStatement, project, issueType, startDate, endDate)
 	if err != nil {
@@ -184,14 +184,14 @@ func (p *PostgresJiraCalculationsRepository) GetEscapedDefects(ctx context.Conte
 	}
 
 	for rows.Next() {
-		var issueKey string
+		var defect EscapedDefect
 
-		err = rows.Scan(&issueKey)
+		err = rows.Scan(&defect.IssueKey, &defect.CreatedAt)
 		if err != nil {
 			return result, nil
 		}
 
-		result = append(result, issueKey)
+		result = append(result, defect)
 	}
 
 	return result, nil
@@ -204,6 +204,7 @@ func (p *PostgresJiraCalculationsRepository) GetCompletedWorkingCycleTimes(ctx c
 		JOIN jira_issues ON jira_issues_calculations.issue_key = jira_issues.issue_key
 		WHERE jira_issues_calculations.issue_completed_at > $3
 		AND jira_issues_calculations.issue_completed_at <= $4
+		AND jira_issues_calculations.working_cycle_time > -1
 		AND jira_issues.issue_type = ANY($2)
 		AND jira_issues.project = $1
 	`
@@ -217,7 +218,7 @@ func (p *PostgresJiraCalculationsRepository) GetCompletedWorkingCycleTimes(ctx c
 	for rows.Next() {
 		var ct CycleTimes
 
-		err = rows.Scan(&ct.IssueKey, &ct.Size, &ct.Completed)
+		err = rows.Scan(&ct.IssueKey, &ct.Size, &ct.CompletedAt)
 		if err != nil {
 			return result, err
 		}
@@ -228,17 +229,18 @@ func (p *PostgresJiraCalculationsRepository) GetCompletedWorkingCycleTimes(ctx c
 	return result, nil
 }
 
-func (p *PostgresJiraCalculationsRepository) GetThroughput(ctx context.Context, project string, issueTypes []string, startDate time.Time, endDate time.Time) ([]string, error) {
+func (p *PostgresJiraCalculationsRepository) GetThroughput(ctx context.Context, project string, issueTypes []string, startDate time.Time, endDate time.Time) ([]ThroughputIssue, error) {
 	selectStatement := `
-		SELECT jira_issues_calculations.issue_key
+		SELECT jira_issues_calculations.issue_key, jira_issues_calculations.issue_completed_at
 		FROM jira_issues_calculations
 		JOIN jira_issues ON jira_issues_calculations.issue_key = jira_issues.issue_key
 		WHERE jira_issues_calculations.issue_completed_at > $3
 		AND jira_issues_calculations.issue_completed_at <= $4
+		AND jira_issues_calculations.working_cycle_time > -1
 		AND jira_issues.issue_type = ANY($2)
 		AND jira_issues.project = $1
 	`
-	var result = []string{}
+	var result = []ThroughputIssue{}
 
 	rows, err := p.db.QueryContext(ctx, selectStatement, project, pq.Array(issueTypes), startDate, endDate)
 	if err != nil {
@@ -246,31 +248,32 @@ func (p *PostgresJiraCalculationsRepository) GetThroughput(ctx context.Context, 
 	}
 
 	for rows.Next() {
-		var key string
+		var issue ThroughputIssue
 
-		err = rows.Scan(&key)
+		err = rows.Scan(&issue.IssueKey, &issue.CompletedAt)
 		if err != nil {
 			return result, nil
 		}
 
-		result = append(result, key)
+		result = append(result, issue)
 	}
 
 	return result, nil
 }
 
-func (p *PostgresJiraCalculationsRepository) GetUnplannedThroughput(ctx context.Context, project string, issueTypes []string, startDate time.Time, endDate time.Time) ([]string, error) {
+func (p *PostgresJiraCalculationsRepository) GetUnplannedThroughput(ctx context.Context, project string, issueTypes []string, startDate time.Time, endDate time.Time) ([]ThroughputIssue, error) {
 	selectStatement := `
-		SELECT jira_issues_calculations.issue_key
+		SELECT jira_issues_calculations.issue_key, jira_issues_calculations.issue_completed_at
 		FROM jira_issues_calculations
 		JOIN jira_issues ON jira_issues_calculations.issue_key = jira_issues.issue_key
 		WHERE jira_issues_calculations.issue_completed_at > $3
 		AND jira_issues_calculations.issue_completed_at <= $4
+		AND jira_issues_calculations.working_cycle_time > -1
 		AND jira_issues.issue_type = ANY($2)
 		AND jira_issues.project = $1
 		AND jira_issues.unplanned = TRUE
 	`
-	var result = []string{}
+	var result = []ThroughputIssue{}
 
 	rows, err := p.db.QueryContext(ctx, selectStatement, project, pq.Array(issueTypes), startDate, endDate)
 	if err != nil {
@@ -278,14 +281,14 @@ func (p *PostgresJiraCalculationsRepository) GetUnplannedThroughput(ctx context.
 	}
 
 	for rows.Next() {
-		var key string
+		var issue ThroughputIssue
 
-		err = rows.Scan(&key)
+		err = rows.Scan(&issue.IssueKey, &issue.CompletedAt)
 		if err != nil {
 			return result, nil
 		}
 
-		result = append(result, key)
+		result = append(result, issue)
 	}
 
 	return result, nil
