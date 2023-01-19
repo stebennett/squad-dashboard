@@ -183,9 +183,16 @@ func (p *PostgresJiraCalculationsRepository) SaveCompleteDates(ctx context.Conte
 	return result.RowsAffected()
 }
 
-func (p *PostgresJiraCalculationsRepository) GetEscapedDefects(ctx context.Context, project string, issueType string, startDate time.Time, endDate time.Time) ([]EscapedDefect, error) {
+func (p *PostgresJiraCalculationsRepository) GetEscapedDefects(ctx context.Context, project string, issueType string, startDate time.Time, endDate time.Time) ([]models.IssueCalculations, error) {
 	selectStatement := `
-		SELECT jira_issues_calculations.issue_key, jira_issues_calculations.issue_created_at
+		SELECT jira_issues_calculations.issue_key, 
+			jira_issues_calculations.cycle_time,
+			jira_issues_calculations.working_cycle_time,
+			jira_issues_calculations.lead_time,
+			jira_issues_calculations.system_delay_time,
+			jira_issues_calculations.issue_created_at,
+			jira_issues_calculations.issue_started_at,
+			jira_issues_calculations.issue_completed_at
 		FROM jira_issues_calculations
 		JOIN jira_issues ON jira_issues_calculations.issue_key = jira_issues.issue_key
 		WHERE jira_issues_calculations.issue_created_at > $3
@@ -193,7 +200,7 @@ func (p *PostgresJiraCalculationsRepository) GetEscapedDefects(ctx context.Conte
 		AND jira_issues.issue_type = $2
 		AND jira_issues.project = $1
 	`
-	var result = []EscapedDefect{}
+	var result = []models.IssueCalculations{}
 
 	rows, err := p.db.QueryContext(ctx, selectStatement, project, issueType, startDate, endDate)
 	if err != nil {
@@ -201,22 +208,37 @@ func (p *PostgresJiraCalculationsRepository) GetEscapedDefects(ctx context.Conte
 	}
 
 	for rows.Next() {
-		var defect EscapedDefect
+		var item models.IssueCalculations
 
-		err = rows.Scan(&defect.IssueKey, &defect.CreatedAt)
+		err = rows.Scan(&item.IssueKey,
+			&item.CycleTime,
+			&item.WorkingCycleTime,
+			&item.LeadTime,
+			&item.SystemDelayTime,
+			&item.IssueCreatedAt,
+			&item.IssueStartedAt,
+			&item.IssueCompletedAt,
+		)
 		if err != nil {
 			return result, nil
 		}
 
-		result = append(result, defect)
+		result = append(result, item)
 	}
 
 	return result, nil
 }
 
-func (p *PostgresJiraCalculationsRepository) GetCompletedWorkingCycleTimes(ctx context.Context, project string, issueTypes []string, startDate time.Time, endDate time.Time) ([]CycleTimes, error) {
+func (p *PostgresJiraCalculationsRepository) GetCompletedWorkingCycleTimes(ctx context.Context, project string, issueTypes []string, startDate time.Time, endDate time.Time) ([]models.IssueCalculations, error) {
 	selectStatement := `
-		SELECT jira_issues_calculations.issue_key, jira_issues_calculations.working_cycle_time, jira_issues_calculations.issue_completed_at
+		SELECT jira_issues_calculations.issue_key, 
+			jira_issues_calculations.cycle_time,
+			jira_issues_calculations.working_cycle_time,
+			jira_issues_calculations.lead_time,
+			jira_issues_calculations.system_delay_time,
+			jira_issues_calculations.issue_created_at,
+			jira_issues_calculations.issue_started_at,
+			jira_issues_calculations.issue_completed_at
 		FROM jira_issues_calculations
 		JOIN jira_issues ON jira_issues_calculations.issue_key = jira_issues.issue_key
 		WHERE jira_issues_calculations.issue_completed_at > $3
@@ -225,7 +247,7 @@ func (p *PostgresJiraCalculationsRepository) GetCompletedWorkingCycleTimes(ctx c
 		AND jira_issues.issue_type = ANY($2)
 		AND jira_issues.project = $1
 	`
-	var result = []CycleTimes{}
+	var result = []models.IssueCalculations{}
 
 	rows, err := p.db.QueryContext(ctx, selectStatement, project, pq.Array(issueTypes), startDate, endDate)
 	if err != nil {
@@ -233,22 +255,37 @@ func (p *PostgresJiraCalculationsRepository) GetCompletedWorkingCycleTimes(ctx c
 	}
 
 	for rows.Next() {
-		var ct CycleTimes
+		var item models.IssueCalculations
 
-		err = rows.Scan(&ct.IssueKey, &ct.Size, &ct.CompletedAt)
+		err = rows.Scan(&item.IssueKey,
+			&item.CycleTime,
+			&item.WorkingCycleTime,
+			&item.LeadTime,
+			&item.SystemDelayTime,
+			&item.IssueCreatedAt,
+			&item.IssueStartedAt,
+			&item.IssueCompletedAt,
+		)
 		if err != nil {
-			return result, err
+			return result, nil
 		}
 
-		result = append(result, ct)
+		result = append(result, item)
 	}
 
 	return result, nil
 }
 
-func (p *PostgresJiraCalculationsRepository) GetThroughput(ctx context.Context, project string, issueTypes []string, startDate time.Time, endDate time.Time) ([]ThroughputIssue, error) {
+func (p *PostgresJiraCalculationsRepository) GetThroughput(ctx context.Context, project string, issueTypes []string, startDate time.Time, endDate time.Time) ([]models.IssueCalculations, error) {
 	selectStatement := `
-		SELECT jira_issues_calculations.issue_key, jira_issues_calculations.issue_completed_at
+		SELECT jira_issues_calculations.issue_key, 
+			jira_issues_calculations.cycle_time,
+			jira_issues_calculations.working_cycle_time,
+			jira_issues_calculations.lead_time,
+			jira_issues_calculations.system_delay_time,
+			jira_issues_calculations.issue_created_at,
+			jira_issues_calculations.issue_started_at,
+			jira_issues_calculations.issue_completed_at
 		FROM jira_issues_calculations
 		JOIN jira_issues ON jira_issues_calculations.issue_key = jira_issues.issue_key
 		WHERE jira_issues_calculations.issue_completed_at > $3
@@ -257,7 +294,7 @@ func (p *PostgresJiraCalculationsRepository) GetThroughput(ctx context.Context, 
 		AND jira_issues.issue_type = ANY($2)
 		AND jira_issues.project = $1
 	`
-	var result = []ThroughputIssue{}
+	var result = []models.IssueCalculations{}
 
 	rows, err := p.db.QueryContext(ctx, selectStatement, project, pq.Array(issueTypes), startDate, endDate)
 	if err != nil {
@@ -265,22 +302,37 @@ func (p *PostgresJiraCalculationsRepository) GetThroughput(ctx context.Context, 
 	}
 
 	for rows.Next() {
-		var issue ThroughputIssue
+		var item models.IssueCalculations
 
-		err = rows.Scan(&issue.IssueKey, &issue.CompletedAt)
+		err = rows.Scan(&item.IssueKey,
+			&item.CycleTime,
+			&item.WorkingCycleTime,
+			&item.LeadTime,
+			&item.SystemDelayTime,
+			&item.IssueCreatedAt,
+			&item.IssueStartedAt,
+			&item.IssueCompletedAt,
+		)
 		if err != nil {
 			return result, nil
 		}
 
-		result = append(result, issue)
+		result = append(result, item)
 	}
 
 	return result, nil
 }
 
-func (p *PostgresJiraCalculationsRepository) GetUnplannedThroughput(ctx context.Context, project string, issueTypes []string, startDate time.Time, endDate time.Time) ([]ThroughputIssue, error) {
+func (p *PostgresJiraCalculationsRepository) GetUnplannedThroughput(ctx context.Context, project string, issueTypes []string, startDate time.Time, endDate time.Time) ([]models.IssueCalculations, error) {
 	selectStatement := `
-		SELECT jira_issues_calculations.issue_key, jira_issues_calculations.issue_completed_at
+		SELECT jira_issues_calculations.issue_key, 
+			jira_issues_calculations.cycle_time,
+			jira_issues_calculations.working_cycle_time,
+			jira_issues_calculations.lead_time,
+			jira_issues_calculations.system_delay_time,
+			jira_issues_calculations.issue_created_at,
+			jira_issues_calculations.issue_started_at,
+			jira_issues_calculations.issue_completed_at
 		FROM jira_issues_calculations
 		JOIN jira_issues ON jira_issues_calculations.issue_key = jira_issues.issue_key
 		WHERE jira_issues_calculations.issue_completed_at > $3
@@ -290,7 +342,7 @@ func (p *PostgresJiraCalculationsRepository) GetUnplannedThroughput(ctx context.
 		AND jira_issues.project = $1
 		AND jira_issues.unplanned = TRUE
 	`
-	var result = []ThroughputIssue{}
+	var result = []models.IssueCalculations{}
 
 	rows, err := p.db.QueryContext(ctx, selectStatement, project, pq.Array(issueTypes), startDate, endDate)
 	if err != nil {
@@ -298,14 +350,22 @@ func (p *PostgresJiraCalculationsRepository) GetUnplannedThroughput(ctx context.
 	}
 
 	for rows.Next() {
-		var issue ThroughputIssue
+		var item models.IssueCalculations
 
-		err = rows.Scan(&issue.IssueKey, &issue.CompletedAt)
+		err = rows.Scan(&item.IssueKey,
+			&item.CycleTime,
+			&item.WorkingCycleTime,
+			&item.LeadTime,
+			&item.SystemDelayTime,
+			&item.IssueCreatedAt,
+			&item.IssueStartedAt,
+			&item.IssueCompletedAt,
+		)
 		if err != nil {
 			return result, nil
 		}
 
-		result = append(result, issue)
+		result = append(result, item)
 	}
 
 	return result, nil
@@ -313,18 +373,19 @@ func (p *PostgresJiraCalculationsRepository) GetUnplannedThroughput(ctx context.
 
 func (p *PostgresJiraCalculationsRepository) GetCompletedIssues(ctx context.Context, project string) (map[string]models.IssueCalculations, error) {
 	selectStatement := `
-	SELECT jira_issues_calculations.issue_key, 
-		jira_issues_calculations.cycle_time, 
-		jira_issues_calculations.lead_time, 
-		jira_issues_calculations.system_delay_time, 
-		jira_issues_calculations.issue_created_at, 
-		jira_issues_calculations.issue_started_at, 
-		jira_issues_calculations.issue_completed_at
-	FROM jira_issues_calculations
-	INNER JOIN jira_issues ON jira_issues_calculations.issue_key = jira_issues.issue_key
-	WHERE jira_issues_calculations.issue_completed_at IS NOT NULL
-	AND jira_issues.project = $1
-`
+		SELECT jira_issues_calculations.issue_key, 
+			jira_issues_calculations.cycle_time,
+			jira_issues_calculations.working_cycle_time,
+			jira_issues_calculations.lead_time,
+			jira_issues_calculations.system_delay_time,
+			jira_issues_calculations.issue_created_at,
+			jira_issues_calculations.issue_started_at,
+			jira_issues_calculations.issue_completed_at
+		FROM jira_issues_calculations
+		INNER JOIN jira_issues ON jira_issues_calculations.issue_key = jira_issues.issue_key
+		WHERE jira_issues_calculations.issue_completed_at IS NOT NULL
+		AND jira_issues.project = $1
+	`
 	var result = make(map[string]models.IssueCalculations)
 
 	rows, err := p.db.QueryContext(ctx, selectStatement, project)
@@ -333,22 +394,22 @@ func (p *PostgresJiraCalculationsRepository) GetCompletedIssues(ctx context.Cont
 	}
 
 	for rows.Next() {
-		var issueKey string
-		var calculations models.IssueCalculations
+		var item models.IssueCalculations
 
-		err = rows.Scan(&issueKey,
-			&calculations.CycleTime,
-			&calculations.LeadTime,
-			&calculations.LeadTime,
-			&calculations.IssueCreatedAt,
-			&calculations.IssueStartedAt,
-			&calculations.IssueCompletedAt,
+		err = rows.Scan(&item.IssueKey,
+			&item.CycleTime,
+			&item.WorkingCycleTime,
+			&item.LeadTime,
+			&item.SystemDelayTime,
+			&item.IssueCreatedAt,
+			&item.IssueStartedAt,
+			&item.IssueCompletedAt,
 		)
 		if err != nil {
-			return result, err
+			return result, nil
 		}
 
-		result[issueKey] = calculations
+		result[item.IssueKey] = item
 	}
 
 	return result, nil

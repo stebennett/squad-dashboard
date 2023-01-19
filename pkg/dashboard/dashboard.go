@@ -44,7 +44,7 @@ func GenerateEscapedDefects(weekCount int, project string, defectIssueType strin
 			for i, d := range escapedDefects {
 				lastWeekEscapedDefect[i] = models.EscapedDefectItem{
 					IssueKey:  d.IssueKey,
-					CreatedAt: d.CreatedAt,
+					CreatedAt: d.IssueCreatedAt.Time,
 				}
 			}
 		}
@@ -83,11 +83,11 @@ func GenerateCycleTime(weekCount int, percentile float64, project string, issueT
 
 		cycleTimes := make([]int, len(ct))
 		for _, ctitem := range ct {
-			cycleTimes = append(cycleTimes, ctitem.Size)
+			cycleTimes = append(cycleTimes, ctitem.WorkingCycleTime)
 			cycleTimeValues = append(cycleTimeValues, models.CycleTimeItem{
 				IssueKey:    ctitem.IssueKey,
-				CompletedAt: ctitem.CompletedAt,
-				Size:        ctitem.Size,
+				CompletedAt: ctitem.IssueCompletedAt.Time,
+				Size:        ctitem.WorkingCycleTime,
 			})
 		}
 
@@ -102,8 +102,8 @@ func GenerateCycleTime(weekCount int, percentile float64, project string, issueT
 			for i, c := range ct {
 				lastWeekCycleTimes[i] = models.CycleTimeItem{
 					IssueKey:    c.IssueKey,
-					CompletedAt: c.CompletedAt,
-					Size:        c.Size,
+					CompletedAt: c.IssueCompletedAt.Time,
+					Size:        c.WorkingCycleTime,
 				}
 			}
 		}
@@ -148,7 +148,7 @@ func GenerateThroughput(weekCount int, project string, issueTypes []string, repo
 			for i, item := range issues {
 				lastWeekThroughputItems[i] = models.ThroughputItem{
 					IssueKey:    item.IssueKey,
-					CompletedAt: item.CompletedAt,
+					CompletedAt: item.IssueCompletedAt.Time,
 				}
 			}
 		}
@@ -205,7 +205,7 @@ func GenerateUnplannedWorkReport(weekCount int, project string, issueTypes []str
 			for i, item := range unplannedIssues {
 				lastWeekUnplannedItems[i] = models.UnplannedWorkItem{
 					IssueKey:    item.IssueKey,
-					CompletedAt: item.CompletedAt,
+					CompletedAt: item.IssueCompletedAt.Time,
 				}
 			}
 		}

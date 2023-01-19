@@ -25,6 +25,7 @@ type JiraTransition struct {
 type IssueCalculations struct {
 	IssueKey         string
 	CycleTime        int
+	WorkingCycleTime int
 	LeadTime         int
 	SystemDelayTime  int
 	IssueCreatedAt   pq.NullTime
