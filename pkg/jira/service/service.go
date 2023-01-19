@@ -1,4 +1,4 @@
-package jiraservice
+package service
 
 import (
 	"bytes"

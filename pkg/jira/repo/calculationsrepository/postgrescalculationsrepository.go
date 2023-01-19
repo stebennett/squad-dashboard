@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/lib/pq"
+	"github.com/stebennett/squad-dashboard/pkg/jira/models"
 )
 
 type PostgresJiraCalculationsRepository struct {
@@ -305,6 +306,127 @@ func (p *PostgresJiraCalculationsRepository) GetUnplannedThroughput(ctx context.
 		}
 
 		result = append(result, issue)
+	}
+
+	return result, nil
+}
+
+func (p *PostgresJiraCalculationsRepository) GetCompletedIssues(ctx context.Context, project string) (map[string]models.IssueCalculations, error) {
+	selectStatement := `
+	SELECT jira_issues_calculations.issue_key, 
+		jira_issues_calculations.cycle_time, 
+		jira_issues_calculations.lead_time, 
+		jira_issues_calculations.system_delay_time, 
+		jira_issues_calculations.issue_created_at, 
+		jira_issues_calculations.issue_started_at, 
+		jira_issues_calculations.issue_completed_at
+	FROM jira_issues_calculations
+	INNER JOIN jira_issues ON jira_issues_calculations.issue_key = jira_issues.issue_key
+	WHERE jira_issues_calculations.issue_completed_at IS NOT NULL
+	AND jira_issues.project = $1
+`
+	var result = make(map[string]models.IssueCalculations)
+
+	rows, err := p.db.QueryContext(ctx, selectStatement, project)
+	if err != nil {
+		return result, err
+	}
+
+	for rows.Next() {
+		var issueKey string
+		var calculations models.IssueCalculations
+
+		err = rows.Scan(&issueKey,
+			&calculations.CycleTime,
+			&calculations.LeadTime,
+			&calculations.LeadTime,
+			&calculations.IssueCreatedAt,
+			&calculations.IssueStartedAt,
+			&calculations.IssueCompletedAt,
+		)
+		if err != nil {
+			return result, err
+		}
+
+		result[issueKey] = calculations
+	}
+
+	return result, nil
+}
+
+func (p *PostgresJiraCalculationsRepository) GetIssuesStartedBetweenDates(ctx context.Context, project string, startDate time.Time, endDate time.Time, issueTypes []string) ([]string, error) {
+	selectStatement := `
+		SELECT jira_issues_calculations.issue_key from jira_issues_calculations
+		INNER JOIN jira_issues ON jira_issues_calculations.issue_key = jira_issues.issue_key
+		WHERE jira_issues.project = $1
+		AND jira_issues_calculations.issue_started_at >= $2
+		AND jira_issues_calculations.issue_started_at < $3
+		AND jira_issues.issue_type = ANY($4)
+	`
+
+	var result []string
+
+	rows, err := p.db.QueryContext(ctx,
+		selectStatement,
+		project,
+		startDate,
+		endDate,
+		pq.Array(issueTypes),
+	)
+
+	if err != nil {
+		return result, err
+	}
+
+	for rows.Next() {
+		var issueKey string
+
+		err = rows.Scan(&issueKey)
+		if err != nil {
+			return result, err
+		}
+
+		result = append(result, issueKey)
+	}
+
+	return result, nil
+}
+
+func (p *PostgresJiraCalculationsRepository) GetIssuesCompletedBetweenDates(ctx context.Context, project string, startDate time.Time, endDate time.Time, issueTypes []string, endStates []string) ([]string, error) {
+	selectStatement := `
+		SELECT jira_issues_calculations.issue_key from jira_issues_calculations
+		INNER JOIN jira_issues ON jira_issues_calculations.issue_key = jira_issues.issue_key
+		WHERE jira_issues.project = $1
+		AND jira_issues_calculations.issue_completed_at >= $2
+		AND jira_issues_calculations.issue_completed_at < $3
+		AND jira_issues_calculations.issue_end_state = ANY($5)
+		AND jira_issues.issue_type = ANY($4)
+	`
+
+	var result []string
+
+	rows, err := p.db.QueryContext(ctx,
+		selectStatement,
+		project,
+		startDate,
+		endDate,
+		pq.Array(issueTypes),
+		pq.Array(endStates),
+	)
+
+	if err != nil {
+		return result, err
+	}
+
+	for rows.Next() {
+		var issueKey string
+
+		err = rows.Scan(&issueKey)
+		if err != nil {
+			return result, err
+		}
+
+		result = append(result, issueKey)
 	}
 
 	return result, nil

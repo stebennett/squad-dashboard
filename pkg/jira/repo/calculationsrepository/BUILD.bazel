@@ -8,5 +8,8 @@ go_library(
     ],
     importpath = "github.com/stebennett/squad-dashboard/pkg/jira/repo/calculationsrepository",
     visibility = ["//visibility:public"],
-    deps = ["//vendor/github.com/lib/pq"],
+    deps = [
+        "//pkg/jira/models",
+        "//vendor/github.com/lib/pq",
+    ],
 )

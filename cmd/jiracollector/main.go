@@ -12,7 +12,7 @@ import (
 
 	"github.com/stebennett/squad-dashboard/cmd/jiracollector/jiracollector"
 	"github.com/stebennett/squad-dashboard/pkg/jira/repo/issuerepository"
-	"github.com/stebennett/squad-dashboard/pkg/jiraservice"
+	"github.com/stebennett/squad-dashboard/pkg/jira/service"
 )
 
 type Environment struct {
@@ -50,6 +50,9 @@ func main() {
 	}
 
 	err = jiraUnplannedCollector.Execute(environment.JiraProject, environment.JiraUnplannedQuery)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	log.Printf("Completed loading of issues for %s", environment.JiraProject)
 }
@@ -68,8 +71,8 @@ func createIssueRepository() issuerepository.IssueRepository {
 	return issuerepository.NewPostgresIssueRepository(db)
 }
 
-func createJiraService(environment Environment) *jiraservice.JiraService {
-	jiraParams := jiraservice.JiraParams{
+func createJiraService(environment Environment) *service.JiraService {
+	jiraParams := service.JiraParams{
 		BaseUrl:   environment.JiraBaseUrl,
 		User:      environment.JiraUser,
 		AuthToken: environment.JiraAuthToken,
@@ -79,5 +82,5 @@ func createJiraService(environment Environment) *jiraservice.JiraService {
 		Timeout: time.Second * 30,
 	}
 
-	return jiraservice.NewJiraService(&jiraClient, jiraParams)
+	return service.NewJiraService(&jiraClient, jiraParams)
 }

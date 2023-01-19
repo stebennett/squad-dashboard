@@ -3,6 +3,8 @@ package calculationsrepository
 import (
 	"context"
 	"time"
+
+	"github.com/stebennett/squad-dashboard/pkg/jira/models"
 )
 
 type CycleTimes struct {
@@ -36,4 +38,8 @@ type JiraCalculationsRepository interface {
 	GetCompletedWorkingCycleTimes(ctx context.Context, project string, issueTypes []string, startDate time.Time, endDate time.Time) ([]CycleTimes, error)
 	GetThroughput(ctx context.Context, project string, issueTypes []string, startDate time.Time, endDate time.Time) ([]ThroughputIssue, error)
 	GetUnplannedThroughput(ctx context.Context, project string, issueTypes []string, startDate time.Time, endDate time.Time) ([]ThroughputIssue, error)
+	GetCompletedIssues(ctx context.Context, project string) (map[string]models.IssueCalculations, error)
+
+	GetIssuesStartedBetweenDates(ctx context.Context, project string, startDate time.Time, endDate time.Time, issueTypes []string) ([]string, error)
+	GetIssuesCompletedBetweenDates(ctx context.Context, project string, startDate time.Time, endDate time.Time, issueTypes []string, endStates []string) ([]string, error)
 }

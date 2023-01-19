@@ -13,7 +13,7 @@ go_library(
         "//cmd/jiracollector/models",
         "//pkg/jira/models",
         "//pkg/jira/repo/issuerepository",
-        "//pkg/jiraservice",
+        "//pkg/jira/service:jiraservice",
         "//pkg/paginator",
     ],
 )

@@ -1,6 +1,10 @@
 package models
 
-import "time"
+import (
+	"time"
+
+	"github.com/lib/pq"
+)
 
 type JiraIssue struct {
 	Key       string
@@ -16,4 +20,14 @@ type JiraTransition struct {
 	FromState      string
 	ToState        string
 	TransitionedAt time.Time
+}
+
+type IssueCalculations struct {
+	IssueKey         string
+	CycleTime        int
+	LeadTime         int
+	SystemDelayTime  int
+	IssueCreatedAt   pq.NullTime
+	IssueStartedAt   pq.NullTime
+	IssueCompletedAt pq.NullTime
 }

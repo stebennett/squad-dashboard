@@ -36,7 +36,7 @@ func main() {
 	}
 	issueRepo := issuerepository.NewPostgresIssueRepository(db)
 	configRepo := configrepository.NewPostgresConfigRepository(db)
-	calaculationsRepo := calculationsrepository.NewPostgresJiraCalculationsRepository(db)
+	calculationsRepo := calculationsrepository.NewPostgresJiraCalculationsRepository(db)
 
 	// load environment vars
 	var environment Environment
@@ -48,48 +48,48 @@ func main() {
 	log.Printf("running updates for project %s", environment.JiraProject)
 
 	// drop all calculations
-	_, err = calaculationsRepo.DropAllCalculations(context.Background(), environment.JiraProject)
+	_, err = calculationsRepo.DropAllCalculations(context.Background(), environment.JiraProject)
 	if err != nil {
 		log.Fatalf("Failed to drop existing calculations. %s", err)
 	}
 
 	// fetch all issues and set create year-week
-	_, err = setCreateDates(issueRepo, calaculationsRepo, environment.JiraProject)
+	_, err = setCreateDates(issueRepo, calculationsRepo, environment.JiraProject)
 	if err != nil {
 		log.Fatalf("Failed to set created year-week for issues. %s", err)
 	}
 	log.Println("Completed update of created year-week for issues")
 
 	// fetch all issues started and set started year-week
-	_, err = setStartDates(issueRepo, calaculationsRepo, environment.JiraProject, strings.Split(environment.WorkStartStates, ","), strings.Split(environment.WorkToDoStates, ","))
+	_, err = setStartDates(issueRepo, calculationsRepo, environment.JiraProject, strings.Split(environment.WorkStartStates, ","), strings.Split(environment.WorkToDoStates, ","))
 	if err != nil {
 		log.Fatalf("Failed to set started year-week for issues. %s", err)
 	}
 	log.Println("Completed update of started year-week for issues")
 
 	// fetch all issues completed and set complete year-week
-	_, err = setCompleteDates(issueRepo, calaculationsRepo, environment.JiraProject, strings.Split(environment.WorkCompleteStates, ","))
+	_, err = setCompleteDates(issueRepo, calculationsRepo, environment.JiraProject, strings.Split(environment.WorkCompleteStates, ","))
 	if err != nil {
 		log.Fatalf("Failed to set completed year-week for issues. %s", err)
 	}
 	log.Println("Completed update of completed year-week for issues")
 
 	// fetch all issues completed and set cycle time (working and complete)
-	_, err = setCycleTimeForCompletedIssues(issueRepo, configRepo, calaculationsRepo, environment.JiraProject)
+	_, err = setCycleTimeForCompletedIssues(issueRepo, configRepo, calculationsRepo, environment.JiraProject)
 	if err != nil {
 		log.Fatalf("Failed to set cycle time. %s", err)
 	}
 	log.Println("Completed updating cycle time for completed issues")
 
 	// set number items completed for a given week
-	_, err = setNumberOfItemsCompletedByWeek(issueRepo, environment.ReportStartDate, environment.JiraProject, strings.Split(environment.ReportIssueTypes, ","), strings.Split(environment.ReportEndStates, ","))
+	_, err = setNumberOfItemsCompletedByWeek(issueRepo, calculationsRepo, environment.ReportStartDate, environment.JiraProject, strings.Split(environment.ReportIssueTypes, ","), strings.Split(environment.ReportEndStates, ","))
 	if err != nil {
 		log.Fatalf("Failed to set number of items completed by week. %s", err)
 	}
 	log.Println("Completed number of items completed reports")
 
 	// set number items started for a given week
-	_, err = setNumberOfItemsStartedByWeek(issueRepo, environment.ReportStartDate, environment.JiraProject, strings.Split(environment.ReportIssueTypes, ","))
+	_, err = setNumberOfItemsStartedByWeek(issueRepo, calculationsRepo, environment.ReportStartDate, environment.JiraProject, strings.Split(environment.ReportIssueTypes, ","))
 	if err != nil {
 		log.Fatalf("Failed to set number of items completed by week. %s", err)
 	}
@@ -196,7 +196,7 @@ func setCompleteDates(issuesRepo issuerepository.IssueRepository, calaculationsR
 }
 
 func setCycleTimeForCompletedIssues(issuesRepo issuerepository.IssueRepository, configRepo configrepository.ConfigRepository, calaculationsRepo calculationsrepository.JiraCalculationsRepository, project string) (int64, error) {
-	calculations, err := issuesRepo.GetCompletedIssues(context.Background(), project)
+	calculations, err := calaculationsRepo.GetCompletedIssues(context.Background(), project)
 	if err != nil {
 		return -1, err
 	}
@@ -239,7 +239,7 @@ func setCycleTimeForCompletedIssues(issuesRepo issuerepository.IssueRepository, 
 	return updatedCount, nil
 }
 
-func setNumberOfItemsCompletedByWeek(repo issuerepository.IssueRepository, startDateStr string, project string, issueTypes []string, endStates []string) (int64, error) {
+func setNumberOfItemsCompletedByWeek(repo issuerepository.IssueRepository, calaculationsRepo calculationsrepository.JiraCalculationsRepository, startDateStr string, project string, issueTypes []string, endStates []string) (int64, error) {
 	startDate, err := time.Parse("2006-01-02T15:04:05Z", startDateStr)
 	if err != nil {
 		return -1, err
@@ -253,7 +253,7 @@ func setNumberOfItemsCompletedByWeek(repo issuerepository.IssueRepository, start
 		}
 
 		endDate := startDate.AddDate(0, 0, 7)
-		issues, err := repo.GetIssuesCompletedBetweenDates(context.Background(), project, startDate, endDate, issueTypes, endStates)
+		issues, err := calaculationsRepo.GetIssuesCompletedBetweenDates(context.Background(), project, startDate, endDate, issueTypes, endStates)
 		if err != nil {
 			return totalUpdates, err
 		}
@@ -270,7 +270,7 @@ func setNumberOfItemsCompletedByWeek(repo issuerepository.IssueRepository, start
 	return totalUpdates, nil
 }
 
-func setNumberOfItemsStartedByWeek(repo issuerepository.IssueRepository, startDateStr string, project string, issueTypes []string) (int64, error) {
+func setNumberOfItemsStartedByWeek(repo issuerepository.IssueRepository, calaculationsRepo calculationsrepository.JiraCalculationsRepository, startDateStr string, project string, issueTypes []string) (int64, error) {
 	startDate, err := time.Parse("2006-01-02T15:04:05Z", startDateStr)
 	if err != nil {
 		return -1, err
@@ -285,7 +285,7 @@ func setNumberOfItemsStartedByWeek(repo issuerepository.IssueRepository, startDa
 
 		endDate := startDate.AddDate(0, 0, 7)
 
-		issues, err := repo.GetIssuesStartedBetweenDates(context.Background(), project, startDate, endDate, issueTypes)
+		issues, err := calaculationsRepo.GetIssuesStartedBetweenDates(context.Background(), project, startDate, endDate, issueTypes)
 		if err != nil {
 			return totalUpdates, err
 		}

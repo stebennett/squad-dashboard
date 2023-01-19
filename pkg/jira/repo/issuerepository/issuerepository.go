@@ -4,7 +4,6 @@ import (
 	"context"
 	"time"
 
-	"github.com/stebennett/squad-dashboard/pkg/calculatormodels"
 	jiramodels "github.com/stebennett/squad-dashboard/pkg/jira/models"
 )
 
@@ -19,12 +18,9 @@ type IssueRepository interface {
 	GetTransitionTimeByStateChanges(ctx context.Context, project string, fromStates []string, toStates []string) (map[string]time.Time, error)
 	GetTransitionTimeByToState(ctx context.Context, project string, toStates []string) (map[string]time.Time, error)
 
-	GetCompletedIssues(ctx context.Context, project string) (map[string]calculatormodels.IssueCalculations, error)
 	GetEndStateForIssue(ctx context.Context, issueKey string, transitionDate time.Time) (string, error)
 
-	GetIssuesStartedBetweenDates(ctx context.Context, project string, startDate time.Time, endDate time.Time, issueTypes []string) ([]string, error)
 	SetIssuesStartedInWeekStarting(ctx context.Context, project string, startDate time.Time, count int) (int64, error)
-	GetIssuesCompletedBetweenDates(ctx context.Context, project string, startDate time.Time, endDate time.Time, issueTypes []string, endStates []string) ([]string, error)
 	SetIssuesCompletedInWeekStarting(ctx context.Context, project string, startDate time.Time, count int) (int64, error)
 	GetProjects(ctx context.Context) ([]string, error)
 
