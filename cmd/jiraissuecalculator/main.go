@@ -14,7 +14,7 @@ import (
 	"github.com/stebennett/squad-dashboard/cmd/jiraissuecalculator/calculator"
 	"github.com/stebennett/squad-dashboard/pkg/configrepository"
 	"github.com/stebennett/squad-dashboard/pkg/jira/repo/calculationsrepository"
-	"github.com/stebennett/squad-dashboard/pkg/jirarepository"
+	"github.com/stebennett/squad-dashboard/pkg/jira/repo/issuerepository"
 	"golang.org/x/exp/slices"
 )
 
@@ -34,7 +34,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	issueRepo := jirarepository.NewPostgresJiraRepository(db)
+	issueRepo := issuerepository.NewPostgresIssueRepository(db)
 	configRepo := configrepository.NewPostgresConfigRepository(db)
 	calaculationsRepo := calculationsrepository.NewPostgresJiraCalculationsRepository(db)
 
@@ -112,7 +112,7 @@ func connectToDatabase() (*sql.DB, error) {
 	return db, nil
 }
 
-func setCreateDates(issuesRepo jirarepository.JiraRepository, calaculationsRepo calculationsrepository.JiraCalculationsRepository, project string) (int64, error) {
+func setCreateDates(issuesRepo issuerepository.IssueRepository, calaculationsRepo calculationsrepository.JiraCalculationsRepository, project string) (int64, error) {
 	issues, err := issuesRepo.GetIssues(context.Background(), project)
 	if err != nil {
 		return -1, err
@@ -134,7 +134,7 @@ func setCreateDates(issuesRepo jirarepository.JiraRepository, calaculationsRepo 
 	return updatedCount, nil
 }
 
-func setStartDates(issuesRepo jirarepository.JiraRepository, calculationsRepo calculationsrepository.JiraCalculationsRepository, project string, workStartStates []string, workToDoStates []string) (int64, error) {
+func setStartDates(issuesRepo issuerepository.IssueRepository, calculationsRepo calculationsrepository.JiraCalculationsRepository, project string, workStartStates []string, workToDoStates []string) (int64, error) {
 	transitions, err := issuesRepo.GetTransitionTimeByStateChanges(context.Background(), project, workToDoStates, workStartStates)
 	if err != nil {
 		return -1, err
@@ -156,7 +156,7 @@ func setStartDates(issuesRepo jirarepository.JiraRepository, calculationsRepo ca
 	return updatedCount, nil
 }
 
-func setCompleteDates(issuesRepo jirarepository.JiraRepository, calaculationsRepo calculationsrepository.JiraCalculationsRepository, project string, workCompleteStates []string) (int64, error) {
+func setCompleteDates(issuesRepo issuerepository.IssueRepository, calaculationsRepo calculationsrepository.JiraCalculationsRepository, project string, workCompleteStates []string) (int64, error) {
 	transitions, err := issuesRepo.GetTransitionTimeByToState(context.Background(), project, workCompleteStates)
 	if err != nil {
 		return -1, err
@@ -195,7 +195,7 @@ func setCompleteDates(issuesRepo jirarepository.JiraRepository, calaculationsRep
 	return updatedCount, nil
 }
 
-func setCycleTimeForCompletedIssues(issuesRepo jirarepository.JiraRepository, configRepo configrepository.ConfigRepository, calaculationsRepo calculationsrepository.JiraCalculationsRepository, project string) (int64, error) {
+func setCycleTimeForCompletedIssues(issuesRepo issuerepository.IssueRepository, configRepo configrepository.ConfigRepository, calaculationsRepo calculationsrepository.JiraCalculationsRepository, project string) (int64, error) {
 	calculations, err := issuesRepo.GetCompletedIssues(context.Background(), project)
 	if err != nil {
 		return -1, err
@@ -239,7 +239,7 @@ func setCycleTimeForCompletedIssues(issuesRepo jirarepository.JiraRepository, co
 	return updatedCount, nil
 }
 
-func setNumberOfItemsCompletedByWeek(repo jirarepository.JiraRepository, startDateStr string, project string, issueTypes []string, endStates []string) (int64, error) {
+func setNumberOfItemsCompletedByWeek(repo issuerepository.IssueRepository, startDateStr string, project string, issueTypes []string, endStates []string) (int64, error) {
 	startDate, err := time.Parse("2006-01-02T15:04:05Z", startDateStr)
 	if err != nil {
 		return -1, err
@@ -270,7 +270,7 @@ func setNumberOfItemsCompletedByWeek(repo jirarepository.JiraRepository, startDa
 	return totalUpdates, nil
 }
 
-func setNumberOfItemsStartedByWeek(repo jirarepository.JiraRepository, startDateStr string, project string, issueTypes []string) (int64, error) {
+func setNumberOfItemsStartedByWeek(repo issuerepository.IssueRepository, startDateStr string, project string, issueTypes []string) (int64, error) {
 	startDate, err := time.Parse("2006-01-02T15:04:05Z", startDateStr)
 	if err != nil {
 		return -1, err

@@ -9,10 +9,10 @@ go_library(
     deps = [
         "//cmd/jiraissuecalculator/calculator",
         "//pkg/configrepository",
-        "//pkg/jirarepository",
+        "//pkg/jira/repo/calculationsrepository",
+        "//pkg/jira/repo/issuerepository",
         "//vendor/github.com/Netflix/go-env",
         "//vendor/golang.org/x/exp/slices",
-        "//pkg/jira/repo/calculationsrepository",
     ],
 )
 

@@ -9,18 +9,18 @@ import (
 
 	"github.com/stebennett/squad-dashboard/cmd/jiracollector/models"
 	jiramodels "github.com/stebennett/squad-dashboard/pkg/jira/models"
-	"github.com/stebennett/squad-dashboard/pkg/jirarepository"
+	"github.com/stebennett/squad-dashboard/pkg/jira/repo/issuerepository"
 	"github.com/stebennett/squad-dashboard/pkg/jiraservice"
 	"github.com/stebennett/squad-dashboard/pkg/paginator"
 )
 
 type JiraIssueCollector struct {
-	repo      jirarepository.JiraRepository
+	repo      issuerepository.IssueRepository
 	jira      *jiraservice.JiraService
 	epicField string
 }
 
-func NewJiraIssueCollector(jira *jiraservice.JiraService, repo jirarepository.JiraRepository, epicField string) *JiraIssueCollector {
+func NewJiraIssueCollector(jira *jiraservice.JiraService, repo issuerepository.IssueRepository, epicField string) *JiraIssueCollector {
 	return &JiraIssueCollector{
 		repo:      repo,
 		jira:      jira,

@@ -11,7 +11,7 @@ import (
 	env "github.com/Netflix/go-env"
 
 	"github.com/stebennett/squad-dashboard/cmd/jiracollector/jiracollector"
-	"github.com/stebennett/squad-dashboard/pkg/jirarepository"
+	"github.com/stebennett/squad-dashboard/pkg/jira/repo/issuerepository"
 	"github.com/stebennett/squad-dashboard/pkg/jiraservice"
 )
 
@@ -54,7 +54,7 @@ func main() {
 	log.Printf("Completed loading of issues for %s", environment.JiraProject)
 }
 
-func createIssueRepository() jirarepository.JiraRepository {
+func createIssueRepository() issuerepository.IssueRepository {
 	var err error
 	var db *sql.DB
 	connStr := os.ExpandEnv("postgres://$DB_USERNAME:$DB_PASSWORD@$DB_HOST:$DB_PORT/$DB_NAME?sslmode=disable") // load from env vars
@@ -65,7 +65,7 @@ func createIssueRepository() jirarepository.JiraRepository {
 	}
 
 	fmt.Println("Database initialised")
-	return jirarepository.NewPostgresJiraRepository(db)
+	return issuerepository.NewPostgresIssueRepository(db)
 }
 
 func createJiraService(environment Environment) *jiraservice.JiraService {

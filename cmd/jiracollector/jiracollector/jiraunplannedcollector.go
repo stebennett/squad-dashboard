@@ -5,17 +5,17 @@ import (
 	"encoding/json"
 
 	"github.com/stebennett/squad-dashboard/cmd/jiracollector/models"
-	"github.com/stebennett/squad-dashboard/pkg/jirarepository"
+	"github.com/stebennett/squad-dashboard/pkg/jira/repo/issuerepository"
 	"github.com/stebennett/squad-dashboard/pkg/jiraservice"
 	"github.com/stebennett/squad-dashboard/pkg/paginator"
 )
 
 type JiraUnplannedCollector struct {
-	repo jirarepository.JiraRepository
+	repo issuerepository.IssueRepository
 	jira *jiraservice.JiraService
 }
 
-func NewJiraUnplannedCollector(jira *jiraservice.JiraService, repo jirarepository.JiraRepository) *JiraUnplannedCollector {
+func NewJiraUnplannedCollector(jira *jiraservice.JiraService, repo issuerepository.IssueRepository) *JiraUnplannedCollector {
 	return &JiraUnplannedCollector{
 		repo: repo,
 		jira: jira,

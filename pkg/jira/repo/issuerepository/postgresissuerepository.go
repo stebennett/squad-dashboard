@@ -1,4 +1,4 @@
-package jirarepository
+package issuerepository
 
 import (
 	"context"
@@ -11,17 +11,17 @@ import (
 	jiramodels "github.com/stebennett/squad-dashboard/pkg/jira/models"
 )
 
-type PostgresJiraRepository struct {
+type PostgresIssueRepository struct {
 	db *sql.DB
 }
 
-func NewPostgresJiraRepository(db *sql.DB) *PostgresJiraRepository {
-	return &PostgresJiraRepository{
+func NewPostgresIssueRepository(db *sql.DB) *PostgresIssueRepository {
+	return &PostgresIssueRepository{
 		db: db,
 	}
 }
 
-func (p *PostgresJiraRepository) GetIssues(ctx context.Context, project string) ([]jiramodels.JiraIssue, error) {
+func (p *PostgresIssueRepository) GetIssues(ctx context.Context, project string) ([]jiramodels.JiraIssue, error) {
 	selectStatement := `
 		SELECT issue_key, parent_key, created_at, updated_at, issue_type
 		FROM jira_issues
@@ -48,7 +48,7 @@ func (p *PostgresJiraRepository) GetIssues(ctx context.Context, project string) 
 	return result, nil
 }
 
-func (p *PostgresJiraRepository) SaveIssue(ctx context.Context, project string, jiraIssue jiramodels.JiraIssue) (int64, error) {
+func (p *PostgresIssueRepository) SaveIssue(ctx context.Context, project string, jiraIssue jiramodels.JiraIssue) (int64, error) {
 	insertIssueStatement := `
 		INSERT INTO jira_issues(issue_key, issue_type, parent_key, created_at, updated_at, project)
 		VALUES ($1, $2, $3, $4, $5, $6)
@@ -75,7 +75,7 @@ func (p *PostgresJiraRepository) SaveIssue(ctx context.Context, project string, 
 	return result.RowsAffected()
 }
 
-func (p *PostgresJiraRepository) SaveTransition(ctx context.Context, issueKey string, jiraTransitions []jiramodels.JiraTransition) (int64, error) {
+func (p *PostgresIssueRepository) SaveTransition(ctx context.Context, issueKey string, jiraTransitions []jiramodels.JiraTransition) (int64, error) {
 	var inserted int64 = 0
 
 	for _, transition := range jiraTransitions {
@@ -105,7 +105,7 @@ func (p *PostgresJiraRepository) SaveTransition(ctx context.Context, issueKey st
 	return inserted, nil
 }
 
-func (p *PostgresJiraRepository) GetTransitionTimeByStateChanges(ctx context.Context, project string, fromStates []string, toStates []string) (map[string]time.Time, error) {
+func (p *PostgresIssueRepository) GetTransitionTimeByStateChanges(ctx context.Context, project string, fromStates []string, toStates []string) (map[string]time.Time, error) {
 	selectStatement := `
 		SELECT jira_transitions.issue_key, MAX(jira_transitions.created_at)
 		FROM jira_transitions
@@ -136,7 +136,7 @@ func (p *PostgresJiraRepository) GetTransitionTimeByStateChanges(ctx context.Con
 	return result, nil
 }
 
-func (p *PostgresJiraRepository) GetTransitionTimeByToState(ctx context.Context, project string, toStates []string) (map[string]time.Time, error) {
+func (p *PostgresIssueRepository) GetTransitionTimeByToState(ctx context.Context, project string, toStates []string) (map[string]time.Time, error) {
 	selectStatement := `
 		SELECT jira_transitions.issue_key, MAX(jira_transitions.created_at)
 		FROM jira_transitions
@@ -167,7 +167,7 @@ func (p *PostgresJiraRepository) GetTransitionTimeByToState(ctx context.Context,
 	return result, nil
 }
 
-func (p *PostgresJiraRepository) GetTransitionsForIssue(ctx context.Context, issueKey string) ([]jiramodels.JiraTransition, error) {
+func (p *PostgresIssueRepository) GetTransitionsForIssue(ctx context.Context, issueKey string) ([]jiramodels.JiraTransition, error) {
 	selectStatement := `
 		SELECT from_state, to_state, created_at
 		FROM jira_transitions
@@ -194,7 +194,7 @@ func (p *PostgresJiraRepository) GetTransitionsForIssue(ctx context.Context, iss
 	return result, nil
 }
 
-func (p *PostgresJiraRepository) GetCompletedIssues(ctx context.Context, project string) (map[string]calculatormodels.IssueCalculations, error) {
+func (p *PostgresIssueRepository) GetCompletedIssues(ctx context.Context, project string) (map[string]calculatormodels.IssueCalculations, error) {
 	selectStatement := `
 	SELECT jira_issues_calculations.issue_key, 
 		jira_issues_calculations.cycle_time, 
@@ -237,7 +237,7 @@ func (p *PostgresJiraRepository) GetCompletedIssues(ctx context.Context, project
 	return result, nil
 }
 
-func (p *PostgresJiraRepository) GetIssuesStartedBetweenDates(ctx context.Context, project string, startDate time.Time, endDate time.Time, issueTypes []string) ([]string, error) {
+func (p *PostgresIssueRepository) GetIssuesStartedBetweenDates(ctx context.Context, project string, startDate time.Time, endDate time.Time, issueTypes []string) ([]string, error) {
 	selectStatement := `
 		SELECT jira_issues_calculations.issue_key from jira_issues_calculations
 		INNER JOIN jira_issues ON jira_issues_calculations.issue_key = jira_issues.issue_key
@@ -275,7 +275,7 @@ func (p *PostgresJiraRepository) GetIssuesStartedBetweenDates(ctx context.Contex
 	return result, nil
 }
 
-func (p *PostgresJiraRepository) SetIssuesStartedInWeekStarting(ctx context.Context, project string, startDate time.Time, count int) (int64, error) {
+func (p *PostgresIssueRepository) SetIssuesStartedInWeekStarting(ctx context.Context, project string, startDate time.Time, count int) (int64, error) {
 	insertStatement := `
 		INSERT INTO jira_issues_reports(project, week_start, number_of_items_started)
 		VALUES ($1, $2, $3)
@@ -299,7 +299,7 @@ func (p *PostgresJiraRepository) SetIssuesStartedInWeekStarting(ctx context.Cont
 	return result.RowsAffected()
 }
 
-func (p *PostgresJiraRepository) GetIssuesCompletedBetweenDates(ctx context.Context, project string, startDate time.Time, endDate time.Time, issueTypes []string, endStates []string) ([]string, error) {
+func (p *PostgresIssueRepository) GetIssuesCompletedBetweenDates(ctx context.Context, project string, startDate time.Time, endDate time.Time, issueTypes []string, endStates []string) ([]string, error) {
 	selectStatement := `
 		SELECT jira_issues_calculations.issue_key from jira_issues_calculations
 		INNER JOIN jira_issues ON jira_issues_calculations.issue_key = jira_issues.issue_key
@@ -339,7 +339,7 @@ func (p *PostgresJiraRepository) GetIssuesCompletedBetweenDates(ctx context.Cont
 	return result, nil
 }
 
-func (p *PostgresJiraRepository) SetIssuesCompletedInWeekStarting(ctx context.Context, project string, startDate time.Time, count int) (int64, error) {
+func (p *PostgresIssueRepository) SetIssuesCompletedInWeekStarting(ctx context.Context, project string, startDate time.Time, count int) (int64, error) {
 	insertStatement := `
 		INSERT INTO jira_issues_reports(project, week_start, number_of_items_completed)
 		VALUES ($1, $2, $3)
@@ -363,7 +363,7 @@ func (p *PostgresJiraRepository) SetIssuesCompletedInWeekStarting(ctx context.Co
 	return result.RowsAffected()
 }
 
-func (p *PostgresJiraRepository) GetEndStateForIssue(ctx context.Context, issueKey string, transitionDate time.Time) (string, error) {
+func (p *PostgresIssueRepository) GetEndStateForIssue(ctx context.Context, issueKey string, transitionDate time.Time) (string, error) {
 	selectStatement := `
 		SELECT jira_transitions.to_state from jira_transitions
 		WHERE jira_transitions.issue_key = $1
@@ -399,7 +399,7 @@ func (p *PostgresJiraRepository) GetEndStateForIssue(ctx context.Context, issueK
 	return result[0], nil
 }
 
-func (p *PostgresJiraRepository) SaveIssueLabels(ctx context.Context, issueKey string, labels []string) (int64, error) {
+func (p *PostgresIssueRepository) SaveIssueLabels(ctx context.Context, issueKey string, labels []string) (int64, error) {
 	insertStatement := `
 		INSERT INTO jira_issue_labels(issue_key, label)
 		VALUES ($1, $2)
@@ -430,7 +430,7 @@ func (p *PostgresJiraRepository) SaveIssueLabels(ctx context.Context, issueKey s
 	return inserted, nil
 }
 
-func (p *PostgresJiraRepository) GetProjects(ctx context.Context) ([]string, error) {
+func (p *PostgresIssueRepository) GetProjects(ctx context.Context) ([]string, error) {
 	selectStatement := `
 		SELECT DISTINCT project from jira_issues
 	`
@@ -449,7 +449,7 @@ func (p *PostgresJiraRepository) GetProjects(ctx context.Context) ([]string, err
 	return result, nil
 }
 
-func (p *PostgresJiraRepository) ClearUnplannedIssuesForProject(ctx context.Context, project string) (int64, error) {
+func (p *PostgresIssueRepository) ClearUnplannedIssuesForProject(ctx context.Context, project string) (int64, error) {
 	updateStatement := `
 		UPDATE jira_issues SET unplanned = FALSE WHERE project = $1
 	`
@@ -461,7 +461,7 @@ func (p *PostgresJiraRepository) ClearUnplannedIssuesForProject(ctx context.Cont
 	return result.RowsAffected()
 }
 
-func (p *PostgresJiraRepository) SaveUnplannedIssue(ctx context.Context, issueKey string) (int64, error) {
+func (p *PostgresIssueRepository) SaveUnplannedIssue(ctx context.Context, issueKey string) (int64, error) {
 	updateStatement := `
 		UPDATE jira_issues SET unplanned = TRUE WHERE issue_key = $1
 	`

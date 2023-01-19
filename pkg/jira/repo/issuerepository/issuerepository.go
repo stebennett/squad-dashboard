@@ -1,4 +1,4 @@
-package jirarepository
+package issuerepository
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 	jiramodels "github.com/stebennett/squad-dashboard/pkg/jira/models"
 )
 
-type JiraRepository interface {
+type IssueRepository interface {
 	GetIssues(ctx context.Context, project string) ([]jiramodels.JiraIssue, error)
 	SaveIssue(ctx context.Context, project string, jiraIssue jiramodels.JiraIssue) (int64, error)
 
