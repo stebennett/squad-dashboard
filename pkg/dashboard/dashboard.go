@@ -5,10 +5,10 @@ import (
 	"log"
 	"time"
 
-	"github.com/stebennett/squad-dashboard/pkg/dashboard/models"
 	"github.com/stebennett/squad-dashboard/pkg/dateutil"
 	"github.com/stebennett/squad-dashboard/pkg/jira/repo/calculationsrepository"
 	"github.com/stebennett/squad-dashboard/pkg/mathutil"
+	"github.com/stebennett/squad-dashboard/pkg/models"
 )
 
 func GenerateEscapedDefects(weekCount int, project string, defectIssueType string, repo calculationsrepository.JiraCalculationsRepository) (models.EscapedDefectReport, error) {
@@ -19,7 +19,7 @@ func GenerateEscapedDefects(weekCount int, project string, defectIssueType strin
 	weekEndings := dateutil.PreviousWeekDates(nearestFriday, weekCount)
 
 	escapedDefectCounts := []models.WeekCount{}
-	var lastWeekEscapedDefect []models.EscapedDefectItem
+	var lastWeekEscapedDefect []models.WorkItem
 
 	maxDate := weekEndings[0]
 
@@ -40,11 +40,13 @@ func GenerateEscapedDefects(weekCount int, project string, defectIssueType strin
 
 		// get the values for the last week only
 		if maxDate.Equal(d) {
-			lastWeekEscapedDefect = make([]models.EscapedDefectItem, len(escapedDefects))
+			lastWeekEscapedDefect = make([]models.WorkItem, len(escapedDefects))
 			for i, d := range escapedDefects {
-				lastWeekEscapedDefect[i] = models.EscapedDefectItem{
-					IssueKey:  d.IssueKey,
-					CreatedAt: d.IssueCreatedAt.Time,
+				lastWeekEscapedDefect[i] = models.WorkItem{
+					IssueKey:         d.IssueKey,
+					CreatedAt:        d.IssueCreatedAt.Time,
+					CompletedAt:      d.IssueCompletedAt.Time,
+					WorkingCycleTime: d.WorkingCycleTime,
 				}
 			}
 		}
@@ -66,8 +68,8 @@ func GenerateCycleTime(weekCount int, percentile float64, project string, issueT
 	maxDate := weekEndings[0]
 
 	cycleTimeReports := []models.WeekCount{}
-	cycleTimeValues := []models.CycleTimeItem{}
-	var lastWeekCycleTimes []models.CycleTimeItem
+	cycleTimeValues := []models.WorkItem{}
+	var lastWeekCycleTimes []models.WorkItem
 
 	// 2. Get the average cycle time for a week
 	for _, d := range weekEndings {
@@ -84,10 +86,11 @@ func GenerateCycleTime(weekCount int, percentile float64, project string, issueT
 		cycleTimes := make([]int, len(ct))
 		for _, ctitem := range ct {
 			cycleTimes = append(cycleTimes, ctitem.WorkingCycleTime)
-			cycleTimeValues = append(cycleTimeValues, models.CycleTimeItem{
-				IssueKey:    ctitem.IssueKey,
-				CompletedAt: ctitem.IssueCompletedAt.Time,
-				Size:        ctitem.WorkingCycleTime,
+			cycleTimeValues = append(cycleTimeValues, models.WorkItem{
+				IssueKey:         ctitem.IssueKey,
+				CreatedAt:        ctitem.IssueCreatedAt.Time,
+				CompletedAt:      ctitem.IssueCompletedAt.Time,
+				WorkingCycleTime: ctitem.WorkingCycleTime,
 			})
 		}
 
@@ -98,12 +101,13 @@ func GenerateCycleTime(weekCount int, percentile float64, project string, issueT
 
 		// get the values for the last week only
 		if maxDate.Equal(d) {
-			lastWeekCycleTimes = make([]models.CycleTimeItem, len(ct))
+			lastWeekCycleTimes = make([]models.WorkItem, len(ct))
 			for i, c := range ct {
-				lastWeekCycleTimes[i] = models.CycleTimeItem{
-					IssueKey:    c.IssueKey,
-					CompletedAt: c.IssueCompletedAt.Time,
-					Size:        c.WorkingCycleTime,
+				lastWeekCycleTimes[i] = models.WorkItem{
+					IssueKey:         c.IssueKey,
+					CreatedAt:        c.IssueCreatedAt.Time,
+					CompletedAt:      c.IssueCompletedAt.Time,
+					WorkingCycleTime: c.WorkingCycleTime,
 				}
 			}
 		}
@@ -125,7 +129,7 @@ func GenerateThroughput(weekCount int, project string, issueTypes []string, repo
 	maxDate := weekEndings[0]
 
 	throughputReports := []models.WeekCount{}
-	var lastWeekThroughputItems []models.ThroughputItem
+	var lastWeekThroughputItems []models.WorkItem
 
 	// 2. Get throughput by week
 	for _, d := range weekEndings {
@@ -144,11 +148,13 @@ func GenerateThroughput(weekCount int, project string, issueTypes []string, repo
 
 		// get the values for the last week only
 		if maxDate.Equal(d) {
-			lastWeekThroughputItems = make([]models.ThroughputItem, len(issues))
+			lastWeekThroughputItems = make([]models.WorkItem, len(issues))
 			for i, item := range issues {
-				lastWeekThroughputItems[i] = models.ThroughputItem{
-					IssueKey:    item.IssueKey,
-					CompletedAt: item.IssueCompletedAt.Time,
+				lastWeekThroughputItems[i] = models.WorkItem{
+					IssueKey:         item.IssueKey,
+					CreatedAt:        item.IssueCreatedAt.Time,
+					CompletedAt:      item.IssueCompletedAt.Time,
+					WorkingCycleTime: item.WorkingCycleTime,
 				}
 			}
 		}
@@ -169,7 +175,7 @@ func GenerateUnplannedWorkReport(weekCount int, project string, issueTypes []str
 	maxDate := weekEndings[0]
 
 	unplannedWorkReports := []models.WeekCount{}
-	var lastWeekUnplannedItems []models.UnplannedWorkItem
+	var lastWeekUnplannedItems []models.WorkItem
 
 	for _, d := range weekEndings {
 		startDate := d.AddDate(0, 0, -7)
@@ -201,11 +207,13 @@ func GenerateUnplannedWorkReport(weekCount int, project string, issueTypes []str
 
 		// get the values for the last week only
 		if maxDate.Equal(d) {
-			lastWeekUnplannedItems = make([]models.UnplannedWorkItem, len(unplannedIssues))
+			lastWeekUnplannedItems = make([]models.WorkItem, len(unplannedIssues))
 			for i, item := range unplannedIssues {
-				lastWeekUnplannedItems[i] = models.UnplannedWorkItem{
-					IssueKey:    item.IssueKey,
-					CompletedAt: item.IssueCompletedAt.Time,
+				lastWeekUnplannedItems[i] = models.WorkItem{
+					IssueKey:         item.IssueKey,
+					CreatedAt:        item.IssueCreatedAt.Time,
+					CompletedAt:      item.IssueCompletedAt.Time,
+					WorkingCycleTime: item.WorkingCycleTime,
 				}
 			}
 		}

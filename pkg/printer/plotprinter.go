@@ -3,8 +3,8 @@ package printer
 import (
 	"image/color"
 
-	"github.com/stebennett/squad-dashboard/pkg/dashboard/models"
 	"github.com/stebennett/squad-dashboard/pkg/mathutil"
+	"github.com/stebennett/squad-dashboard/pkg/models"
 
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/plotter"
@@ -136,11 +136,11 @@ func (pp *PlotPrinter) printChart(weekCounts []models.WeekCount, title string, p
 	return p, nil
 }
 
-func (pp *PlotPrinter) addPoints(p *plot.Plot, cycleTimes []models.CycleTimeItem, plotColor color.Color) (*plot.Plot, error) {
+func (pp *PlotPrinter) addPoints(p *plot.Plot, cycleTimes []models.WorkItem, plotColor color.Color) (*plot.Plot, error) {
 	data := make(plotter.XYs, len(cycleTimes))
 	for i, d := range cycleTimes {
 		data[i].X = float64(d.CompletedAt.Unix())
-		data[i].Y = float64(d.Size)
+		data[i].Y = float64(d.WorkingCycleTime)
 	}
 
 	scatter, err := plotter.NewScatter(data)

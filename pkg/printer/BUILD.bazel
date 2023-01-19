@@ -11,8 +11,8 @@ go_library(
     importpath = "github.com/stebennett/squad-dashboard/pkg/printer",
     visibility = ["//visibility:public"],
     deps = [
-        "//pkg/dashboard/models",
         "//pkg/mathutil",
+        "//pkg/models",
         "//pkg/report",
         "//vendor/gonum.org/v1/plot",
         "//vendor/gonum.org/v1/plot/plotter",

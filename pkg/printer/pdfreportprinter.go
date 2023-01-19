@@ -3,8 +3,8 @@ package printer
 import (
 	"fmt"
 
-	"github.com/stebennett/squad-dashboard/pkg/dashboard/models"
 	"github.com/stebennett/squad-dashboard/pkg/mathutil"
+	"github.com/stebennett/squad-dashboard/pkg/models"
 	"github.com/stebennett/squad-dashboard/pkg/report"
 )
 
@@ -164,7 +164,7 @@ func createSpeedTable(ctr models.CycleTimeReport) report.Table {
 		row := make(map[string]string, len(SpeedColumns))
 		row[DateCompleted] = v.CompletedAt.Format("2006-01-02")
 		row[Link] = v.IssueKey
-		row[Size] = fmt.Sprintf("%d", v.Size)
+		row[Size] = fmt.Sprintf("%d", v.WorkingCycleTime)
 
 		tableData[i] = row
 	}

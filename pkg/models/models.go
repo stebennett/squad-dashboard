@@ -9,41 +9,30 @@ type WeekCount struct {
 	Count      int
 }
 
-type CycleTimeItem struct {
-	IssueKey    string
-	CompletedAt time.Time
-	Size        int
+type WorkItem struct {
+	IssueKey         string
+	CreatedAt        time.Time
+	CompletedAt      time.Time
+	WorkingCycleTime int
 }
-
-type ThroughputItem struct {
-	IssueKey    string
-	CompletedAt time.Time
-}
-
-type EscapedDefectItem struct {
-	IssueKey  string
-	CreatedAt time.Time
-}
-
-type UnplannedWorkItem ThroughputItem
 
 type CycleTimeReport struct {
 	WeeklyReports          []WeekCount
-	AllCycleTimeItems      []CycleTimeItem
-	LastWeekCycleTimeItems []CycleTimeItem
+	AllCycleTimeItems      []WorkItem
+	LastWeekCycleTimeItems []WorkItem
 }
 
 type ThroughputReport struct {
 	WeeklyReports           []WeekCount
-	LastWeekThroughputItems []ThroughputItem
+	LastWeekThroughputItems []WorkItem
 }
 
 type EscapedDefectReport struct {
 	WeeklyReports              []WeekCount
-	LastWeekEscapedDefectItems []EscapedDefectItem
+	LastWeekEscapedDefectItems []WorkItem
 }
 
 type UnplannedWorkReport struct {
 	WeeklyReports              []WeekCount
-	LastWeekUnplannedWorkItems []UnplannedWorkItem
+	LastWeekUnplannedWorkItems []WorkItem
 }
