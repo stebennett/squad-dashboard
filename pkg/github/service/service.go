@@ -1,4 +1,4 @@
-package githubservice
+package service
 
 import (
 	"encoding/json"
@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/stebennett/squad-dashboard/pkg/githubmodels"
+	"github.com/stebennett/squad-dashboard/pkg/github/models"
 	"github.com/tomnomnom/linkheader"
 )
 
@@ -51,15 +51,15 @@ func NewGithubService(httpClient *http.Client, githubParams GithubParams) *Githu
 	}
 }
 
-func (g *GithubService) GetPullRequestsForRepo(organisation string, repository string) ([]githubmodels.GithubPullRequest, error) {
+func (g *GithubService) GetPullRequestsForRepo(organisation string, repository string) ([]models.GithubPullRequest, error) {
 	url := fmt.Sprintf("https://api.github.com/repos/%s/%s/pulls", organisation, repository)
 
-	result, err := g.getPullRequestsForRepo(url, []githubmodels.GithubPullRequest{})
+	result, err := g.getPullRequestsForRepo(url, []models.GithubPullRequest{})
 
 	return result, err
 }
 
-func (g *GithubService) getPullRequestsForRepo(url string, result []githubmodels.GithubPullRequest) ([]githubmodels.GithubPullRequest, error) {
+func (g *GithubService) getPullRequestsForRepo(url string, result []models.GithubPullRequest) ([]models.GithubPullRequest, error) {
 	log.Printf("fetching pull requests for repo from %s", url)
 
 	req, err := http.NewRequest(http.MethodGet, url, nil)
@@ -90,11 +90,11 @@ func (g *GithubService) getPullRequestsForRepo(url string, result []githubmodels
 	var pullRequestsResponse []GithubPullRequestResponse
 	err = json.Unmarshal(body, &pullRequestsResponse)
 	if err != nil {
-		return []githubmodels.GithubPullRequest{}, err
+		return []models.GithubPullRequest{}, err
 	}
 
 	for _, pr := range pullRequestsResponse {
-		githubPr := githubmodels.GithubPullRequest{
+		githubPr := models.GithubPullRequest{
 			User:      pr.User.Login,
 			Title:     pr.Title,
 			Id:        pr.Id,

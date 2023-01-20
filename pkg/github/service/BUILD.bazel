@@ -1,12 +1,12 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
-    name = "githubservice",
-    srcs = ["githubservice.go"],
-    importpath = "github.com/stebennett/squad-dashboard/pkg/githubservice",
+    name = "service",
+    srcs = ["service.go"],
+    importpath = "github.com/stebennett/squad-dashboard/pkg/github/service",
     visibility = ["//visibility:public"],
     deps = [
-        "//pkg/githubmodels",
+        "//pkg/github/models",
         "//vendor/github.com/tomnomnom/linkheader",
     ],
 )

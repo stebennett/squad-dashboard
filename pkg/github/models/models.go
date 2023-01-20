@@ -1,4 +1,4 @@
-package githubmodels
+package models
 
 import "time"
 

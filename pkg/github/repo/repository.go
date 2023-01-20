@@ -1,15 +1,15 @@
-package githubrepository
+package repo
 
 import (
 	"context"
 	"database/sql"
 
 	_ "github.com/lib/pq"
-	"github.com/stebennett/squad-dashboard/pkg/githubmodels"
+	"github.com/stebennett/squad-dashboard/pkg/github/models"
 )
 
 type GithubRespository interface {
-	SavePullRequest(ctx context.Context, organisation string, repository string, pullRequest githubmodels.GithubPullRequest) (int64, error)
+	SavePullRequest(ctx context.Context, organisation string, repository string, pullRequest models.GithubPullRequest) (int64, error)
 }
 
 type PosgresGithubRepository struct {
@@ -22,7 +22,7 @@ func NewPostgresGithubRepository(db *sql.DB) *PosgresGithubRepository {
 	}
 }
 
-func (p *PosgresGithubRepository) SavePullRequest(ctx context.Context, organisation string, repository string, pullRequest githubmodels.GithubPullRequest) (int64, error) {
+func (p *PosgresGithubRepository) SavePullRequest(ctx context.Context, organisation string, repository string, pullRequest models.GithubPullRequest) (int64, error) {
 	insertStatement := `
 		INSERT INTO github_pull_requests(organisation, repository, gh_user, title, github_id, pr_number, created_at, updated_at, closed_at, merged_at)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
