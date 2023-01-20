@@ -1,0 +1,15 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "calculationsrepository",
+    srcs = [
+        "calculationsrepository.go",
+        "postgrescalculationsrepository.go",
+    ],
+    importpath = "github.com/stebennett/squad-dashboard/pkg/jira/repo/calculationsrepository",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/jira/models",
+        "//vendor/github.com/lib/pq",
+    ],
+)

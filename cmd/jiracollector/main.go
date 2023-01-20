@@ -11,8 +11,8 @@ import (
 	env "github.com/Netflix/go-env"
 
 	"github.com/stebennett/squad-dashboard/cmd/jiracollector/jiracollector"
-	"github.com/stebennett/squad-dashboard/pkg/jirarepository"
-	"github.com/stebennett/squad-dashboard/pkg/jiraservice"
+	"github.com/stebennett/squad-dashboard/pkg/jira/repo/issuerepository"
+	"github.com/stebennett/squad-dashboard/pkg/jira/service"
 )
 
 type Environment struct {
@@ -50,11 +50,14 @@ func main() {
 	}
 
 	err = jiraUnplannedCollector.Execute(environment.JiraProject, environment.JiraUnplannedQuery)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	log.Printf("Completed loading of issues for %s", environment.JiraProject)
 }
 
-func createIssueRepository() jirarepository.JiraRepository {
+func createIssueRepository() issuerepository.IssueRepository {
 	var err error
 	var db *sql.DB
 	connStr := os.ExpandEnv("postgres://$DB_USERNAME:$DB_PASSWORD@$DB_HOST:$DB_PORT/$DB_NAME?sslmode=disable") // load from env vars
@@ -65,11 +68,11 @@ func createIssueRepository() jirarepository.JiraRepository {
 	}
 
 	fmt.Println("Database initialised")
-	return jirarepository.NewPostgresJiraRepository(db)
+	return issuerepository.NewPostgresIssueRepository(db)
 }
 
-func createJiraService(environment Environment) *jiraservice.JiraService {
-	jiraParams := jiraservice.JiraParams{
+func createJiraService(environment Environment) *service.JiraService {
+	jiraParams := service.JiraParams{
 		BaseUrl:   environment.JiraBaseUrl,
 		User:      environment.JiraUser,
 		AuthToken: environment.JiraAuthToken,
@@ -79,5 +82,5 @@ func createJiraService(environment Environment) *jiraservice.JiraService {
 		Timeout: time.Second * 30,
 	}
 
-	return jiraservice.NewJiraService(&jiraClient, jiraParams)
+	return service.NewJiraService(&jiraClient, jiraParams)
 }

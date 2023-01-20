@@ -5,17 +5,17 @@ import (
 	"encoding/json"
 
 	"github.com/stebennett/squad-dashboard/cmd/jiracollector/models"
-	"github.com/stebennett/squad-dashboard/pkg/jirarepository"
-	"github.com/stebennett/squad-dashboard/pkg/jiraservice"
+	"github.com/stebennett/squad-dashboard/pkg/jira/repo/issuerepository"
+	"github.com/stebennett/squad-dashboard/pkg/jira/service"
 	"github.com/stebennett/squad-dashboard/pkg/paginator"
 )
 
 type JiraUnplannedCollector struct {
-	repo jirarepository.JiraRepository
-	jira *jiraservice.JiraService
+	repo issuerepository.IssueRepository
+	jira *service.JiraService
 }
 
-func NewJiraUnplannedCollector(jira *jiraservice.JiraService, repo jirarepository.JiraRepository) *JiraUnplannedCollector {
+func NewJiraUnplannedCollector(jira *service.JiraService, repo issuerepository.IssueRepository) *JiraUnplannedCollector {
 	return &JiraUnplannedCollector{
 		repo: repo,
 		jira: jira,
@@ -28,7 +28,7 @@ func (jc *JiraUnplannedCollector) Execute(project string, jql string) error {
 }
 
 func (jc *JiraUnplannedCollector) execute(project string, startAt int, maxResults int, jql string, saveUnplannedIssues func(ctx context.Context, issueKey string) (int64, error)) error {
-	query := jiraservice.JiraSearchQuery{
+	query := service.JiraSearchQuery{
 		Jql:        jql,
 		StartAt:    startAt,
 		MaxResults: maxResults,

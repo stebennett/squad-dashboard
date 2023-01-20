@@ -3,8 +3,8 @@ package printer
 import (
 	"log"
 
-	"github.com/stebennett/squad-dashboard/pkg/dashboard/models"
 	"github.com/stebennett/squad-dashboard/pkg/mathutil"
+	"github.com/stebennett/squad-dashboard/pkg/models"
 )
 
 type CommandLinePrinter struct{}
@@ -48,15 +48,15 @@ func (c *CommandLinePrinter) printCycleTimes(cycleTimeReport models.CycleTimeRep
 
 	ctValues := make([]int, len(cycleTimeReport.AllCycleTimeItems))
 	for i, c := range cycleTimeReport.AllCycleTimeItems {
-		ctValues[i] = c.Size
+		ctValues[i] = c.WorkingCycleTime
 	}
 
 	percentile75th := mathutil.Percentile(0.75, ctValues)
 	log.Printf("> Percentile: %d", percentile75th)
 
 	for _, c := range cycleTimeReport.AllCycleTimeItems {
-		if c.Size >= percentile75th {
-			log.Printf("Issue outside percentile: %s; Completed: %s; CycleTime: %d", c.IssueKey, c.CompletedAt, c.Size)
+		if c.WorkingCycleTime >= percentile75th {
+			log.Printf("Issue outside percentile: %s; Completed: %s; CycleTime: %d", c.IssueKey, c.CompletedAt, c.WorkingCycleTime)
 		}
 	}
 

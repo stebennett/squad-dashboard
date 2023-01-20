@@ -7,6 +7,6 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/dateutil",
-        "//pkg/jiramodels",
+        "//pkg/jira/models",
     ],
 )

@@ -1,0 +1,12 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "repo",
+    srcs = [
+        "configrepository.go",
+        "postgresconfigrespository.go",
+    ],
+    importpath = "github.com/stebennett/squad-dashboard/pkg/config/repo",
+    visibility = ["//visibility:public"],
+    deps = ["//vendor/github.com/lib/pq"],
+)

@@ -1,0 +1,12 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "tasks",
+    srcs = ["loader.go"],
+    importpath = "github.com/stebennett/squad-dashboard/pkg/config/tasks",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/config/models",
+        "//pkg/config/repo",
+    ],
+)

@@ -10,8 +10,8 @@ import (
 	"time"
 
 	"github.com/Netflix/go-env"
-	"github.com/stebennett/squad-dashboard/pkg/pagerdutyrepository"
-	"github.com/stebennett/squad-dashboard/pkg/pagerdutyservice"
+	"github.com/stebennett/squad-dashboard/pkg/pagerduty/repo"
+	"github.com/stebennett/squad-dashboard/pkg/pagerduty/service"
 )
 
 type Environment struct {
@@ -58,8 +58,8 @@ func main() {
 	}
 }
 
-func createPagerDutyService(environment Environment) *pagerdutyservice.PagerDutyService {
-	params := pagerdutyservice.PagerDutyParams{
+func createPagerDutyService(environment Environment) *service.PagerDutyService {
+	params := service.PagerDutyParams{
 		AuthToken: environment.PagerDutyAuthToken,
 		BaseUrl:   "api.pagerduty.com",
 	}
@@ -68,10 +68,10 @@ func createPagerDutyService(environment Environment) *pagerdutyservice.PagerDuty
 		Timeout: time.Second * 30,
 	}
 
-	return pagerdutyservice.NewPagerDutyService(&client, params)
+	return service.NewPagerDutyService(&client, params)
 }
 
-func createPagerDutyRepository() pagerdutyrepository.PagerDutyRepository {
+func createPagerDutyRepository() repo.PagerDutyRepository {
 	var err error
 	var db *sql.DB
 	connStr := os.ExpandEnv("postgres://$DB_USERNAME:$DB_PASSWORD@$DB_HOST:$DB_PORT/$DB_NAME?sslmode=disable") // load from env vars
@@ -82,5 +82,5 @@ func createPagerDutyRepository() pagerdutyrepository.PagerDutyRepository {
 	}
 
 	fmt.Println("Database initialised")
-	return pagerdutyrepository.NewPostgresPagerDutyRepository(db)
+	return repo.NewPostgresPagerDutyRepository(db)
 }

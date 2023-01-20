@@ -8,8 +8,8 @@ go_library(
     visibility = ["//visibility:private"],
     deps = [
         "//cmd/jiracollector/jiracollector",
-        "//pkg/jirarepository",
-        "//pkg/jiraservice",
+        "//pkg/jira/repo/issuerepository",
+        "//pkg/jira/service:jiraservice",
         "//vendor/github.com/Netflix/go-env",
     ],
 )

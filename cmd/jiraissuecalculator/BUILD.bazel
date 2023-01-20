@@ -8,9 +8,9 @@ go_library(
     visibility = ["//visibility:private"],
     deps = [
         "//cmd/jiraissuecalculator/calculator",
-        "//pkg/configrepository",
-        "//pkg/jiracalculationsrepository",
-        "//pkg/jirarepository",
+        "//pkg/config/repo",
+        "//pkg/jira/repo/calculationsrepository",
+        "//pkg/jira/repo/issuerepository",
         "//vendor/github.com/Netflix/go-env",
         "//vendor/golang.org/x/exp/slices",
     ],

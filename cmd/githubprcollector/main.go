@@ -10,8 +10,8 @@ import (
 	"time"
 
 	"github.com/Netflix/go-env"
-	"github.com/stebennett/squad-dashboard/pkg/githubrepository"
-	"github.com/stebennett/squad-dashboard/pkg/githubservice"
+	"github.com/stebennett/squad-dashboard/pkg/github/repo"
+	"github.com/stebennett/squad-dashboard/pkg/github/service"
 )
 
 type Environment struct {
@@ -54,8 +54,8 @@ func main() {
 	}
 }
 
-func createGithubService(environment Environment) *githubservice.GithubService {
-	githubParams := githubservice.GithubParams{
+func createGithubService(environment Environment) *service.GithubService {
+	githubParams := service.GithubParams{
 		User:                environment.GithubUser,
 		PersonalAccessToken: environment.GithubAccessToken,
 	}
@@ -64,10 +64,10 @@ func createGithubService(environment Environment) *githubservice.GithubService {
 		Timeout: time.Second * 30,
 	}
 
-	return githubservice.NewGithubService(&githubClient, githubParams)
+	return service.NewGithubService(&githubClient, githubParams)
 }
 
-func createGithubRepository() githubrepository.GithubRespository {
+func createGithubRepository() repo.GithubRespository {
 	var err error
 	var db *sql.DB
 	connStr := os.ExpandEnv("postgres://$DB_USERNAME:$DB_PASSWORD@$DB_HOST:$DB_PORT/$DB_NAME?sslmode=disable") // load from env vars
@@ -78,5 +78,5 @@ func createGithubRepository() githubrepository.GithubRespository {
 	}
 
 	fmt.Println("Database initialised")
-	return githubrepository.NewPostgresGithubRepository(db)
+	return repo.NewPostgresGithubRepository(db)
 }

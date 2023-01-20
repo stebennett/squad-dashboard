@@ -8,19 +8,19 @@ import (
 	"strings"
 
 	"github.com/stebennett/squad-dashboard/cmd/jiracollector/models"
-	"github.com/stebennett/squad-dashboard/pkg/jiramodels"
-	"github.com/stebennett/squad-dashboard/pkg/jirarepository"
-	"github.com/stebennett/squad-dashboard/pkg/jiraservice"
+	jiramodels "github.com/stebennett/squad-dashboard/pkg/jira/models"
+	"github.com/stebennett/squad-dashboard/pkg/jira/repo/issuerepository"
+	"github.com/stebennett/squad-dashboard/pkg/jira/service"
 	"github.com/stebennett/squad-dashboard/pkg/paginator"
 )
 
 type JiraIssueCollector struct {
-	repo      jirarepository.JiraRepository
-	jira      *jiraservice.JiraService
+	repo      issuerepository.IssueRepository
+	jira      *service.JiraService
 	epicField string
 }
 
-func NewJiraIssueCollector(jira *jiraservice.JiraService, repo jirarepository.JiraRepository, epicField string) *JiraIssueCollector {
+func NewJiraIssueCollector(jira *service.JiraService, repo issuerepository.IssueRepository, epicField string) *JiraIssueCollector {
 	return &JiraIssueCollector{
 		repo:      repo,
 		jira:      jira,
@@ -37,7 +37,7 @@ func (jc *JiraIssueCollector) execute(project string, startAt int, maxResults in
 	saveTransition func(ctx context.Context, issueKey string, jiraTransitions []jiramodels.JiraTransition) (int64, error),
 	saveIssueLabels func(ctx context.Context, issueKey string, labels []string) (int64, error)) error {
 
-	query := jiraservice.JiraSearchQuery{
+	query := service.JiraSearchQuery{
 		Jql:        jql,
 		Fields:     []string{"summary", "issuetype", epicField, "created", "updated", "labels"},
 		Expand:     []string{"changelog"},

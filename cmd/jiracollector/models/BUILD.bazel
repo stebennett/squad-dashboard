@@ -5,5 +5,5 @@ go_library(
     srcs = ["models.go"],
     importpath = "github.com/stebennett/squad-dashboard/cmd/jiracollector/models",
     visibility = ["//visibility:public"],
-    deps = ["//pkg/jiramodels"],
+    deps = ["//pkg/jira/models"],
 )

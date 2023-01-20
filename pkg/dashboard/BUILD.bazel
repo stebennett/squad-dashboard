@@ -6,9 +6,9 @@ go_library(
     importpath = "github.com/stebennett/squad-dashboard/pkg/dashboard",
     visibility = ["//visibility:public"],
     deps = [
-        "//pkg/dashboard/models",
         "//pkg/dateutil",
-        "//pkg/jiracalculationsrepository",
+        "//pkg/jira/repo/calculationsrepository",
         "//pkg/mathutil",
+        "//pkg/models",
     ],
 )
