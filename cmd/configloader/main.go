@@ -9,8 +9,9 @@ import (
 	"strings"
 
 	"github.com/Netflix/go-env"
-	"github.com/stebennett/squad-dashboard/pkg/configloader"
-	"github.com/stebennett/squad-dashboard/pkg/configrepository"
+	"github.com/stebennett/squad-dashboard/pkg/config/models"
+	"github.com/stebennett/squad-dashboard/pkg/config/repo"
+	"github.com/stebennett/squad-dashboard/pkg/config/tasks"
 )
 
 type Environment struct {
@@ -30,7 +31,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	config := configloader.Config{
+	config := models.Config{
 		JiraProject:          environment.JiraProject,
 		JiraToDoStates:       strings.Split(environment.WorkToDoStates, ","),
 		JiraInProgressStates: strings.Split(environment.WorkStartStates, ","),
@@ -38,7 +39,7 @@ func main() {
 		NonWorkingDays:       strings.Split(environment.NonWorkingDays, ","),
 	}
 
-	err = configloader.Load(context.Background(), repo, config)
+	err = tasks.Load(context.Background(), repo, config)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -46,7 +47,7 @@ func main() {
 	log.Print("Config loaded successfully")
 }
 
-func createConfigRepository() configrepository.ConfigRepository {
+func createConfigRepository() repo.ConfigRepository {
 	var err error
 	var db *sql.DB
 	connStr := os.ExpandEnv("postgres://$DB_USERNAME:$DB_PASSWORD@$DB_HOST:$DB_PORT/$DB_NAME?sslmode=disable") // load from env vars
@@ -57,5 +58,5 @@ func createConfigRepository() configrepository.ConfigRepository {
 	}
 
 	fmt.Println("Database initialised")
-	return configrepository.NewPostgresConfigRepository(db)
+	return repo.NewPostgresConfigRepository(db)
 }

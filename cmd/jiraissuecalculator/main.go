@@ -12,7 +12,7 @@ import (
 
 	"github.com/Netflix/go-env"
 	"github.com/stebennett/squad-dashboard/cmd/jiraissuecalculator/calculator"
-	"github.com/stebennett/squad-dashboard/pkg/configrepository"
+	configrepository "github.com/stebennett/squad-dashboard/pkg/config/repo"
 	"github.com/stebennett/squad-dashboard/pkg/jira/repo/calculationsrepository"
 	"github.com/stebennett/squad-dashboard/pkg/jira/repo/issuerepository"
 	"golang.org/x/exp/slices"

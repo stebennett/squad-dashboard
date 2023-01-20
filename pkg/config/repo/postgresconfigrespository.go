@@ -1,4 +1,4 @@
-package configrepository
+package repo
 
 import (
 	"context"

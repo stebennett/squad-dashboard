@@ -1,21 +1,14 @@
-package configloader
+package tasks
 
 import (
 	"context"
 	"fmt"
 
-	"github.com/stebennett/squad-dashboard/pkg/configrepository"
+	"github.com/stebennett/squad-dashboard/pkg/config/models"
+	"github.com/stebennett/squad-dashboard/pkg/config/repo"
 )
 
-type Config struct {
-	JiraProject          string
-	JiraToDoStates       []string
-	JiraInProgressStates []string
-	JiraDoneStates       []string
-	NonWorkingDays       []string
-}
-
-func Load(ctx context.Context, repo configrepository.ConfigRepository, config Config) error {
+func Load(ctx context.Context, repo repo.ConfigRepository, config models.Config) error {
 	_, err := repo.SaveJiraToDoStates(context.Background(), config.JiraProject, config.JiraToDoStates)
 	if err != nil {
 		return fmt.Errorf("failed to save Jira Work ToDo States. %s", err)
