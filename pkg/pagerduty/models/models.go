@@ -1,4 +1,4 @@
-package pagerdutymodels
+package models
 
 import "time"
 

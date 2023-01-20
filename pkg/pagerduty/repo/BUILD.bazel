@@ -1,12 +1,12 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
-    name = "pagerdutyrepository",
+    name = "repo",
     srcs = ["pagerdutyrepository.go"],
-    importpath = "github.com/stebennett/squad-dashboard/pkg/pagerdutyrepository",
+    importpath = "github.com/stebennett/squad-dashboard/pkg/pagerduty/repo",
     visibility = ["//visibility:public"],
     deps = [
-        "//pkg/pagerdutymodels",
+        "//pkg/pagerduty/models",
         "//vendor/github.com/lib/pq",
     ],
 )

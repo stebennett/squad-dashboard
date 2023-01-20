@@ -1,15 +1,15 @@
-package pagerdutyrepository
+package repo
 
 import (
 	"context"
 	"database/sql"
 
 	_ "github.com/lib/pq"
-	"github.com/stebennett/squad-dashboard/pkg/pagerdutymodels"
+	"github.com/stebennett/squad-dashboard/pkg/pagerduty/models"
 )
 
 type PagerDutyRepository interface {
-	SaveOnCall(ctx context.Context, oncall pagerdutymodels.OnCall) (int64, error)
+	SaveOnCall(ctx context.Context, oncall models.OnCall) (int64, error)
 }
 
 type PostgresPagerDutyRepository struct {
@@ -22,7 +22,7 @@ func NewPostgresPagerDutyRepository(db *sql.DB) *PostgresPagerDutyRepository {
 	}
 }
 
-func (p *PostgresPagerDutyRepository) SaveOnCall(ctx context.Context, oncall pagerdutymodels.OnCall) (int64, error) {
+func (p *PostgresPagerDutyRepository) SaveOnCall(ctx context.Context, oncall models.OnCall) (int64, error) {
 	insertStatement := `
 		INSERT INTO pagerduty_oncalls(pd_user_id, pd_user_name, schedule_id, schedule_name, escalation_policy_id, escalation_policy_name, escalation_level, on_call_start, on_call_end)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
