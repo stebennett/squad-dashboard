@@ -75,6 +75,16 @@ services:
       - DB_HOST=db
       - DB_PORT=5432
 
+  googlesheetcollector:
+    image: bazel/cmd/googlesheetcollector:image
+    command: bash -c 'while !</dev/tcp/db/5432; do sleep 1; done; run --logtostderr'
+    environment:
+      - DB_USERNAME=${POSTGRES_USER}
+      - DB_PASSWORD=${POSTGRES_PASSWORD}
+      - DB_NAME=${POSTGRES_DB}
+      - DB_HOST=db
+      - DB_PORT=5432
+
   jiraissuecalculator:
     image: bazel/cmd/jiraissuecalculator:image
     environment:

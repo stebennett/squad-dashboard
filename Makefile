@@ -40,6 +40,12 @@ githubprcollector: build-all db
 	bazel run --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/githubprcollector:image
 	docker-compose --env-file ${ENV} up githubprcollector
 
+.PHONY: googlesheetcollector
+googlesheetcollector: build-all db
+	bazel build --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/googlesheetcollector:image
+	bazel run --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/googlesheetcollector:image
+	docker-compose --env-file ${ENV} up googlesheetcollector
+
 .PHONY: pagerdutyoncallcollector
 pagerdutyoncallcollector: build-all db
 	bazel build --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/pagerdutyoncallcollector:image
