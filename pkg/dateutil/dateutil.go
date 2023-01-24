@@ -1,9 +1,20 @@
 package dateutil
 
 import (
+	"fmt"
 	"math"
 	"time"
 )
+
+var daysOfWeek = map[string]time.Weekday{
+	"Sunday":    time.Sunday,
+	"Monday":    time.Monday,
+	"Tuesday":   time.Tuesday,
+	"Wednesday": time.Wednesday,
+	"Thursday":  time.Thursday,
+	"Friday":    time.Friday,
+	"Saturday":  time.Saturday,
+}
 
 func DaysBetween(time1 time.Time, time2 time.Time) int {
 	t1, t2 := time1, time2
@@ -74,4 +85,12 @@ func PreviousWeekDates(startDate time.Time, numberOfWeeks int) []time.Time {
 
 func AsDate(year int, month time.Month, day int) time.Time {
 	return time.Date(year, month, day, 0, 0, 0, 0, time.UTC)
+}
+
+func ParseDayOfWeek(s string) (time.Weekday, error) {
+	if d, ok := daysOfWeek[s]; ok {
+		return d, nil
+	}
+
+	return time.Sunday, fmt.Errorf("invalid weekday '%s'", s)
 }

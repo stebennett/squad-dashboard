@@ -126,6 +126,9 @@ services:
       - DB_NAME=${POSTGRES_DB}
       - DB_HOST=db
       - DB_PORT=5432
+      - JIRA_DEFECT_ISSUE_TYPE
+      - JIRA_REPORT_ISSUE_TYPES
+      - REPORT_CYCLE_TIME_PERCENTILE
       - PORT=8080
     ports:
       - "8080:8080"
