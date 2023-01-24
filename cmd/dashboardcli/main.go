@@ -7,11 +7,12 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/Netflix/go-env"
-	"github.com/stebennett/squad-dashboard/pkg/dashboard"
 	"github.com/stebennett/squad-dashboard/pkg/jira/repo/calculationsrepository"
 	"github.com/stebennett/squad-dashboard/pkg/printer"
+	"github.com/stebennett/squad-dashboard/pkg/statsservice"
 )
 
 type Environment struct {
@@ -30,6 +31,7 @@ func main() {
 	}
 
 	repo := createJiraRepository()
+	ss := statsservice.NewStatsService(repo)
 	plotprinter := printer.NewPlotPrinter(environment.OutputDirectory, environment.JiraProject)
 	cliprinter := printer.NewCommandLinePrinter()
 	pdfprinter := printer.NewPdfReportPrinter(
@@ -45,22 +47,24 @@ func main() {
 		log.Fatal(err)
 	}
 
-	escapedDefects, err := dashboard.GenerateEscapedDefects(12, environment.JiraProject, environment.JiraDefectIssueType, repo)
+	now := time.Now()
+
+	escapedDefects, err := ss.GenerateEscapedDefects(12, environment.JiraProject, environment.JiraDefectIssueType, now, time.Friday)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	cycleTimeReports, err := dashboard.GenerateCycleTime(12, percentile, environment.JiraProject, strings.Split(environment.JiraReportIssueTypes, ","), repo)
+	cycleTimeReports, err := ss.GenerateCycleTime(12, percentile, environment.JiraProject, strings.Split(environment.JiraReportIssueTypes, ","), now, time.Friday)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	throughputReports, err := dashboard.GenerateThroughput(12, environment.JiraProject, strings.Split(environment.JiraReportIssueTypes, ","), repo)
+	throughputReports, err := ss.GenerateThroughput(12, environment.JiraProject, strings.Split(environment.JiraReportIssueTypes, ","), now, time.Friday)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	unplannedWorkReports, err := dashboard.GenerateUnplannedWorkReport(12, environment.JiraProject, strings.Split(environment.JiraReportIssueTypes, ","), repo)
+	unplannedWorkReports, err := ss.GenerateUnplannedWorkReport(12, environment.JiraProject, strings.Split(environment.JiraReportIssueTypes, ","), now, time.Friday)
 	if err != nil {
 		log.Fatal(err)
 	}

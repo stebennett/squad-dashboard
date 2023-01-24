@@ -1,4 +1,4 @@
-package dashboard
+package statsservice
 
 import (
 	"context"
@@ -11,11 +11,19 @@ import (
 	"github.com/stebennett/squad-dashboard/pkg/models"
 )
 
-func GenerateEscapedDefects(weekCount int, project string, defectIssueType string, repo calculationsrepository.JiraCalculationsRepository) (models.EscapedDefectReport, error) {
-	// 1. Calculate dates of last weekCount fridays
-	now := time.Now()
+type StatsService struct {
+	calculationsRepository calculationsrepository.JiraCalculationsRepository
+}
 
-	nearestFriday := dateutil.NearestPreviousDateForDay(dateutil.AsDate(now.Year(), now.Month(), now.Day()), time.Friday)
+func NewStatsService(repo calculationsrepository.JiraCalculationsRepository) *StatsService {
+	return &StatsService{
+		calculationsRepository: repo,
+	}
+}
+
+func (ss *StatsService) GenerateEscapedDefects(weekCount int, project string, defectIssueType string, startTime time.Time, endOfWeekDay time.Weekday) (models.EscapedDefectReport, error) {
+	// 1. Calculate dates of last weekCount fridays
+	nearestFriday := dateutil.NearestPreviousDateForDay(dateutil.AsDate(startTime.Year(), startTime.Month(), startTime.Day()), endOfWeekDay)
 	weekEndings := dateutil.PreviousWeekDates(nearestFriday, weekCount)
 
 	escapedDefectCounts := []models.WeekCount{}
@@ -26,7 +34,7 @@ func GenerateEscapedDefects(weekCount int, project string, defectIssueType strin
 	// 2. Count the number of defects created for week
 	for _, d := range weekEndings {
 		startDate := d.AddDate(0, 0, -7)
-		escapedDefects, err := repo.GetEscapedDefects(context.Background(), project, defectIssueType, startDate, d)
+		escapedDefects, err := ss.calculationsRepository.GetEscapedDefects(context.Background(), project, defectIssueType, startDate, d)
 		if err != nil {
 			return models.EscapedDefectReport{
 				WeeklyReports: escapedDefectCounts,
@@ -59,11 +67,9 @@ func GenerateEscapedDefects(weekCount int, project string, defectIssueType strin
 	}, nil
 }
 
-func GenerateCycleTime(weekCount int, percentile float64, project string, issueTypes []string, repo calculationsrepository.JiraCalculationsRepository) (models.CycleTimeReport, error) {
+func (ss *StatsService) GenerateCycleTime(weekCount int, percentile float64, project string, issueTypes []string, startTime time.Time, endOfWeekDay time.Weekday) (models.CycleTimeReport, error) {
 	// 1. Calculate dates of last weekCount fridays
-	now := time.Now()
-
-	nearestFriday := dateutil.NearestPreviousDateForDay(dateutil.AsDate(now.Year(), now.Month(), now.Day()), time.Friday)
+	nearestFriday := dateutil.NearestPreviousDateForDay(dateutil.AsDate(startTime.Year(), startTime.Month(), startTime.Day()), endOfWeekDay)
 	weekEndings := dateutil.PreviousWeekDates(nearestFriday, weekCount)
 	maxDate := weekEndings[0]
 
@@ -74,7 +80,7 @@ func GenerateCycleTime(weekCount int, percentile float64, project string, issueT
 	// 2. Get the average cycle time for a week
 	for _, d := range weekEndings {
 		startDate := d.AddDate(0, 0, -7)
-		ct, err := repo.GetCompletedWorkingCycleTimes(context.Background(), project, issueTypes, startDate, d)
+		ct, err := ss.calculationsRepository.GetCompletedWorkingCycleTimes(context.Background(), project, issueTypes, startDate, d)
 		if err != nil {
 			return models.CycleTimeReport{
 				WeeklyReports:          cycleTimeReports,
@@ -120,11 +126,9 @@ func GenerateCycleTime(weekCount int, percentile float64, project string, issueT
 	}, nil
 }
 
-func GenerateThroughput(weekCount int, project string, issueTypes []string, repo calculationsrepository.JiraCalculationsRepository) (models.ThroughputReport, error) {
+func (ss *StatsService) GenerateThroughput(weekCount int, project string, issueTypes []string, startTime time.Time, endOfWeekDay time.Weekday) (models.ThroughputReport, error) {
 	// 1. Calculate dates of last weekCount fridays
-	now := time.Now()
-
-	nearestFriday := dateutil.NearestPreviousDateForDay(dateutil.AsDate(now.Year(), now.Month(), now.Day()), time.Friday)
+	nearestFriday := dateutil.NearestPreviousDateForDay(dateutil.AsDate(startTime.Year(), startTime.Month(), startTime.Day()), time.Friday)
 	weekEndings := dateutil.PreviousWeekDates(nearestFriday, weekCount)
 	maxDate := weekEndings[0]
 
@@ -134,7 +138,7 @@ func GenerateThroughput(weekCount int, project string, issueTypes []string, repo
 	// 2. Get throughput by week
 	for _, d := range weekEndings {
 		startDate := d.AddDate(0, 0, -7)
-		issues, err := repo.GetThroughput(context.Background(), project, issueTypes, startDate, d)
+		issues, err := ss.calculationsRepository.GetThroughput(context.Background(), project, issueTypes, startDate, d)
 		if err != nil {
 			return models.ThroughputReport{
 				WeeklyReports: throughputReports,
@@ -166,11 +170,9 @@ func GenerateThroughput(weekCount int, project string, issueTypes []string, repo
 	}, nil
 }
 
-func GenerateUnplannedWorkReport(weekCount int, project string, issueTypes []string, repo calculationsrepository.JiraCalculationsRepository) (models.UnplannedWorkReport, error) {
+func (ss *StatsService) GenerateUnplannedWorkReport(weekCount int, project string, issueTypes []string, startTime time.Time, endOfWeekDay time.Weekday) (models.UnplannedWorkReport, error) {
 	// 1. Calculate dates of last weekCount fridays
-	now := time.Now()
-
-	nearestFriday := dateutil.NearestPreviousDateForDay(dateutil.AsDate(now.Year(), now.Month(), now.Day()), time.Friday)
+	nearestFriday := dateutil.NearestPreviousDateForDay(dateutil.AsDate(startTime.Year(), startTime.Month(), startTime.Day()), endOfWeekDay)
 	weekEndings := dateutil.PreviousWeekDates(nearestFriday, weekCount)
 	maxDate := weekEndings[0]
 
@@ -179,14 +181,14 @@ func GenerateUnplannedWorkReport(weekCount int, project string, issueTypes []str
 
 	for _, d := range weekEndings {
 		startDate := d.AddDate(0, 0, -7)
-		throughputIssues, err := repo.GetThroughput(context.Background(), project, issueTypes, startDate, d)
+		throughputIssues, err := ss.calculationsRepository.GetThroughput(context.Background(), project, issueTypes, startDate, d)
 		if err != nil {
 			return models.UnplannedWorkReport{
 				WeeklyReports: unplannedWorkReports,
 			}, err
 		}
 
-		unplannedIssues, err := repo.GetUnplannedThroughput(context.Background(), project, issueTypes, startDate, d)
+		unplannedIssues, err := ss.calculationsRepository.GetUnplannedThroughput(context.Background(), project, issueTypes, startDate, d)
 		if err != nil {
 			return models.UnplannedWorkReport{
 				WeeklyReports: unplannedWorkReports,

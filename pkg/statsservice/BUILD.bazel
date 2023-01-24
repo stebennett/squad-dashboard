@@ -1,9 +1,9 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
-    name = "dashboard",
-    srcs = ["dashboard.go"],
-    importpath = "github.com/stebennett/squad-dashboard/pkg/dashboard",
+    name = "statsservice",
+    srcs = ["statsservice.go"],
+    importpath = "github.com/stebennett/squad-dashboard/pkg/statsservice",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/dateutil",
