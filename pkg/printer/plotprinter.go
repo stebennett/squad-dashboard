@@ -46,7 +46,7 @@ func (pp *PlotPrinter) Print(reports Reports) error {
 }
 
 func (pp *PlotPrinter) printDefectCounts(defectCounts models.EscapedDefectReport) error {
-	p, err := pp.printChart(defectCounts.WeeklyReports, "Escaped Defects", color.NRGBA{R: 190, G: 0, B: 0, A: 100}, color.NRGBA{R: 190, G: 0, B: 0, A: 255})
+	p, err := pp.printChart(defectCounts.WeeklyReports, defectCounts.Trend, "Escaped Defects", color.NRGBA{R: 190, G: 0, B: 0, A: 100}, color.NRGBA{R: 190, G: 0, B: 0, A: 255})
 	if err != nil {
 		return err
 	}
@@ -55,7 +55,7 @@ func (pp *PlotPrinter) printDefectCounts(defectCounts models.EscapedDefectReport
 }
 
 func (pp *PlotPrinter) printCycleTimes(cycleTimeReport models.CycleTimeReport) error {
-	p, err := pp.printChart(cycleTimeReport.WeeklyReports, "Cycle Time", color.NRGBA{R: 0, G: 0, B: 190, A: 100}, color.NRGBA{R: 0, G: 0, B: 190, A: 255})
+	p, err := pp.printChart(cycleTimeReport.WeeklyReports, cycleTimeReport.Trend, "Cycle Time", color.NRGBA{R: 0, G: 0, B: 190, A: 100}, color.NRGBA{R: 0, G: 0, B: 190, A: 255})
 	if err != nil {
 		return err
 	}
@@ -69,7 +69,7 @@ func (pp *PlotPrinter) printCycleTimes(cycleTimeReport models.CycleTimeReport) e
 }
 
 func (pp *PlotPrinter) printThroughput(throughputReports models.ThroughputReport) error {
-	p, err := pp.printChart(throughputReports.WeeklyReports, "Throughput", color.NRGBA{R: 0, G: 190, B: 0, A: 100}, color.NRGBA{R: 0, G: 190, B: 0, A: 255})
+	p, err := pp.printChart(throughputReports.WeeklyReports, throughputReports.Trend, "Throughput", color.NRGBA{R: 0, G: 190, B: 0, A: 100}, color.NRGBA{R: 0, G: 190, B: 0, A: 255})
 	if err != nil {
 		return err
 	}
@@ -78,7 +78,7 @@ func (pp *PlotPrinter) printThroughput(throughputReports models.ThroughputReport
 }
 
 func (pp *PlotPrinter) printUnplannedWork(unplannedWorkReports models.UnplannedWorkReport) error {
-	p, err := pp.printChart(unplannedWorkReports.WeeklyReports, "Unplanned Work", color.NRGBA{R: 100, G: 0, B: 100, A: 100}, color.NRGBA{R: 100, G: 0, B: 100, A: 255})
+	p, err := pp.printChart(unplannedWorkReports.WeeklyReports, unplannedWorkReports.Trend, "Unplanned Work", color.NRGBA{R: 100, G: 0, B: 100, A: 100}, color.NRGBA{R: 100, G: 0, B: 100, A: 255})
 	if err != nil {
 		return err
 	}
@@ -86,7 +86,7 @@ func (pp *PlotPrinter) printUnplannedWork(unplannedWorkReports models.UnplannedW
 	return p.Save(20*vg.Centimeter, 10*vg.Centimeter, pp.GetUnplannedWorkChartLocation())
 }
 
-func (pp *PlotPrinter) printChart(weekCounts []models.WeekCount, title string, plotColor color.Color, trendlineColor color.Color) (p *plot.Plot, err error) {
+func (pp *PlotPrinter) printChart(weekCounts []models.WeekCount, trendData models.TrendDetails, title string, plotColor color.Color, trendlineColor color.Color) (p *plot.Plot, err error) {
 	p = plot.New()
 
 	xticks := plot.TimeTicks{Format: "2006-01-02"}
@@ -121,9 +121,7 @@ func (pp *PlotPrinter) printChart(weekCounts []models.WeekCount, title string, p
 
 	p.Add(line, points)
 
-	linearRegression, _, _ := mathutil.LinearRegression(xys)
-
-	linearRegressionLine, linearRegressionPoints, err := plotter.NewLinePoints(asPlotPoints(linearRegression))
+	linearRegressionLine, linearRegressionPoints, err := plotter.NewLinePoints(asPlotPoints(trendData))
 	if err != nil {
 		return p, err
 	}
@@ -172,10 +170,10 @@ func (pp *PlotPrinter) GetUnplannedWorkChartLocation() string {
 	return pp.OutputDirectory + "/unplanned-" + pp.JiraProject + ".png"
 }
 
-func asPlotPoints(points []mathutil.XY) plotter.XYs {
-	plotterPoints := make(plotter.XYs, len(points))
-	for i, v := range points {
-		plotterPoints[i].X = v.X
+func asPlotPoints(points models.TrendDetails) plotter.XYs {
+	plotterPoints := make(plotter.XYs, len(points.XYs))
+	for i, v := range points.XYs {
+		plotterPoints[i].X = float64(v.X.Unix())
 		plotterPoints[i].Y = v.Y
 	}
 	return plotterPoints

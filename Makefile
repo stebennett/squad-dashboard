@@ -58,11 +58,11 @@ migrate: build-all db
 	bazel run --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/dbmigration:image
 	docker-compose --env-file ${ENV} up migration
 
-.PHONY: api
-api: build-all db
-	bazel build --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/api:image
-	bazel run --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/api:image
-	docker-compose --env-file ${ENV} up api	
+.PHONY: app
+app: build-all db
+	bazel build --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //services/app:image
+	bazel run --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //services/app:image
+	docker-compose --env-file ${ENV} up app	
 
 .PHONY: dashboardcli
 dashboardcli: build-all db

@@ -1,0 +1,14 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "statsservice",
+    srcs = ["statsservice.go"],
+    importpath = "github.com/stebennett/squad-dashboard/pkg/statsservice",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/dateutil",
+        "//pkg/jira/repo/calculationsrepository",
+        "//pkg/mathutil",
+        "//pkg/models",
+    ],
+)

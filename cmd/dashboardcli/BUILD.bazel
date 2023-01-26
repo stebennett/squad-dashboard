@@ -7,9 +7,9 @@ go_library(
     importpath = "github.com/stebennett/squad-dashboard/cmd/dashboardcli",
     visibility = ["//visibility:public"],
     deps = [
-        "//pkg/dashboard",
         "//pkg/jira/repo/calculationsrepository",
         "//pkg/printer",
+        "//pkg/statsservice",
         "//vendor/github.com/Netflix/go-env",
     ],
 )
