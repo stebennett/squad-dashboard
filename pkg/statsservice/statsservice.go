@@ -2,7 +2,6 @@ package statsservice
 
 import (
 	"context"
-	"log"
 	"time"
 
 	"github.com/stebennett/squad-dashboard/pkg/dateutil"
@@ -26,13 +25,14 @@ func (ss *StatsService) GenerateEscapedDefects(weekCount int, project string, de
 	nearestFriday := dateutil.NearestPreviousDateForDay(dateutil.AsDate(startTime.Year(), startTime.Month(), startTime.Day()), endOfWeekDay)
 	weekEndings := dateutil.PreviousWeekDates(nearestFriday, weekCount)
 
-	escapedDefectCounts := []models.WeekCount{}
+	escapedDefectCounts := make([]models.WeekCount, len(weekEndings))
 	var lastWeekEscapedDefect []models.WorkItem
 
 	maxDate := weekEndings[0]
+	xys := make([]mathutil.XY, len(weekEndings))
 
 	// 2. Count the number of defects created for week
-	for _, d := range weekEndings {
+	for idx, d := range weekEndings {
 		startDate := d.AddDate(0, 0, -7)
 		escapedDefects, err := ss.calculationsRepository.GetEscapedDefects(context.Background(), project, defectIssueType, startDate, d)
 		if err != nil {
@@ -41,10 +41,12 @@ func (ss *StatsService) GenerateEscapedDefects(weekCount int, project string, de
 			}, err
 		}
 
-		escapedDefectCounts = append(escapedDefectCounts, models.WeekCount{
+		escapedDefectCounts[idx] = models.WeekCount{
 			WeekEnding: d,
 			Count:      len(escapedDefects),
-		})
+		}
+		xys[idx].X = float64(d.Unix())
+		xys[idx].Y = float64(len(escapedDefects))
 
 		// get the values for the last week only
 		if maxDate.Equal(d) {
@@ -60,10 +62,18 @@ func (ss *StatsService) GenerateEscapedDefects(weekCount int, project string, de
 		}
 	}
 
+	linearRegression, m, b := mathutil.LinearRegression(xys)
+	trendDetails := models.TrendDetails{
+		XYs:           buildTrendLinePoints(linearRegression),
+		Slope:         m * (7 * 24 * 60 * 60),
+		CrossingPoint: b,
+	}
+
 	// 3. Return the data
 	return models.EscapedDefectReport{
 		WeeklyReports:              escapedDefectCounts,
 		LastWeekEscapedDefectItems: lastWeekEscapedDefect,
+		Trend:                      trendDetails,
 	}, nil
 }
 
@@ -73,12 +83,13 @@ func (ss *StatsService) GenerateCycleTime(weekCount int, percentile float64, pro
 	weekEndings := dateutil.PreviousWeekDates(nearestFriday, weekCount)
 	maxDate := weekEndings[0]
 
-	cycleTimeReports := []models.WeekCount{}
-	cycleTimeValues := []models.WorkItem{}
+	cycleTimeReports := make([]models.WeekCount, len(weekEndings))
+	cycleTimeValues := make([]models.WorkItem, len(weekEndings))
+	xys := make([]mathutil.XY, len(weekEndings))
 	var lastWeekCycleTimes []models.WorkItem
 
 	// 2. Get the average cycle time for a week
-	for _, d := range weekEndings {
+	for idx, d := range weekEndings {
 		startDate := d.AddDate(0, 0, -7)
 		ct, err := ss.calculationsRepository.GetCompletedWorkingCycleTimes(context.Background(), project, issueTypes, startDate, d)
 		if err != nil {
@@ -100,10 +111,15 @@ func (ss *StatsService) GenerateCycleTime(weekCount int, percentile float64, pro
 			})
 		}
 
-		cycleTimeReports = append(cycleTimeReports, models.WeekCount{
+		percentileCount := mathutil.Percentile(percentile, cycleTimes)
+
+		cycleTimeReports[idx] = models.WeekCount{
 			WeekEnding: d,
-			Count:      mathutil.Percentile(percentile, cycleTimes),
-		})
+			Count:      percentileCount,
+		}
+
+		xys[idx].X = float64(d.Unix())
+		xys[idx].Y = float64(percentileCount)
 
 		// get the values for the last week only
 		if maxDate.Equal(d) {
@@ -119,10 +135,18 @@ func (ss *StatsService) GenerateCycleTime(weekCount int, percentile float64, pro
 		}
 	}
 
+	linearRegression, m, b := mathutil.LinearRegression(xys)
+	trendDetails := models.TrendDetails{
+		XYs:           buildTrendLinePoints(linearRegression),
+		Slope:         m * (7 * 24 * 60 * 60),
+		CrossingPoint: b,
+	}
+
 	return models.CycleTimeReport{
 		WeeklyReports:          cycleTimeReports,
 		AllCycleTimeItems:      cycleTimeValues,
 		LastWeekCycleTimeItems: lastWeekCycleTimes,
+		Trend:                  trendDetails,
 	}, nil
 }
 
@@ -132,11 +156,13 @@ func (ss *StatsService) GenerateThroughput(weekCount int, project string, issueT
 	weekEndings := dateutil.PreviousWeekDates(nearestFriday, weekCount)
 	maxDate := weekEndings[0]
 
-	throughputReports := []models.WeekCount{}
+	throughputReports := make([]models.WeekCount, len(weekEndings))
+	xys := make([]mathutil.XY, len(weekEndings))
+
 	var lastWeekThroughputItems []models.WorkItem
 
 	// 2. Get throughput by week
-	for _, d := range weekEndings {
+	for idx, d := range weekEndings {
 		startDate := d.AddDate(0, 0, -7)
 		issues, err := ss.calculationsRepository.GetThroughput(context.Background(), project, issueTypes, startDate, d)
 		if err != nil {
@@ -145,10 +171,13 @@ func (ss *StatsService) GenerateThroughput(weekCount int, project string, issueT
 			}, nil
 		}
 
-		throughputReports = append(throughputReports, models.WeekCount{
+		throughputReports[idx] = models.WeekCount{
 			WeekEnding: d,
 			Count:      len(issues),
-		})
+		}
+
+		xys[idx].X = float64(d.Unix())
+		xys[idx].Y = float64(len(issues))
 
 		// get the values for the last week only
 		if maxDate.Equal(d) {
@@ -164,9 +193,17 @@ func (ss *StatsService) GenerateThroughput(weekCount int, project string, issueT
 		}
 	}
 
+	linearRegression, m, b := mathutil.LinearRegression(xys)
+	trendDetails := models.TrendDetails{
+		XYs:           buildTrendLinePoints(linearRegression),
+		Slope:         m * (7 * 24 * 60 * 60),
+		CrossingPoint: b,
+	}
+
 	return models.ThroughputReport{
 		WeeklyReports:           throughputReports,
 		LastWeekThroughputItems: lastWeekThroughputItems,
+		Trend:                   trendDetails,
 	}, nil
 }
 
@@ -176,10 +213,12 @@ func (ss *StatsService) GenerateUnplannedWorkReport(weekCount int, project strin
 	weekEndings := dateutil.PreviousWeekDates(nearestFriday, weekCount)
 	maxDate := weekEndings[0]
 
-	unplannedWorkReports := []models.WeekCount{}
+	unplannedWorkReports := make([]models.WeekCount, len(weekEndings))
+	xys := make([]mathutil.XY, len(weekEndings))
+
 	var lastWeekUnplannedItems []models.WorkItem
 
-	for _, d := range weekEndings {
+	for idx, d := range weekEndings {
 		startDate := d.AddDate(0, 0, -7)
 		throughputIssues, err := ss.calculationsRepository.GetThroughput(context.Background(), project, issueTypes, startDate, d)
 		if err != nil {
@@ -200,12 +239,12 @@ func (ss *StatsService) GenerateUnplannedWorkReport(weekCount int, project strin
 			unplannedPercent = int((float64(len(unplannedIssues)) / float64(len(throughputIssues))) * 100.0)
 		}
 
-		log.Printf("unplanned: %d; all: %d; percent: %d", len(unplannedIssues), len(throughputIssues), unplannedPercent)
-
-		unplannedWorkReports = append(unplannedWorkReports, models.WeekCount{
+		unplannedWorkReports[idx] = models.WeekCount{
 			WeekEnding: d,
 			Count:      unplannedPercent,
-		})
+		}
+		xys[idx].X = float64(d.Unix())
+		xys[idx].Y = float64(unplannedPercent)
 
 		// get the values for the last week only
 		if maxDate.Equal(d) {
@@ -221,8 +260,25 @@ func (ss *StatsService) GenerateUnplannedWorkReport(weekCount int, project strin
 		}
 	}
 
+	linearRegression, m, b := mathutil.LinearRegression(xys)
+	trendDetails := models.TrendDetails{
+		XYs:           buildTrendLinePoints(linearRegression),
+		Slope:         m * (7 * 24 * 60 * 60),
+		CrossingPoint: b,
+	}
+
 	return models.UnplannedWorkReport{
 		WeeklyReports:              unplannedWorkReports,
 		LastWeekUnplannedWorkItems: lastWeekUnplannedItems,
+		Trend:                      trendDetails,
 	}, nil
+}
+
+func buildTrendLinePoints(pts []mathutil.XY) []models.TrendLineItem {
+	trendline := make([]models.TrendLineItem, len(pts))
+	for i, p := range pts {
+		trendline[i].X = time.Unix(int64(p.X), 0)
+		trendline[i].Y = p.Y
+	}
+	return trendline
 }
