@@ -68,7 +68,13 @@ Building and run a command in docker
 ````
 
 ## Troubleshooting
-- Error: `xcrun: error: invalid active developer path (/Library/Developer/CommandLineTools), missing xcrun at: /Library/Developer/CommandLineTools/usr/bin/xcrun`
-  - Fix it with: `xcode-select --install`
-- Error when running `make deps` : ` unable to find valid certification path to requested target`
-  - Fix it by exiting zScaler
+1. Error: `xcrun: error: invalid active developer path (/Library/Developer/CommandLineTools), missing xcrun at: /Library/Developer/CommandLineTools/usr/bin/xcrun`
+   - Fix it with: `xcode-select --install`
+2. Error when running `make deps` : ` unable to find valid certification path to requested target`
+   - This is a VPN issue, fix it by exiting zScaler
+3. Error about missing python: `line 119: python: command not found`
+   - Most likely you have python3.9 installed via homebrew, you can fix it by running `echo 'export PATH=/opt/homebrew/opt/python@3.9/libexec/bin:$PATH' >> ~/.zprofile` and then `. ~/.zprofile`
+4. `jiracollector_1             | 2023/02/06 13:48:10 Post "https://stashinvest.atlassian.net/rest/api/2/search": x509: certificate signed by unknown authority`
+   - This is a VPN issue, fix it by exiting zScaler
+5. `squad-dashboard-configloader-1  | 2023/02/06 13:54:14 failed to save Jira Work ToDo States. pq: relation "jira_work_states" does not exist`
+   - Not sure about this one
