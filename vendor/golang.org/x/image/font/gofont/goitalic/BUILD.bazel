@@ -1,9 +1,0 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library")
-
-go_library(
-    name = "goitalic",
-    srcs = ["data.go"],
-    importmap = "github.com/stebennett/squad-dashboard/vendor/golang.org/x/image/font/gofont/goitalic",
-    importpath = "golang.org/x/image/font/gofont/goitalic",
-    visibility = ["//visibility:public"],
-)
