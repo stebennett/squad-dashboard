@@ -1,9 +1,0 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library")
-
-go_library(
-    name = "linkheader",
-    srcs = ["main.go"],
-    importmap = "github.com/stebennett/squad-dashboard/vendor/github.com/tomnomnom/linkheader",
-    importpath = "github.com/tomnomnom/linkheader",
-    visibility = ["//visibility:public"],
-)

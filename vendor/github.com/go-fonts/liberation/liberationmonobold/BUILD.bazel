@@ -1,9 +1,0 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library")
-
-go_library(
-    name = "liberationmonobold",
-    srcs = ["data.go"],
-    importmap = "github.com/stebennett/squad-dashboard/vendor/github.com/go-fonts/liberation/liberationmonobold",
-    importpath = "github.com/go-fonts/liberation/liberationmonobold",
-    visibility = ["//visibility:public"],
-)
