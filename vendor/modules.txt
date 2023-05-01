@@ -50,32 +50,20 @@ github.com/golang-migrate/migrate/v4/source/iofs
 ## explicit
 github.com/golang/freetype/raster
 github.com/golang/freetype/truetype
-# github.com/golang/glog v1.0.0
-## explicit; go 1.11
-github.com/golang/glog
 # github.com/hashicorp/errwrap v1.1.0
 ## explicit
 github.com/hashicorp/errwrap
 # github.com/hashicorp/go-multierror v1.1.1
 ## explicit; go 1.13
 github.com/hashicorp/go-multierror
-# github.com/inconshreveable/mousetrap v1.0.1
-## explicit; go 1.18
-github.com/inconshreveable/mousetrap
 # github.com/jung-kurt/gofpdf v1.16.2
 ## explicit; go 1.12
 github.com/jung-kurt/gofpdf
-# github.com/lib/pq v1.10.7
+# github.com/lib/pq v1.10.9
 ## explicit; go 1.13
 github.com/lib/pq
 github.com/lib/pq/oid
 github.com/lib/pq/scram
-# github.com/spf13/cobra v1.6.1
-## explicit; go 1.15
-github.com/spf13/cobra
-# github.com/spf13/pflag v1.0.5
-## explicit; go 1.12
-github.com/spf13/pflag
 # github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80
 ## explicit
 github.com/tomnomnom/linkheader
@@ -126,3 +114,5 @@ gonum.org/v1/plot/vg/vgimg
 gonum.org/v1/plot/vg/vgpdf
 gonum.org/v1/plot/vg/vgsvg
 gonum.org/v1/plot/vg/vgtex
+# gopkg.in/yaml.v3 v3.0.1
+## explicit
